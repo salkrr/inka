@@ -4,7 +4,6 @@ import re
 
 class Parser:
     __tags_prefix = "Tags:"
-    __source_prefix = "Source:"
     __question_prefix = ""
     __answer_prefix = ">"
 
@@ -17,9 +16,8 @@ class Parser:
         # Get all lines from note
         lines_list = self.get_file_lines()
 
-        # Get tags and source
+        # Get tags
         tags = self.get_tags(lines_list)
-        source = self.get_source(lines_list)
 
         # Forward and backward sides of a card
         forward = ""
@@ -41,9 +39,8 @@ class Parser:
             if line[0] == "#":
                 continue
 
-            # Skip line if it's tags or source
-            if line.startswith(self.__tags_prefix) or \
-                    line.startswith(self.__source_prefix):
+            # Skip line if it contains tags
+            if line.startswith(self.__tags_prefix):
                 continue
 
             # Getting question or answer prefix from the line
@@ -66,7 +63,7 @@ class Parser:
                 else:
                     # So we should create new card and add it to the list
                     if not first_card:
-                        cards_list.append(Card(forward, backward, source, tags))
+                        cards_list.append(Card(forward, backward, tags))
                     else:
                         first_card = False
 
@@ -94,7 +91,7 @@ class Parser:
 
         # Append card if it's the last or the only one in the note
         if forward != "" and previous_is_answer:
-            cards_list.append(Card(forward, backward, source, tags))
+            cards_list.append(Card(forward, backward, tags))
 
         return cards_list
 
@@ -118,20 +115,6 @@ class Parser:
                 break
 
         return tags
-
-    def get_source(self, lines):
-        source = ""
-        for line in lines:
-            # Skip empty lines
-            if line.strip() == "":
-                continue
-
-            # Get source
-            if line.startswith(self.__source_prefix):
-                source = line.replace(self.__source_prefix, "").strip()
-                break
-
-        return source
 
     def print_error_message(self, line_with_error):
         print(f"Something wrong in formatting near line: {line_with_error}")
