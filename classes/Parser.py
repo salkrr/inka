@@ -19,9 +19,9 @@ class Parser:
         # Get tags
         tags = self.get_tags(lines_list)
 
-        # Forward and backward sides of a card
-        forward = ""
-        backward = ""
+        # Front and back sides of a card
+        card_front = ""
+        card_back = ""
 
         # We use this boolean to track what last we parsed: question or answer
         previous_is_answer = True
@@ -57,23 +57,23 @@ class Parser:
                 cleaned_line = line[prefix_match.regs[0][1]:].strip()
                 # We firstly check if there's continuation for an answer
                 if prefix == self.__answer_prefix:
-                    backward += "\n" + cleaned_line
+                    card_back += "\n" + cleaned_line
 
                 # else it's a new question
                 else:
                     # So we should create new card and add it to the list
                     if not first_card:
-                        cards_list.append(Card(forward, backward, tags))
+                        cards_list.append(Card(card_front, card_back, tags))
                     else:
                         first_card = False
 
-                    # And set new forward value
-                    forward = cleaned_line
+                    # And set new card_front value
+                    card_front = cleaned_line
                     previous_is_answer = False
             else:
                 # No prefix means that this is the question's line
                 if prefix_match is None:
-                    forward += "\n" + line
+                    card_front += "\n" + line
                     continue
 
                 prefix = line[:prefix_match.regs[0][1]]
@@ -81,7 +81,7 @@ class Parser:
                 # If we have answer prefix then it's a first line
                 # of the answer for the question we had before
                 if prefix == self.__answer_prefix:
-                    backward = cleaned_line
+                    card_back = cleaned_line
                     previous_is_answer = True
 
                 # Question prefix means that we have next question
@@ -90,8 +90,8 @@ class Parser:
                     self.print_error_message(line)
 
         # Append card if it's the last or the only one in the note
-        if forward != "" and previous_is_answer:
-            cards_list.append(Card(forward, backward, tags))
+        if card_front != "" and previous_is_answer:
+            cards_list.append(Card(card_front, card_back, tags))
 
         return cards_list
 

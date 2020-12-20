@@ -5,8 +5,8 @@ class Converter:
 
     @staticmethod
     def convert_card(card):
-        card.forward = Converter.convert_string(card.forward)
-        card.backward = Converter.convert_string(card.backward)
+        card.front = Converter.convert_string(card.front)
+        card.back = Converter.convert_string(card.back)
 
     @staticmethod
     def convert_string(raw_str):

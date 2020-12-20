@@ -14,8 +14,8 @@ def main():
     for card in cards_list:
         Converter.convert_card(card)
         print("------------------------------------")
-        print(f"Forward: {card.forward}")
-        print(f"Backward: {card.backward}")
+        print(f"Front: {card.front}")
+        print(f"Back: {card.back}")
         print(f"Tags: {str(card.tags)}")
 
 
