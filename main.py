@@ -11,7 +11,7 @@ def main():
         return
 
     if len(cards_list) == 0:
-        print("ERROR: Cards wasn't found in file.")
+        print("ERROR: Cards weren't found in file.")
         return
 
     Converter.convert_cards(cards_list)
