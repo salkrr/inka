@@ -46,8 +46,8 @@ class AnkiApi:
             "deckName": cls.deck_name,
             "modelName": cls.note_type,
             "fields": {
-                cls.front_field_name: card.front,
-                cls.back_field_name: card.back
+                cls.front_field_name: card.front_converted,
+                cls.back_field_name: card.back_converted
             },
             "options": {
                 "allowDuplicate": False,
