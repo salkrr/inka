@@ -3,10 +3,15 @@ import pypandoc
 
 class Converter:
 
-    @staticmethod
-    def convert_card(card):
-        card.front = Converter.convert_string(card.front)
-        card.back = Converter.convert_string(card.back)
+    @classmethod
+    def convert_cards(cls, cards_list):
+        for card in cards_list:
+            cls.convert_card(card)
+
+    @classmethod
+    def convert_card(cls, card):
+        card.front = cls.convert_string(card.front)
+        card.back = cls.convert_string(card.back)
 
     @staticmethod
     def convert_string(raw_str):

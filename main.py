@@ -14,9 +14,7 @@ def main():
         print("ERROR: Cards wasn't found in file.")
         return
 
-    for card in cards_list:
-        Converter.convert_card(card)
-
+    Converter.convert_cards(cards_list)
     AnkiApi.add_cards(cards_list)
 
 
