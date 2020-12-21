@@ -88,6 +88,7 @@ class Parser:
                 # before we got answer to the previous
                 else:
                     self.print_error_message(line)
+                    return
 
         # Append card if it's the last or the only one in the note
         if card_front != "" and previous_is_answer:
