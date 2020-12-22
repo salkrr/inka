@@ -119,4 +119,5 @@ class Parser:
 
     def print_error_message(self, line_with_error):
         print(f"Something wrong in formatting near line: {line_with_error}")
-        print("Closing...")
+        input("Press Enter to continue...")
+        print()
