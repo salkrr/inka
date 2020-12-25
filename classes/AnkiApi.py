@@ -2,7 +2,6 @@ import requests
 
 
 class AnkiApi:
-    deck_name = "test"
     note_type = "Basic"
     front_field_name = "Front"
     back_field_name = "Back"
@@ -43,7 +42,7 @@ class AnkiApi:
     @classmethod
     def create_note_dict(cls, card):
         return {
-            "deckName": cls.deck_name,
+            "deckName": card.deck_name,
             "modelName": cls.note_type,
             "fields": {
                 cls.front_field_name: card.front_converted,

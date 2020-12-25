@@ -1,9 +1,11 @@
-from classes.Card import Card
 import re
+
+from classes.Card import Card
 
 
 class Parser:
     __tags_prefix = "Tags:"
+    __deck_prefix = "Deck:"
     __question_prefix = ""
     __answer_prefix = ">"
 
@@ -18,6 +20,9 @@ class Parser:
 
         # Get tags
         tags = self.get_tags(lines_list)
+
+        # Get name of the deck
+        deck_name = self.get_deck(lines_list)
 
         # Front and back sides of a card
         card_front = ""
@@ -39,8 +44,9 @@ class Parser:
             if line[0] == "#":
                 continue
 
-            # Skip line if it contains tags
-            if line.startswith(self.__tags_prefix):
+            # Skip line if it contains tags or deck name
+            if line.startswith(self.__tags_prefix) or \
+                    line.startswith(self.__deck_prefix):
                 continue
 
             # Getting question or answer prefix from the line
@@ -63,7 +69,7 @@ class Parser:
                 else:
                     # So we should create new card and add it to the list
                     if not first_card:
-                        cards_list.append(Card(card_front, card_back, tags))
+                        cards_list.append(Card(card_front, card_back, tags, deck_name))
                     else:
                         first_card = False
 
@@ -92,7 +98,7 @@ class Parser:
 
         # Append card if it's the last or the only one in the note
         if card_front != "" and previous_is_answer:
-            cards_list.append(Card(card_front, card_back, tags))
+            cards_list.append(Card(card_front, card_back, tags, deck_name))
 
         return cards_list
 
@@ -116,6 +122,20 @@ class Parser:
                 break
 
         return tags
+
+    def get_deck(self, lines):
+        deck_name = None
+        for line in lines:
+            # Skip empty lines
+            if line.strip() == "":
+                continue
+
+            # Get tags
+            if line.startswith(self.__deck_prefix):
+                deck_name = line.replace(self.__deck_prefix, "").strip()
+                break
+
+        return deck_name
 
     def print_error_message(self, line_with_error):
         print(f"Something wrong in formatting near line: {line_with_error}")
