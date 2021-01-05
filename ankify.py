@@ -2,6 +2,8 @@ import argparse
 import os
 import sys
 
+import requests
+
 from classes.AnkiApi import AnkiApi
 from classes.Converter import Converter
 from classes.Parser import Parser
@@ -29,17 +31,16 @@ def create_cards(file_path):
     note_parser = Parser(file_path)
 
     print("Getting cards from the file...")
-    cards_list = note_parser.collect_cards()
-
-    # Error
-    if cards_list is None:
-        print(f"Cards from the file \"{file_path}\" weren't added to Anki!")
-        return
+    try:
+        cards_list = note_parser.collect_cards()
+    except ValueError as e:
+        print(f'ERROR: {e.args[0]}')
+        sys.exit()
 
     number_of_cards = len(cards_list)
     if number_of_cards == 0:
         print("ERROR: Cards weren't found in the file.\n")
-        return
+        sys.exit()
 
     print(f"Found {number_of_cards} cards!")
 
@@ -47,7 +48,12 @@ def create_cards(file_path):
     Converter.convert_cards(cards_list)
 
     print("Sending cards...")
-    AnkiApi.add_cards(cards_list)
+    try:
+        AnkiApi.add_cards(cards_list)
+    except requests.exceptions.ConnectionError:
+        print("ERROR: Couldn't connect to Anki. "
+              "Please, check that Anki is working and you have AnkiConnect plugin installed.")
+        sys.exit()
 
 
 def main():
