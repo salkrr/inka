@@ -4,140 +4,83 @@ from classes.Card import Card
 
 
 class Parser:
-    __tags_prefix = "Tags:"
-    __deck_prefix = "Deck:"
-    __question_prefix = ""
-    __answer_prefix = ">"
 
     def __init__(self, file_path):
         self.file_path = file_path
 
     def collect_cards(self):
-        cards_list = []
+        note_string = self.get_note_string()
 
-        # Get all lines from note
-        lines_list = self.get_file_lines()
+        question_sections = self.get_question_sections(note_string)
 
-        # Get tags
-        tags = self.get_tags(lines_list)
+        cards = []
+        for section in question_sections:
+            cards.extend(self.get_cards_from_section(section))
 
-        # Get name of the deck
-        deck_name = self.get_deck(lines_list)
+        return cards
 
-        # Front and back sides of a card
-        card_front = ""
-        card_back = ""
+    def get_cards_from_section(self, section):
+        tags = self.get_tags_from_section(section)
+        deck_name = self.get_deck_name_from_section(section)
 
-        # We use this boolean to track what last we parsed: question or answer
-        previous_is_answer = True
+        questions = re.findall(r'^\d+\..+?(?=^>)',
+                               section,
+                               re.DOTALL | re.MULTILINE)
+        # Clean questions from whitespace at the start and the end of string
+        questions = list(map(lambda q: re.sub(r'\d+\.', '', q, 1).strip(), questions))
 
-        # This one is needed to correctly add first card
-        first_card = True
-        for line in lines_list:
-            line = line.strip()
+        answers = re.findall(r'(?:>.*?\n)+',
+                             section,
+                             re.DOTALL | re.MULTILINE)
 
-            # Skip if line is empty
-            if line == "":
-                continue
+        # Clean (remove '>' and unnecessary whitespace) answer strings
+        answers = list(map(self.clean_answer_string, answers))
 
-            # Skip line if it's a heading
-            if line[0] == "#":
-                continue
+        if len(questions) != len(answers):
+            raise ValueError(f'Different number of questions and answers in section:\n{section}')
 
-            # Skip line if it contains tags or deck name
-            if line.startswith(self.__tags_prefix) or \
-                    line.startswith(self.__deck_prefix):
-                continue
+        cards = []
+        for question, answer in zip(questions, answers):
+            cards.append(Card(question, answer, tags, deck_name))
 
-            # Getting question or answer prefix from the line
-            prefix_match = re.match("(\\d+\\.)|(>)", line)
+        return cards
 
-            if previous_is_answer:
-                # If there's no prefix than that means
-                # that something is wrong with file formatting
-                if prefix_match is None:
-                    self.print_error_message(line)
-                    return
+    def get_tags_from_section(self, section):
+        match = re.search(r'(?<=^Tags:).*?$',
+                          section,
+                          re.MULTILINE)
+        if not match:
+            return []
 
-                prefix = line[:prefix_match.regs[0][1]]
-                cleaned_line = line[prefix_match.regs[0][1]:].strip()
-                # We firstly check if there's continuation for an answer
-                if prefix == self.__answer_prefix:
-                    card_back += "\n" + cleaned_line
-
-                # else it's a new question
-                else:
-                    # So we should create new card and add it to the list
-                    if not first_card:
-                        cards_list.append(Card(card_front, card_back, tags, deck_name))
-                    else:
-                        first_card = False
-
-                    # And set new card_front value
-                    card_front = cleaned_line
-                    previous_is_answer = False
-            else:
-                # No prefix means that this is the question's line
-                if prefix_match is None:
-                    card_front += "\n" + line
-                    continue
-
-                prefix = line[:prefix_match.regs[0][1]]
-                cleaned_line = line[prefix_match.regs[0][1]:].strip()
-                # If we have answer prefix then it's a first line
-                # of the answer for the question we had before
-                if prefix == self.__answer_prefix:
-                    card_back = cleaned_line
-                    previous_is_answer = True
-
-                # Question prefix means that we have next question
-                # before we got answer to the previous
-                else:
-                    self.print_error_message(line)
-                    return
-
-        # Append card if it's the last or the only one in the note
-        if card_front != "" and previous_is_answer:
-            cards_list.append(Card(card_front, card_back, tags, deck_name))
-
-        return cards_list
-
-    def get_file_lines(self):
-        with open(self.file_path, 'r') as note:
-            all_lines = list(
-                map(lambda l: l.strip(), note.readlines()))
-
-        return all_lines
-
-    def get_tags(self, lines):
-        tags = []
-        for line in lines:
-            # Skip empty lines
-            if line.strip() == "":
-                continue
-
-            # Get tags
-            if line.startswith(self.__tags_prefix):
-                tags = line.replace(self.__tags_prefix, "").strip().split(" ")
-                break
-
+        tags = match.group().strip().split()
         return tags
 
-    def get_deck(self, lines):
-        deck_name = None
-        for line in lines:
-            # Skip empty lines
-            if line.strip() == "":
-                continue
+    def get_deck_name_from_section(self, section):
+        match = re.search(r'(?<=^Deck:).*?$',
+                          section,
+                          re.MULTILINE)
 
-            # Get tags
-            if line.startswith(self.__deck_prefix):
-                deck_name = line.replace(self.__deck_prefix, "").strip()
-                break
+        if not match or not match.group().strip():
+            raise ValueError(f"Couldn't find deck name in:\n{section}")
 
+        deck_name = match.group().strip()
         return deck_name
 
-    def print_error_message(self, line_with_error):
-        print(f"Something wrong in formatting near line: {line_with_error}")
-        input("Press Enter to continue...")
-        print()
+    def clean_answer_string(self, answer):
+        lines = answer.splitlines()
+        # Remove first char ('>') and whitespace at the start
+        # and the end of each line
+        lines = map(lambda l: l[1:].strip(), lines)
+
+        return '\n'.join(lines)
+
+    def get_question_sections(self, note_string):
+        return re.findall(r'^---$.+?^---$',
+                          note_string,
+                          re.MULTILINE | re.DOTALL)
+
+    def get_note_string(self):
+        with open(self.file_path, 'r') as note:
+            note_string = note.read()
+
+        return note_string
