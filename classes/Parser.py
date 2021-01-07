@@ -1,12 +1,23 @@
+import filecmp
+import os
+import random
 import re
+import shutil
 
 from classes.Card import Card
+from classes.Image import Image
 
 
 class Parser:
+    DEFAULT_ANKI_FOLDER = {
+        'win32': r'~\AppData\Anki2',
+        'linux': '~/.local/share/Anki2',
+        'darwin': '~/Library/Application Support/Anki2'
+    }
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, anki_user_name='User 1'):
         self.file_path = file_path
+        self.anki_user_name = anki_user_name
 
     def collect_cards(self):
         note_string = self.get_note_string()
@@ -20,6 +31,8 @@ class Parser:
         return cards
 
     def get_cards_from_section(self, section):
+        section = self.handle_images(section)
+
         tags = self.get_tags_from_section(section)
         deck_name = self.get_deck_name_from_section(section)
 
@@ -44,6 +57,41 @@ class Parser:
             cards.append(Card(question, answer, tags, deck_name))
 
         return cards
+
+    def handle_images(self, section):
+        # Find all unique image links in the text
+        image_links = set(re.findall(r'!\[.*?]\(.*?\)', section))
+        images = [Image(link) for link in image_links]
+
+        # Change image name if image with this name already exists in Anki Media folder
+
+        # Copy images to Anki Media folder
+        # And change all image links in section string
+        for image in images:
+            self.copy_image_to_anki_media(image)
+            section = section.replace(image.original_md_link, image.updated_md_link)
+
+        return section
+
+    def copy_image_to_anki_media(self, image):
+        anki_folder_path = os.path.expanduser(self.DEFAULT_ANKI_FOLDER["linux"])
+        anki_image_path = f'{anki_folder_path}/{self.anki_user_name}/collection.media/{image.file_name}'
+
+        # Check if image already exists in Anki Media folder
+        if os.path.exists(anki_image_path):
+            # If same image is already in folder then skip
+            if filecmp.cmp(image.abs_path, anki_image_path):
+                image.path = image.file_name
+                return
+
+            # If not same then rename our image
+            image.rename(f'{image.file_name}_{random.randint(100000, 999999)}')
+
+        # Copy image
+        shutil.copyfile(image.abs_path, anki_image_path)
+
+        # Change path to be just file name (for it to work in Anki)
+        image.path = image.file_name
 
     def get_tags_from_section(self, section):
         match = re.search(r'(?<=^Tags:).*?$',

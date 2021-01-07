@@ -28,7 +28,13 @@ def init_argparse():
 
 def create_cards(file_path):
     print(f"Starting to create cards from \"{file_path}\"!")
-    note_parser = Parser(file_path)
+
+    abs_file_path = os.path.abspath(file_path)
+
+    # We need to change working directory because images in file can have relative path
+    os.chdir(os.path.dirname(abs_file_path))
+
+    note_parser = Parser(abs_file_path)
 
     print("Getting cards from the file...")
     try:
@@ -65,8 +71,10 @@ def main():
             print(f"The file specified doesn't exist: \"{file}\"")
             sys.exit()
 
+    original_directory = os.getcwd()
     for file in args.files:
         create_cards(file)
+        os.chdir(original_directory)
 
 
 if __name__ == "__main__":
