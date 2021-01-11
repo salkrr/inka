@@ -37,16 +37,11 @@ def create_cards(file_path):
     note_parser = Parser(abs_file_path)
 
     print("Getting cards from the file...")
-    try:
-        cards_list = note_parser.collect_cards()
-    except ValueError as e:
-        print(f'ERROR: {e.args[0]}')
-        sys.exit()
+    cards_list = note_parser.collect_cards()
 
     number_of_cards = len(cards_list)
     if number_of_cards == 0:
-        print("ERROR: Cards weren't found in the file.\n")
-        sys.exit()
+        raise ValueError("Cards weren't found in the file.")
 
     print(f"Found {number_of_cards} cards!")
 
@@ -58,7 +53,7 @@ def create_cards(file_path):
         AnkiApi.add_cards(cards_list)
     except requests.exceptions.ConnectionError:
         print("ERROR: Couldn't connect to Anki. "
-              "Please, check that Anki is working and you have AnkiConnect plugin installed.")
+              "Please, check that Anki is working and you have AnkiConnect plugin is installed.")
         sys.exit()
 
 
@@ -66,14 +61,14 @@ def main():
     arg_parser = init_argparse()
     args = arg_parser.parse_args()
 
-    for file in args.files:
-        if not os.path.isfile(file):
-            print(f"The file specified doesn't exist: \"{file}\"")
-            sys.exit()
-
     original_directory = os.getcwd()
     for file in args.files:
-        create_cards(file)
+        try:
+            create_cards(file)
+        except (OSError, ValueError) as e:
+            print(e)
+            print('Skipping file...')
+
         os.chdir(original_directory)
 
 
