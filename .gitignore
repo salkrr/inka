@@ -2,3 +2,4 @@
 *.iml
 test*
 __pycache__
+venv
