@@ -1,4 +1,4 @@
-import pypandoc
+import mistune
 
 
 class Converter:
@@ -13,10 +13,6 @@ class Converter:
         card.front_converted = cls.convert_string(card.front_raw)
         card.back_converted = cls.convert_string(card.back_raw)
 
-    @staticmethod
-    def convert_string(raw_str):
-        args = ["--mathjax"]
-        html_str = pypandoc.convert_text(raw_str, "html", extra_args=args, format="md")
-
-        return html_str
-
+    @classmethod
+    def convert_string(cls, raw_str):
+        return mistune.html(raw_str)
