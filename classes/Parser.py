@@ -68,7 +68,11 @@ class Parser:
         # Copy images to Anki Media folder
         # And change all image links in section string
         for image in images:
-            self.copy_image_to_anki_media(image)
+            try:
+                self.copy_image_to_anki_media(image)
+            except OSError:
+                raise OSError(f"Couldn't find image '{image.original_md_link}' in path '{image.abs_path}'!")
+
             section = section.replace(image.original_md_link, image.updated_md_link)
 
         return section
