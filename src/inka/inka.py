@@ -4,9 +4,9 @@ import sys
 
 import requests
 
-from classes.AnkiApi import AnkiApi
-from classes.Converter import Converter
-from classes.Parser import Parser
+from .ankiApi import AnkiApi
+from .converter import Converter
+from .parser import Parser
 
 
 def init_argparse():

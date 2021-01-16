@@ -4,8 +4,8 @@ import random
 import re
 import shutil
 
-from classes.Card import Card
-from classes.Image import Image
+from .card import Card
+from .image import Image
 
 
 class Parser:
