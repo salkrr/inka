@@ -1,5 +1,6 @@
 import filecmp
 import os
+import sys
 import random
 import re
 import shutil
@@ -7,17 +8,20 @@ import shutil
 from .card import Card
 from .image import Image
 
+DEFAULT_ANKI_FOLDERS = {
+    'win32': r'~\AppData\Roaming\Anki2',
+    'linux': '~/.local/share/Anki2',
+    'darwin': '~/Library/Application Support/Anki2'
+}
+
 
 class Parser:
-    DEFAULT_ANKI_FOLDER = {
-        'win32': r'~\AppData\Anki2',
-        'linux': '~/.local/share/Anki2',
-        'darwin': '~/Library/Application Support/Anki2'
-    }
 
     def __init__(self, file_path, anki_user_name='User 1'):
         self.file_path = file_path
-        self.anki_user_name = anki_user_name
+
+        anki_folder_path = os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
+        self.anki_media_path = f'{anki_folder_path}/{anki_user_name}/collection.media'
 
     def collect_cards(self):
         note_string = self.get_note_string()
@@ -78,21 +82,21 @@ class Parser:
         return section
 
     def copy_image_to_anki_media(self, image):
-        anki_folder_path = os.path.expanduser(self.DEFAULT_ANKI_FOLDER["linux"])
-        anki_image_path = f'{anki_folder_path}/{self.anki_user_name}/collection.media/{image.file_name}'
+        path_to_image = f'{self.anki_media_path}/{image.file_name}'
 
         # Check if image already exists in Anki Media folder
-        if os.path.exists(anki_image_path):
+        if os.path.exists(path_to_image):
             # If same image is already in folder then skip
-            if filecmp.cmp(image.abs_path, anki_image_path):
+            if filecmp.cmp(image.abs_path, path_to_image):
                 image.path = image.file_name
                 return
 
             # If not same then rename our image
-            image.rename(f'{image.file_name}_{random.randint(100000, 999999)}')
+            image.rename(f'{random.randint(100000, 999999)}_{image.file_name}')
+            path_to_image = f'{self.anki_media_path}/{image.file_name}'
 
         # Copy image
-        shutil.copyfile(image.abs_path, anki_image_path)
+        shutil.copyfile(image.abs_path, path_to_image)
 
         # Change path to be just file name (for it to work in Anki)
         image.path = image.file_name
@@ -132,7 +136,7 @@ class Parser:
                           re.MULTILINE | re.DOTALL)
 
     def get_note_string(self):
-        with open(self.file_path, 'r') as note:
+        with open(self.file_path, mode='rt', encoding='utf-8') as note:
             note_string = note.read()
 
         return note_string
