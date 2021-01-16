@@ -70,7 +70,3 @@ def main():
             print('Skipping file...')
 
         os.chdir(original_directory)
-
-
-if __name__ == "__main__":
-    main()
