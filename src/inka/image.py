@@ -38,7 +38,7 @@ class Image:
 
     @property
     def abs_path(self):
-        return os.path.abspath(self._path)
+        return os.path.realpath(self._path)
 
     def rename(self, new_file_name):
         """

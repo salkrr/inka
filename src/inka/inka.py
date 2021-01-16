@@ -29,7 +29,7 @@ def init_argparse():
 def create_cards(file_path):
     print(f"Starting to create cards from \"{file_path}\"!")
 
-    abs_file_path = os.path.abspath(file_path)
+    abs_file_path = os.path.realpath(file_path)
 
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(abs_file_path))
