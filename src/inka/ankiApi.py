@@ -14,6 +14,8 @@ class AnkiApi:
         for card in cards_list:
             AnkiApi.add_card(card)
 
+        print("All cards sent successfully!")
+
     @classmethod
     def add_card(cls, card):
         note_dict = cls.create_note_dict(card)
@@ -32,11 +34,6 @@ class AnkiApi:
             print("ERROR: Can't create the card!")
             print(f'Reason: "{response_json["error"]}"')
             input("Press Enter to continue...")
-            print()
-        # Or OK message
-        else:
-            card.print_card_info()
-            print("Successfully created the card!")
             print()
 
     @classmethod
