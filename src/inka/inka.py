@@ -4,7 +4,7 @@ import sys
 
 import requests
 
-from .ankiApi import AnkiApi
+from .anki_api import AnkiApi
 from .converter import Converter
 from .parser import Parser
 
