@@ -12,16 +12,16 @@ from .parser import Parser
 def init_argparse():
     arg_parser = argparse.ArgumentParser(
         prog="ankify",
-        usage="%(prog)s [FILE]...",
+        usage="%(prog)s FILE...",
         description="Extract Anki cards from your Markdown notes."
     )
 
     arg_parser.add_argument(
         "files",
         metavar="FILE",
-        nargs="*",
+        nargs="+",
         type=str,
-        help="the path to the file")
+        help="the path to the file(s)")
 
     return arg_parser
 
