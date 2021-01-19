@@ -22,7 +22,7 @@ class Parser:
     def __init__(
             self, file_path: str,
             anki_user_name: str = 'User 1',
-            section_regex: str = '^---$.+?^---$'
+            section_regex: str = '^---\n(.+?)^---$'
     ):
         self._file_path = file_path
 
