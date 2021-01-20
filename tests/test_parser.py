@@ -307,7 +307,7 @@ class ParserTest(unittest.TestCase):
             'Deck: Abraham\n'
             '1. Question?\n'
             '\n'
-            'Tags: Default\n'
+            'Deck: Default\n'
             'Answer\n'
         )
 
