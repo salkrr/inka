@@ -124,25 +124,34 @@ class Parser:
 
     def _get_tags_from_section(self, section: str) -> list[str]:
         """Get tags specified for this section"""
-        match = re.search(self.tags_line_regex,
-                          section,
-                          re.MULTILINE)
-        if not match:
+        matches = re.findall(self.tags_line_regex,
+                             section,
+                             re.MULTILINE)
+        if not matches:
             return []
 
-        tags = match.group().strip().split()
+        if len(matches) > 1:
+            raise ValueError(f'More than one tag field in section:\n{section}')
+
+        tags = matches[0].strip().split()
         return tags
 
     def _get_deck_name_from_section(self, section: str) -> str:
         """Get deck name specified for this section"""
-        match = re.search(self.deck_name_regex,
-                          section,
-                          re.MULTILINE)
+        matches = re.findall(self.deck_name_regex,
+                             section,
+                             re.MULTILINE)
 
-        if not match or not match.group().strip():
-            raise ValueError(f"Couldn't find deck name in:\n{section}")
+        if not matches:
+            raise ValueError(f"Couldn't find deck name in section:\n{section}")
 
-        deck_name = match.group().strip()
+        if len(matches) > 1:
+            raise ValueError(f'More than one deck name field in section:\n{section}')
+
+        deck_name = matches[0].strip()
+        if not deck_name:
+            raise ValueError(f"Empty deck name field in section:\n{section}")
+
         return deck_name
 
     def _clean_answer_string(self, answer: str) -> str:
