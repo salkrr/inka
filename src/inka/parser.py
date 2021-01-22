@@ -63,7 +63,7 @@ class Parser:
         # Clean questions from whitespace at the start and the end of string
         questions = list(map(lambda q: re.sub(r'\d+\.', '', q, 1).strip(), questions))
 
-        answers = re.findall(r'(?:>.*?\n)+',
+        answers = re.findall(r'(?:^>.*?(?:\n|$))+',
                              section,
                              re.DOTALL | re.MULTILINE)
 
