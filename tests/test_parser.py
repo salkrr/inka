@@ -1,6 +1,7 @@
 import unittest
 
-from inka.parser import Parser
+from src.inka.card import Card
+from src.inka.parser import Parser
 
 
 class ParserTest(unittest.TestCase):
@@ -313,6 +314,200 @@ class ParserTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.parser._get_deck_name_from_section(section)
+
+    def test_get_cards_from_section_which_is_empty(self):
+        section = ''
+
+        with self.assertRaises(ValueError):
+            self.parser._get_cards_from_section(section)
+
+    def test_get_cards_from_section_with_only_deck_field(self):
+        section = (
+            'Deck: Abraham\n'
+        )
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual([], cards)
+
+    def test_get_cards_from_section_with_only_deck_and_tags_fields(self):
+        section = (
+            'Deck: Abraham\n'
+            'Tags: some tags here'
+        )
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual([], cards)
+
+    def test_get_cards_from_section_with_one_card_without_tags(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '1. Some question?\n'
+            '\n'
+            '> Answer'
+        )
+        expected = [Card(front='Some question?', back='Answer', tags=[], deck_name='Abraham')]
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual(expected, cards)
+
+    def test_get_cards_from_section_with_one_card_with_tags(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            'Tags: one two-three\n'
+            '\n'
+            '1. Some question?\n'
+            '\n'
+            '> Answer'
+        )
+        expected = [Card(front='Some question?', back='Answer', tags=['one', 'two-three'], deck_name='Abraham')]
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual(expected, cards)
+
+    def test_get_cards_from_section_with_one_card_without_empty_line_between_question_and_answer(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '1. Some question?\n'
+            '> Answer'
+        )
+        expected = [Card(front='Some question?', back='Answer', tags=[], deck_name='Abraham')]
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual(expected, cards)
+
+    def test_get_cards_from_section_with_two_cards_without_tags(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '1. Some question?\n'
+            '\n'
+            '> Answer\n'
+            '\n'
+            '2. Q\n'
+            '\n'
+            '> A'
+        )
+        expected = [Card(front='Some question?', back='Answer', tags=[], deck_name='Abraham'),
+                    Card(front='Q', back='A', tags=[], deck_name='Abraham')]
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual(expected, cards)
+
+    def test_get_cards_from_section_with_two_cards_without_empty_line_between_answer_and_new_question(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '1. Some question?\n'
+            '\n'
+            '> Answer\n'
+            '2. Q\n'
+            '\n'
+            '> A'
+        )
+        expected = [Card(front='Some question?', back='Answer', tags=[], deck_name='Abraham'),
+                    Card(front='Q', back='A', tags=[], deck_name='Abraham')]
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual(expected, cards)
+
+    def test_get_cards_from_section_with_one_card_with_multiline_question(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '1. Some question?\n'
+            '\n'
+            'More info on question.\n'
+            '\n'
+            'And even more!'
+            '\n'
+            '> Answer'
+        )
+        expected = [Card(front='Some question?\n\nMore info on question.\n\nAnd even more!',
+                         back='Answer', tags=[], deck_name='Abraham')]
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual(expected, cards)
+
+    def test_get_cards_from_section_with_one_card_with_multiline_answer(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '1. Some question?\n'
+            '\n'
+            '> Answer\n'
+            '> \n'
+            '> Additional info\n'
+            '> \n'
+            '> And more to it'
+        )
+        expected = [Card(front='Some question?',
+                         back='Answer\n\nAdditional info\n\nAnd more to it',
+                         tags=[], deck_name='Abraham')]
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual(expected, cards)
+
+    def test_get_cards_from_section_with_one_card_with_multiline_question_and_answer(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '1. Some question?\n'
+            '\n'
+            'More info on question.\n'
+            '\n'
+            'And even more!'
+            '\n'
+            '> Answer\n'
+            '> \n'
+            '> Additional info\n'
+            '> \n'
+            '> And more to it'
+        )
+        expected = [Card(front='Some question?\n\nMore info on question.\n\nAnd even more!',
+                         back='Answer\n\nAdditional info\n\nAnd more to it',
+                         tags=[], deck_name='Abraham')]
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual(expected, cards)
+
+    def test_get_cards_from_section_card_with_incorrect_question_syntax_ignored(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '>> Some question?\n'
+            '\n'
+            '> Answer\n'
+        )
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual([], cards)
+
+    def test_get_cards_from_section_card_with_incorrect_answer_syntax_ignored(self):
+        section = (
+            'Deck: Abraham\n'
+            '\n'
+            '1. Some question?\n'
+            '\n'
+            'Answer\n'
+        )
+
+        cards = self.parser._get_cards_from_section(section)
+
+        self.assertEqual([], cards)
 
 
 if __name__ == '__main__':
