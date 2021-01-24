@@ -4,6 +4,7 @@ import random
 import re
 import shutil
 import sys
+from typing import List
 
 from .card import Card
 from .image import Image
@@ -31,7 +32,7 @@ class Parser:
 
         self.section_regex = section_regex
 
-    def collect_cards(self) -> list[Card]:
+    def collect_cards(self) -> List[Card]:
         """Get all cards from the file which path was passed to the Parser"""
         with open(self._file_path, mode='rt', encoding='utf-8') as f:
             file_string = f.read()
@@ -44,13 +45,13 @@ class Parser:
 
         return cards
 
-    def _get_question_sections(self, file_contents: str) -> list[str]:
+    def _get_question_sections(self, file_contents: str) -> List[str]:
         """Get all sections (groups of cards) from the file string"""
         return re.findall(self.section_regex,
                           file_contents,
                           re.MULTILINE | re.DOTALL)
 
-    def _get_cards_from_section(self, section: str) -> list[Card]:
+    def _get_cards_from_section(self, section: str) -> List[Card]:
         """Get all Cards from the section string"""
         section = self._handle_images(section)
 
@@ -122,7 +123,7 @@ class Parser:
         # Change path to be just file name (for it to work in Anki)
         image.path = image.file_name
 
-    def _get_tags_from_section(self, section: str) -> list[str]:
+    def _get_tags_from_section(self, section: str) -> List[str]:
         """Get tags specified for this section"""
         matches = re.findall(self.tags_line_regex,
                              section,
