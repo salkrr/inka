@@ -11,7 +11,7 @@ from .parser import Parser
 
 def init_argparse():
     arg_parser = argparse.ArgumentParser(
-        prog="ankify",
+        prog="inka",
         usage="%(prog)s FILE...",
         description="Extract Anki cards from your Markdown notes."
     )
