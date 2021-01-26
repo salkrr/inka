@@ -16,15 +16,15 @@ setup(
         'Development Status :: 4 - Beta',
         'Operating System :: OS Independent',
         'Intended Audience :: Education',
-        'Topic :: Education :: Computer Aided Instruction (CAI)'
+        'Topic :: Education :: Computer Aided Instruction (CAI)',
         'Topic :: Text Processing :: Markup :: Markdown',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
-        'Programming Language :: Python :: 3'
-        'Programming Language :: Python :: 3.6'
-        'Programming Language :: Python :: 3.7'
-        'Programming Language :: Python :: 3.8'
-        'Programming Language :: Python :: 3.9'
-        'Programming Language :: Python :: 3.10'
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3 :: Only'
     ],
     license='GPLv3',
