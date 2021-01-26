@@ -1,11 +1,16 @@
 from setuptools import setup, find_packages
 
+with open('README.md', mode='rt', encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(
     name='inka',
     version='0.8.0',
     author='Salnikov Kirill',
     author_email='salnikov.k54@gmail.com',
     description='Command-line tool for adding Markdown cards to Anki',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/lazy-void/Inka',
     classifiers=[
         'Development Status :: 4 - Beta',
