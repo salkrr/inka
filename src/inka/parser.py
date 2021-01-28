@@ -17,27 +17,28 @@ DEFAULT_ANKI_FOLDERS = {
 
 
 class Parser:
-    deck_name_regex = '(?<=^Deck:).*?$'
-    tags_line_regex = '(?<=^Tags:).*?$'
+    _section_regex = '^---\n(.+?)^---$'
+    _deck_name_regex = '(?<=^Deck:).*?$'
+    _tags_line_regex = '(?<=^Tags:).*?$'
+    _card_substring_regex = r'^\d+\.[\s\S]+?(?:^>.*?(?:\n|$))+'
+    _question_regex = r'^\d+\.[\s\S]+?(?=^>)'
+    _answer_regex = r'(?:^>.*?(?:\n|$))+'
 
     def __init__(
             self, file_path: str,
             anki_user_name: str = 'User 1',
-            section_regex: str = '^---\n(.+?)^---$'
     ):
         self._file_path = file_path
 
         anki_folder_path = os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
         self._anki_media_path = f'{anki_folder_path}/{anki_user_name}/collection.media'
 
-        self.section_regex = section_regex
-
     def collect_cards(self) -> List[Card]:
         """Get all cards from the file which path was passed to the Parser"""
         with open(self._file_path, mode='rt', encoding='utf-8') as f:
             file_string = f.read()
 
-        question_sections = self._get_question_sections(file_string)
+        question_sections = self._get_sections(file_string)
 
         cards = []
         for section in question_sections:
@@ -45,9 +46,9 @@ class Parser:
 
         return cards
 
-    def _get_question_sections(self, file_contents: str) -> List[str]:
+    def _get_sections(self, file_contents: str) -> List[str]:
         """Get all sections (groups of cards) from the file string"""
-        return re.findall(self.section_regex,
+        return re.findall(self._section_regex,
                           file_contents,
                           re.MULTILINE | re.DOTALL)
 
@@ -55,28 +56,23 @@ class Parser:
         """Get all Cards from the section string"""
         section = self._handle_images(section)
 
-        tags = self._get_tags_from_section(section)
-        deck_name = self._get_deck_name_from_section(section)
+        tags = self._get_tags(section)
+        deck_name = self._get_deck_name(section)
 
-        questions = re.findall(r'^\d+\..+?(?=^>)',
-                               section,
-                               re.DOTALL | re.MULTILINE)
-        # Clean questions from whitespace at the start and the end of string
-        questions = list(map(lambda q: re.sub(r'\d+\.', '', q, 1).strip(), questions))
+        # Get all section's substrings which contain question-answer pairs
+        card_substrings = self._get_card_substrings(section)
 
-        answers = re.findall(r'(?:^>.*?(?:\n|$))+',
-                             section,
-                             re.DOTALL | re.MULTILINE)
-
-        # Clean (remove '>' and unnecessary whitespace) answer strings
-        answers = list(map(self._clean_answer_string, answers))
-
-        if len(questions) != len(answers):
-            raise ValueError(f'Different number of questions and answers in section:\n{section}')
-
+        # Create cards
         cards = []
-        for question, answer in zip(questions, answers):
-            cards.append(Card(question, answer, tags, deck_name))
+        for substring in card_substrings:
+            question = self._get_question(substring)
+
+            answer = self._get_answer(substring)
+
+            cards.append(Card(front=question,
+                              back=answer,
+                              tags=tags,
+                              deck_name=deck_name))
 
         return cards
 
@@ -123,9 +119,9 @@ class Parser:
         # Change path to be just file name (for it to work in Anki)
         image.path = image.file_name
 
-    def _get_tags_from_section(self, section: str) -> List[str]:
+    def _get_tags(self, section: str) -> List[str]:
         """Get tags specified for this section"""
-        matches = re.findall(self.tags_line_regex,
+        matches = re.findall(self._tags_line_regex,
                              section,
                              re.MULTILINE)
         if not matches:
@@ -137,9 +133,9 @@ class Parser:
         tags = matches[0].strip().split()
         return tags
 
-    def _get_deck_name_from_section(self, section: str) -> str:
+    def _get_deck_name(self, section: str) -> str:
         """Get deck name specified for this section"""
-        matches = re.findall(self.deck_name_regex,
+        matches = re.findall(self._deck_name_regex,
                              section,
                              re.MULTILINE)
 
@@ -155,11 +151,34 @@ class Parser:
 
         return deck_name
 
-    def _clean_answer_string(self, answer: str) -> str:
-        """Get answer string without prefix in the line start"""
+    def _get_card_substrings(self, section: str) -> List[str]:
+        """Get all section substrings with question-answer pairs"""
+        return re.findall(self._card_substring_regex,
+                          section,
+                          re.MULTILINE)
+
+    def _get_question(self, text: str) -> str:
+        """Get clean question string from text
+         (without digit followed by period and trailing whitespace)"""
+        question_match = re.search(self._question_regex,
+                                   text,
+                                   re.MULTILINE)
+
+        question = re.sub(r'\d+\.', '', question_match.group(), 1).strip()
+
+        return question
+
+    def _get_answer(self, text: str) -> str:
+        """Get clean answer string from text (without '>' and trailing whitespace)"""
+        answer_match = re.search(self._answer_regex,
+                                 text,
+                                 re.MULTILINE)
+
         # Remove first char ('>') and whitespace at the start
         # and the end of each line
-        lines = answer.splitlines()
+        lines = answer_match.group().splitlines()
         lines = map(lambda l: l[1:].strip(), lines)
 
-        return '\n'.join(lines)
+        answer = '\n'.join(lines)
+
+        return answer
