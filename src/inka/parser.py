@@ -100,21 +100,21 @@ class Parser:
 
     def _copy_image_to_anki_media(self, image: Image):
         """Copy image to Anki media folder"""
-        path_to_image = f'{self._anki_media_path}/{image.file_name}'
+        path_to_anki_image = f'{self._anki_media_path}/{image.file_name}'
 
         # Check if image already exists in Anki Media folder
-        if os.path.exists(path_to_image):
+        if os.path.exists(path_to_anki_image):
             # If same image is already in folder then skip
-            if filecmp.cmp(image.abs_path, path_to_image):
+            if filecmp.cmp(image.abs_path, path_to_anki_image):
                 image.path = image.file_name
                 return
 
             # If not same then rename our image
             image.rename(f'{random.randint(100000, 999999)}_{image.file_name}')
-            path_to_image = f'{self._anki_media_path}/{image.file_name}'
+            path_to_anki_image = f'{self._anki_media_path}/{image.file_name}'
 
         # Copy image
-        shutil.copyfile(image.abs_path, path_to_image)
+        shutil.copyfile(image.abs_path, path_to_anki_image)
 
         # Change path to be just file name (for it to work in Anki)
         image.path = image.file_name
