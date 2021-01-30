@@ -8,7 +8,8 @@ from src.inka.parser import Parser
 
 
 @pytest.fixture
-def parser():
+def fake_parser():
+    """Parser class with dummy filename"""
     return Parser('file_doesnt_exist.md')
 
 
@@ -39,9 +40,9 @@ def another_image():
 
 
 @pytest.fixture
-def path_to_anki_image(parser, image):
+def path_to_anki_image(fake_parser, image):
     """Path to image (with the same name as 'image' fixture returns) in anki media folder"""
-    path_to_anki_image = f'{parser._anki_media_path}/{image.file_name}'
+    path_to_anki_image = f'{fake_parser._anki_media_path}/{image.file_name}'
 
     yield path_to_anki_image
 

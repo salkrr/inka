@@ -1,19 +1,19 @@
 import pytest
 
 
-def test_section_without_tag_field(parser):
+def test_section_without_tag_field(fake_parser):
     section = (
         '1. Question?\n'
         '\n'
         'Answer\n'
     )
 
-    tags = parser._get_tags(section)
+    tags = fake_parser._get_tags(section)
 
     assert tags == []
 
 
-def test_section_with_empty_tag_field(parser):
+def test_section_with_empty_tag_field(fake_parser):
     section = (
         'Tags:\n'
         '1. Question?\n'
@@ -21,12 +21,12 @@ def test_section_with_empty_tag_field(parser):
         'Answer\n'
     )
 
-    tags = parser._get_tags(section)
+    tags = fake_parser._get_tags(section)
 
     assert tags == []
 
 
-def test_section_with_not_empty_tag_field(parser):
+def test_section_with_not_empty_tag_field(fake_parser):
     section = (
         'Tags: yolo\n'
         '1. Question?\n'
@@ -35,12 +35,12 @@ def test_section_with_not_empty_tag_field(parser):
     )
     expected = ['yolo']
 
-    tags = parser._get_tags(section)
+    tags = fake_parser._get_tags(section)
 
     assert tags == expected
 
 
-def test_section_with_tag_field_with_multiple_tags(parser):
+def test_section_with_tag_field_with_multiple_tags(fake_parser):
     section = (
         'Tags: yolo abc new1\n'
         '1. Question?\n'
@@ -49,12 +49,12 @@ def test_section_with_tag_field_with_multiple_tags(parser):
     )
     expected = ['yolo', 'abc', 'new1']
 
-    tags = parser._get_tags(section)
+    tags = fake_parser._get_tags(section)
 
     assert tags == expected
 
 
-def test_section_with_tag_field_not_on_top(parser):
+def test_section_with_tag_field_not_on_top(fake_parser):
     section = (
         '1. Question?\n'
         '\n'
@@ -68,12 +68,12 @@ def test_section_with_tag_field_not_on_top(parser):
     )
     expected = ['yolo']
 
-    tags = parser._get_tags(section)
+    tags = fake_parser._get_tags(section)
 
     assert tags == expected
 
 
-def test_section_with_tag_field_inline(parser):
+def test_section_with_tag_field_inline(fake_parser):
     section = (
         'Some text; Tags: yolo abc new1\n'
         '1. Question?\n'
@@ -81,12 +81,12 @@ def test_section_with_tag_field_inline(parser):
         'Answer\n'
     )
 
-    tags = parser._get_tags(section)
+    tags = fake_parser._get_tags(section)
 
     assert tags == []
 
 
-def test_section_with_multiple_tag_fields(parser):
+def test_section_with_multiple_tag_fields(fake_parser):
     section = (
         'Tags: yolo abc new1\n'
         '1. Question?\n'
@@ -96,4 +96,4 @@ def test_section_with_multiple_tag_fields(parser):
     )
 
     with pytest.raises(ValueError):
-        parser._get_tags(section)
+        fake_parser._get_tags(section)

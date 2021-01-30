@@ -1,14 +1,14 @@
 import pytest
 
 
-def test_no_answer_raises_error(parser):
+def test_no_answer_raises_error(fake_parser):
     text = 'Some text'
 
     with pytest.raises(AttributeError):
-        parser._get_answer(text)
+        fake_parser._get_answer(text)
 
 
-def test_oneliner_answer(parser):
+def test_oneliner_answer(fake_parser):
     text = (
         'Deck: Abraham\n'
         '\n'
@@ -20,12 +20,12 @@ def test_oneliner_answer(parser):
     )
     expected = 'Some answer'
 
-    answer = parser._get_answer(text)
+    answer = fake_parser._get_answer(text)
 
     assert answer == expected
 
 
-def test_multiline_answer(parser):
+def test_multiline_answer(fake_parser):
     text = (
         'Deck: Abraham\n'
         '\n'
@@ -39,12 +39,12 @@ def test_multiline_answer(parser):
     )
     expected = 'Answer\n\nAdditional info\n\nAnd more to it'
 
-    answer = parser._get_answer(text)
+    answer = fake_parser._get_answer(text)
 
     assert answer == expected
 
 
-def test_answer_prefix_inside_answer(parser):
+def test_answer_prefix_inside_answer(fake_parser):
     text = (
         'Deck: Abraham\n'
         '\n'
@@ -54,6 +54,6 @@ def test_answer_prefix_inside_answer(parser):
     )
     expected = '> Answer'
 
-    answer = parser._get_answer(text)
+    answer = fake_parser._get_answer(text)
 
     assert answer == expected

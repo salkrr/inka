@@ -1,28 +1,28 @@
 from src.inka.card import Card
 
 
-def test_section_with_only_deck_field(parser):
+def test_section_with_only_deck_field(fake_parser):
     section = (
         'Deck: Abraham\n'
     )
 
-    cards = parser._get_cards_from_section(section)
+    cards = fake_parser._get_cards_from_section(section)
 
     assert cards == []
 
 
-def test_section_with_only_deck_and_tags_fields(parser):
+def test_section_with_only_deck_and_tags_fields(fake_parser):
     section = (
         'Deck: Abraham\n'
         'Tags: some tags here'
     )
 
-    cards = parser._get_cards_from_section(section)
+    cards = fake_parser._get_cards_from_section(section)
 
     assert cards == []
 
 
-def test_one_card_without_tags(parser):
+def test_one_card_without_tags(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -35,12 +35,12 @@ def test_one_card_without_tags(parser):
                      tags=[],
                      deck_name='Abraham')]
 
-    cards = parser._get_cards_from_section(section)
+    cards = fake_parser._get_cards_from_section(section)
 
     assert cards == expected
 
 
-def test_one_card_with_tags(parser):
+def test_one_card_with_tags(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -55,12 +55,12 @@ def test_one_card_with_tags(parser):
                      tags=['one', 'two-three'],
                      deck_name='Abraham')]
 
-    cards = parser._get_cards_from_section(section)
+    cards = fake_parser._get_cards_from_section(section)
 
     assert cards == expected
 
 
-def test_two_cards_without_tags(parser):
+def test_two_cards_without_tags(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -75,12 +75,12 @@ def test_two_cards_without_tags(parser):
     expected = [Card(front='Some question?', back='Answer', tags=[], deck_name='Abraham'),
                 Card(front='Q', back='A', tags=[], deck_name='Abraham')]
 
-    cards = parser._get_cards_from_section(section)
+    cards = fake_parser._get_cards_from_section(section)
 
     assert cards == expected
 
 
-def test_two_cards_with_tags(parser):
+def test_two_cards_with_tags(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -97,6 +97,6 @@ def test_two_cards_with_tags(parser):
     expected = [Card(front='Some question?', back='Answer', tags=['one', 'two-three'], deck_name='Abraham'),
                 Card(front='Q', back='A', tags=['one', 'two-three'], deck_name='Abraham')]
 
-    cards = parser._get_cards_from_section(section)
+    cards = fake_parser._get_cards_from_section(section)
 
     assert cards == expected

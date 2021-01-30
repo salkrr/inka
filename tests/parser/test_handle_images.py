@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_no_images(parser):
+def test_no_images(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -17,12 +17,12 @@ def test_no_images(parser):
         '> Answer\n'
     )
 
-    result = parser._handle_images(section)
+    result = fake_parser._handle_images(section)
 
     assert result == expected
 
 
-def test_updates_links_for_one_image(parser, image):
+def test_updates_links_for_one_image(fake_parser, image):
     section = (
         'Deck: Abraham\n'
         f'{image.original_md_link}'
@@ -43,12 +43,12 @@ def test_updates_links_for_one_image(parser, image):
         f'> {image.updated_md_link}'
     )
 
-    result = parser._handle_images(section)
+    result = fake_parser._handle_images(section)
 
     assert result == expected
 
 
-def test_updates_links_for_two_images(parser, image, another_image):
+def test_updates_links_for_two_images(fake_parser, image, another_image):
     section = (
         'Deck: Abraham\n'
         f'{image.original_md_link}'
@@ -69,12 +69,12 @@ def test_updates_links_for_two_images(parser, image, another_image):
         f'> {another_image.updated_md_link}'
     )
 
-    result = parser._handle_images(section)
+    result = fake_parser._handle_images(section)
 
     assert result == expected
 
 
-def test_non_existing_image(parser, image):
+def test_non_existing_image(fake_parser, image):
     image_md = '![](/path/to/non-existing.png)'
     section = (
         'Deck: Abraham\n'
@@ -87,4 +87,4 @@ def test_non_existing_image(parser, image):
     )
 
     with pytest.raises(OSError):
-        parser._handle_images(section)
+        fake_parser._handle_images(section)

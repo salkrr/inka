@@ -1,13 +1,13 @@
 import pytest
 
 
-def test_empty(parser):
-    card_substrings = parser._get_card_substrings('')
+def test_empty(fake_parser):
+    card_substrings = fake_parser._get_card_substrings('')
 
     assert card_substrings == []
 
 
-def test_one_card(parser):
+def test_one_card(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -23,12 +23,12 @@ def test_one_card(parser):
         '> Answer'
     ]
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected
 
 
-def test_without_empty_line_between_question_and_answer(parser):
+def test_without_empty_line_between_question_and_answer(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -40,12 +40,12 @@ def test_without_empty_line_between_question_and_answer(parser):
         '> Answer'
     ]
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected
 
 
-def test_two_cards(parser):
+def test_two_cards(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -68,12 +68,12 @@ def test_two_cards(parser):
          '> A')
     ]
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected
 
 
-def test_two_cards_without_empty_line_between_answer_and_new_question(parser):
+def test_two_cards_without_empty_line_between_answer_and_new_question(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -93,12 +93,12 @@ def test_two_cards_without_empty_line_between_answer_and_new_question(parser):
          '> A')
     ]
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected
 
 
-def test_one_card_with_multiline_question(parser):
+def test_one_card_with_multiline_question(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -120,12 +120,12 @@ def test_one_card_with_multiline_question(parser):
         '> Answer'
     ]
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected
 
 
-def test_one_card_with_multiline_answer(parser):
+def test_one_card_with_multiline_answer(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -147,12 +147,12 @@ def test_one_card_with_multiline_answer(parser):
         '> And more to it'
     ]
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected
 
 
-def test_one_card_with_multiline_question_and_answer(parser):
+def test_one_card_with_multiline_question_and_answer(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -182,12 +182,12 @@ def test_one_card_with_multiline_question_and_answer(parser):
         '> And more to it'
     ]
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected
 
 
-def test_card_with_incorrect_question_syntax_ignored(parser):
+def test_card_with_incorrect_question_syntax_ignored(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -196,12 +196,12 @@ def test_card_with_incorrect_question_syntax_ignored(parser):
         '> Answer\n'
     )
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == []
 
 
-def test_card_with_incorrect_answer_syntax_ignored(parser):
+def test_card_with_incorrect_answer_syntax_ignored(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -210,14 +210,14 @@ def test_card_with_incorrect_answer_syntax_ignored(parser):
         'Answer\n'
     )
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == []
 
 
 # TODO: fix the bug spotted by this test
 @pytest.mark.skip('WIP')
-def test_two_questions_one_answer(parser):
+def test_two_questions_one_answer(fake_parser):
     section = (
         'Deck: Abraham\n'
         '\n'
@@ -235,6 +235,6 @@ def test_two_questions_one_answer(parser):
         '> Answer'
     ]
 
-    card_substrings = parser._get_card_substrings(section)
+    card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected

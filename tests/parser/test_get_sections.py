@@ -1,69 +1,69 @@
-def test_empty_string(parser):
-    sections = parser._get_sections('')
+def test_empty_string(fake_parser):
+    sections = fake_parser._get_sections('')
 
     assert sections == []
 
 
-def test_string_without_sections(parser):
+def test_string_without_sections(fake_parser):
     string_without_sections = (
         'First line'
         'Second line'
         '\t 123 51'
     )
 
-    sections = parser._get_sections(string_without_sections)
+    sections = fake_parser._get_sections(string_without_sections)
 
     assert sections == []
 
 
-def test_string_with_empty_section(parser):
+def test_string_with_empty_section(fake_parser):
     string_with_empty_section = (
         '---\n'
         '---'
     )
 
-    sections = parser._get_sections(string_with_empty_section)
+    sections = fake_parser._get_sections(string_with_empty_section)
 
     assert sections == []
 
 
-def test_string_with_incorrect_section_start(parser):
+def test_string_with_incorrect_section_start(fake_parser):
     string = (
         '---123\n'
         'Not empty\n'
         '---'
     )
 
-    sections = parser._get_sections(string)
+    sections = fake_parser._get_sections(string)
 
     assert sections == []
 
 
-def test_string_with_section_with_incorrect_section_end(parser):
+def test_string_with_section_with_incorrect_section_end(fake_parser):
     string = (
         '---\n'
         'Not empty\n'
         'a---'
     )
 
-    sections = parser._get_sections(string)
+    sections = fake_parser._get_sections(string)
 
     assert sections == []
 
 
-def test_string_with_section_without_section_end(parser):
+def test_string_with_section_without_section_end(fake_parser):
     string = (
         '---\n'
         'Not empty\n'
         'Ok'
     )
 
-    sections = parser._get_sections(string)
+    sections = fake_parser._get_sections(string)
 
     assert sections == []
 
 
-def test_string_with_one_section(parser):
+def test_string_with_one_section(fake_parser):
     string_with_one_section = (
         '---\n'
         'Text inside section\n'
@@ -71,12 +71,12 @@ def test_string_with_one_section(parser):
     )
     expected = ['Text inside section\n']
 
-    sections = parser._get_sections(string_with_one_section)
+    sections = fake_parser._get_sections(string_with_one_section)
 
     assert sections == expected
 
 
-def test_string_with_multiline_section_content(parser):
+def test_string_with_multiline_section_content(fake_parser):
     string_with_one_section = (
         '---\n'
         'First\n'
@@ -86,12 +86,12 @@ def test_string_with_multiline_section_content(parser):
     )
     expected = ['First\nSecond\nThird\n']
 
-    sections = parser._get_sections(string_with_one_section)
+    sections = fake_parser._get_sections(string_with_one_section)
 
     assert sections == expected
 
 
-def test_string_with_two_sections(parser):
+def test_string_with_two_sections(fake_parser):
     string_with_two_sections = (
         '---\n'
         'First one\n'
@@ -102,12 +102,12 @@ def test_string_with_two_sections(parser):
     )
     expected = ['First one\n', 'Second one\n']
 
-    sections = parser._get_sections(string_with_two_sections)
+    sections = fake_parser._get_sections(string_with_two_sections)
 
     assert sections == expected
 
 
-def test_string_with_two_sections_and_text_between_them(parser):
+def test_string_with_two_sections_and_text_between_them(fake_parser):
     string_with_two_sections = (
         '---\n'
         'First one\n'
@@ -119,6 +119,6 @@ def test_string_with_two_sections_and_text_between_them(parser):
     )
     expected = ['First one\n', 'Second one\n']
 
-    sections = parser._get_sections(string_with_two_sections)
+    sections = fake_parser._get_sections(string_with_two_sections)
 
     assert sections == expected
