@@ -26,6 +26,19 @@ def image():
 
 
 @pytest.fixture
+def another_image():
+    """Temporary image in working directory"""
+    filename = 'another_image_for_testing.png'
+    markdown_link = f'![]({filename})'
+    Img.new('RGBA', size=(50, 50), color=(155, 0, 123)).save(filename, format='png')
+
+    image = Image(markdown_link)
+    yield image
+
+    os.remove(image.abs_path)
+
+
+@pytest.fixture
 def path_to_anki_image(parser, image):
     """Path to image (with the same name as 'image' fixture returns) in anki media folder"""
     path_to_anki_image = f'{parser._anki_media_path}/{image.file_name}'
