@@ -80,7 +80,7 @@ def get_files_from_directory(dir_path: str, search_recursive: bool) -> List[str]
 
     # Get all '.md' files from each sub directory
     for directory in sub_directories:
-        paths_to_files.extend(get_files_from_directory(directory))
+        paths_to_files.extend(get_files_from_directory(directory, search_recursive))
         os.chdir(dir_path)
 
     return paths_to_files
