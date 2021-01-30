@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+from typing import List
 
 import requests
 
@@ -9,24 +10,33 @@ from .converter import Converter
 from .parser import Parser
 
 
-def init_argparse():
+def init_argparse() -> argparse.ArgumentParser:
     arg_parser = argparse.ArgumentParser(
         prog="inka",
-        usage="%(prog)s FILE...",
+        usage="%(prog)s [OPTION]... PATH...",
         description="Extract Anki cards from your Markdown notes."
     )
 
     arg_parser.add_argument(
-        "files",
-        metavar="FILE",
+        "paths",
+        metavar="PATH",
         nargs="+",
         type=str,
-        help="the path to the file(s)")
+        help="path to file or directory"
+    )
+
+    arg_parser.add_argument(
+        '-r',
+        '--recursive',
+        action='store_true',
+        help='search files in subdirectories of specified directories'
+    )
 
     return arg_parser
 
 
-def create_cards(file_path):
+def create_cards(file_path: str):
+    """Get all cards from file and send them to Anki"""
     print(f"Starting to create cards from \"{file_path}\"!")
 
     abs_file_path = os.path.realpath(file_path)
@@ -40,8 +50,6 @@ def create_cards(file_path):
     cards_list = note_parser.collect_cards()
 
     number_of_cards = len(cards_list)
-    if number_of_cards == 0:
-        raise ValueError("Cards weren't found in the file.")
 
     print(f"Found {number_of_cards} cards!")
 
@@ -57,16 +65,54 @@ def create_cards(file_path):
         sys.exit()
 
 
+def get_files_from_directory(dir_path: str, search_recursive: bool) -> List[str]:
+    os.chdir(dir_path)
+
+    paths_to_files = []
+    sub_directories = []
+    for item in os.scandir():
+        # Get files with extension '.md'
+        if item.is_file() and item.name.endswith('.md'):
+            paths_to_files.append(os.path.realpath(item.path))
+        # And all directories
+        elif search_recursive and item.is_dir():
+            sub_directories.append(os.path.realpath(item.path))
+
+    # Get all '.md' files from each sub directory
+    for directory in sub_directories:
+        paths_to_files.extend(get_files_from_directory(directory))
+        os.chdir(dir_path)
+
+    return paths_to_files
+
+
 def main():
+    # Get command-line args
     arg_parser = init_argparse()
     args = arg_parser.parse_args()
 
-    original_directory = os.getcwd()
-    for file in args.files:
+    # Check that all paths are correct
+    for path in args.paths:
+        if not os.path.exists(path):
+            print(f"Path '{path}' doesn't exist.")
+            sys.exit()
+
+    # Create and send cards from each file
+    initial_directory = os.getcwd()
+    files = []
+    for path in args.paths:
+        if os.path.isdir(path):
+            full_path = os.path.realpath(path)
+            files.extend(get_files_from_directory(full_path, args.recursive))
+            continue
+
+        files.append(path)
+
+    for file in files:
         try:
             create_cards(file)
+            os.chdir(initial_directory)
         except (OSError, ValueError) as e:
             print(e)
             print('Skipping file...')
-
-        os.chdir(original_directory)
+            input('Press Enter to continue...\n')

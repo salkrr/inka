@@ -15,6 +15,7 @@ class AnkiApi:
             AnkiApi.add_card(card)
 
         print("All cards sent successfully!")
+        print()
 
     @classmethod
     def add_card(cls, card):
