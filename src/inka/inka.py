@@ -97,17 +97,21 @@ def main():
             print(f"Path '{path}' doesn't exist.")
             sys.exit()
 
-    # Create and send cards from each file
+    # Get paths to all files
     initial_directory = os.getcwd()
     files = []
     for path in args.paths:
-        if os.path.isdir(path):
-            full_path = os.path.realpath(path)
-            files.extend(get_files_from_directory(full_path, args.recursive))
+        full_path = os.path.realpath(path)
+
+        if os.path.isdir(full_path):
+            directory_files = get_files_from_directory(full_path, args.recursive)
+            files.extend(directory_files)
+            os.chdir(initial_directory)
             continue
 
-        files.append(path)
+        files.append(full_path)
 
+    # Create and send cards from each file
     for file in files:
         try:
             create_cards(file)
