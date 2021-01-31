@@ -5,7 +5,7 @@ with open('README.md', mode='rt', encoding='utf-8') as f:
 
 setup(
     name='inka',
-    version='0.8.1',
+    version='0.8.2',
     author='Salnikov Kirill',
     author_email='salnikov.k54@gmail.com',
     description='Command-line tool for adding Markdown cards to Anki',

@@ -53,7 +53,7 @@ Tags: learning life-questions
 
 > 42
 
-2. If it walks like a duck and it quacks like a duck, then what is it? 
+2. If it looks like a duck, swims like a duck, and quacks like a duck, then what is it? 
 
 > It is a duck!
 
@@ -69,14 +69,26 @@ The deck name is written after `Deck:`, and tags for all cards after `Tags:` wit
 
 ### Adding cards to Anki
 
-Start **Anki** and use this command in your terminal:
+Add cards from the file: 
 
 ```commandline
 inka path/to/file/with_cards.md
 ```
 
-You can specify several files at once:
+Or from all *Markdown* files in a directory:
 
 ```commandline
-inka path/to/file/with_cards.md path/to/another/cards.md
+inka path/to/directory
+```
+
+By default, the program doesn't search for files in subdirectories. To enable this behavior, you must use the `-r` flag:
+
+```commandline
+inka -r path/to/directory
+```
+
+You can also specify multiple paths at once:
+
+```commandline
+inka path/to/file/with_cards.md path/to/folder
 ```
