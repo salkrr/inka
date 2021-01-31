@@ -9,6 +9,17 @@ class AnkiApi:
     _back_field_name = 'Back'
     _api_url = 'http://localhost:8765'
 
+    @classmethod
+    def check_connection(cls) -> bool:
+        request = cls._create_request('version')
+
+        try:
+            requests.post(cls._api_url, json=request)
+        except requests.exceptions.ConnectionError:
+            return False
+
+        return True
+
     @staticmethod
     def add_cards(cards_list):
         for card in cards_list:
@@ -54,5 +65,9 @@ class AnkiApi:
         }
 
     @classmethod
-    def _create_request(cls, action: str, params: dict) -> dict:
-        return {'action': action, 'version': 6, 'params': params}
+    def _create_request(cls, action: str, params: dict = None) -> dict:
+        request = {'action': action, 'version': 6}
+        if params is not None:
+            request['params'] = params
+
+        return request

@@ -60,8 +60,7 @@ def create_cards(file_path: str):
     try:
         AnkiApi.add_cards(cards_list)
     except requests.exceptions.ConnectionError:
-        print("ERROR: Couldn't connect to Anki. "
-              "Please, check that Anki is working and you have AnkiConnect plugin is installed.")
+        print("Couldn't connect to Anki. Please, check that Anki is running and try again.")
         sys.exit()
 
 
@@ -90,6 +89,15 @@ def main():
     # Get command-line args
     arg_parser = init_argparse()
     args = arg_parser.parse_args()
+
+    # Check connection with Anki
+    print("Attempting to connect to Anki...")
+    if not AnkiApi.check_connection():
+        print("Couldn't connect to Anki. "
+              "Please, check that Anki is running and AnkiConnect plugin is installed.")
+        sys.exit()
+
+    print("Connected")
 
     # Check that all paths are correct
     for path in args.paths:
