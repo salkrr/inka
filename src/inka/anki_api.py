@@ -1,61 +1,58 @@
 import requests
 
+from .card import Card
+
 
 class AnkiApi:
-    note_type = "Basic"
-    front_field_name = "Front"
-    back_field_name = "Back"
-    api_url = "http://localhost:8765"
+    _note_type = 'Basic'
+    _front_field_name = 'Front'
+    _back_field_name = 'Back'
+    _api_url = 'http://localhost:8765'
 
     @staticmethod
     def add_cards(cards_list):
-        # TODO
-        # Use addNotes api call
         for card in cards_list:
-            AnkiApi.add_card(card)
-
-        print("All cards sent successfully!")
+            AnkiApi._add_card(card)
+        print('All cards sent successfully!')
         print()
 
     @classmethod
-    def add_card(cls, card):
-        note_dict = cls.create_note_dict(card)
-        request_dict = cls.create_base_dict()
-        request_dict["action"] = "addNote"
-        request_dict["params"]["note"] = note_dict
+    def _add_card(cls, card: Card):
+        note_params = cls._create_note_params(card)
+        request_dict = cls._create_request('addNote', note_params)
 
         # Send request to AnkiConnect
-        response = requests.post(cls.api_url, json=request_dict)
-
-        response_json = response.json()
+        response = requests.post(cls._api_url, json=request_dict).json()
 
         # Show error message
-        if response_json['result'] is None:
+        if response['result'] is None:
             card.print_card_info()
             print("ERROR: Can't create the card!")
-            print(f'Reason: "{response_json["error"]}"')
-            input("Press Enter to continue...")
+            print(f'Reason: "{response["error"]}"')
+            input('Press Enter to continue...')
             print()
 
     @classmethod
-    def create_note_dict(cls, card):
+    def _create_note_params(cls, card: Card) -> dict:
         return {
-            "deckName": card.deck_name,
-            "modelName": cls.note_type,
-            "fields": {
-                cls.front_field_name: card.front_converted,
-                cls.back_field_name: card.back_converted
-            },
-            "options": {
-                "allowDuplicate": False,
-                "duplicateScope": None,
-                "duplicateScopeOptions": {
-                    "checkChildren": False
-                }
-            },
-            "tags": card.tags
+            'note': {
+                'deckName': card.deck_name,
+                'modelName': cls._note_type,
+                'fields': {
+                    cls._front_field_name: card.front_converted,
+                    cls._back_field_name: card.back_converted
+                },
+                'options': {
+                    'allowDuplicate': False,
+                    'duplicateScope': None,
+                    'duplicateScopeOptions': {
+                        'checkChildren': False
+                    }
+                },
+                'tags': card.tags
+            }
         }
 
     @classmethod
-    def create_base_dict(cls):
-        return {"action": "", "version": 6, "params": {}}
+    def _create_request(cls, action: str, params: dict) -> dict:
+        return {'action': action, 'version': 6, 'params': params}
