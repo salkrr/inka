@@ -12,17 +12,17 @@ from .parser import Parser
 
 def init_argparse() -> argparse.ArgumentParser:
     arg_parser = argparse.ArgumentParser(
-        prog="inka",
-        usage="%(prog)s [OPTION]... PATH...",
-        description="Extract Anki cards from your Markdown notes."
+        prog='inka',
+        usage='%(prog)s [OPTION]... PATH...',
+        description='Extract Anki cards from your Markdown notes.'
     )
 
     arg_parser.add_argument(
-        "paths",
-        metavar="PATH",
-        nargs="+",
+        'paths',
+        metavar='PATH',
+        nargs='+',
         type=str,
-        help="path to file or directory"
+        help='path to file or directory'
     )
 
     arg_parser.add_argument(
@@ -37,7 +37,7 @@ def init_argparse() -> argparse.ArgumentParser:
 
 def create_cards(file_path: str):
     """Get all cards from file and send them to Anki"""
-    print(f"Starting to create cards from \"{file_path}\"!")
+    print(f'Starting to create cards from "{file_path}"!')
 
     abs_file_path = os.path.realpath(file_path)
 
@@ -46,17 +46,17 @@ def create_cards(file_path: str):
 
     note_parser = Parser(abs_file_path)
 
-    print("Getting cards from the file...")
+    print('Getting cards from the file...')
     cards_list = note_parser.collect_cards()
 
     number_of_cards = len(cards_list)
 
-    print(f"Found {number_of_cards} cards!")
+    print(f'Found {number_of_cards} cards!')
 
-    print("Converting cards to the html...")
+    print('Converting cards to the html...')
     Converter.convert_cards(cards_list)
 
-    print("Sending cards...")
+    print('Sending cards...')
     try:
         AnkiApi.add_cards(cards_list)
     except requests.exceptions.ConnectionError:

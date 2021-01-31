@@ -147,7 +147,7 @@ class Parser:
 
         deck_name = matches[0].strip()
         if not deck_name:
-            raise ValueError(f"Empty deck name field in section:\n{section}")
+            raise ValueError(f'Empty deck name field in section:\n{section}')
 
         return deck_name
 
