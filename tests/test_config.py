@@ -95,3 +95,21 @@ def test_create_default_config(config, config_path, default_config_string):
 def test_if_config_not_found_created_default(config, config_path, default_config_string):
     with open(config_path, mode='rt', encoding='utf-8') as file:
         assert file.read() == default_config_string
+
+
+def test_get_entry_value(config):
+    expected = 'Default'
+
+    entry_value = config.get_entry_value('defaults', 'deck')
+
+    assert entry_value == expected
+
+
+def test_get_entry_value_with_incorrect_section_raises_error(config):
+    with pytest.raises(KeyError):
+        config.get_entry_value('ankiConnect', 'port')
+
+
+def test_get_entry_value_with_incorrect_key_raises_error(config):
+    with pytest.raises(KeyError):
+        config.get_entry_value('defaults', 'profile')

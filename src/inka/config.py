@@ -48,3 +48,7 @@ class Config:
         """Save config state in file system"""
         with open(self._config_path, mode='wt', encoding='utf-8') as file:
             self._config.write(file)
+
+    def get_entry_value(self, section: str, key: str) -> str:
+        """Get value of the config entry"""
+        return self._config[section][key]
