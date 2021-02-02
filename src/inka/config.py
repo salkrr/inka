@@ -52,3 +52,11 @@ class Config:
     def get_entry_value(self, section: str, key: str) -> str:
         """Get value of the config entry"""
         return self._config[section][key]
+
+    def update_entry_value(self, section: str, key: str, value: str):
+        """Update value of the config entry"""
+        if key not in self._config[section]:
+            raise KeyError
+
+        self._config[section][key] = value
+        self._save()

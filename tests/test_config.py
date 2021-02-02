@@ -113,3 +113,33 @@ def test_get_entry_value_with_incorrect_section_raises_error(config):
 def test_get_entry_value_with_incorrect_key_raises_error(config):
     with pytest.raises(KeyError):
         config.get_entry_value('defaults', 'profile')
+
+
+def test_updates_entry_value_in_backing_object(config):
+    new_value = 'path/to/folder'
+    config.update_entry_value('defaults', 'folder', new_value)
+
+    updated_value = config._config['defaults']['folder']
+
+    assert updated_value == new_value
+
+
+def test_updates_entry_value_in_file(config, config_path):
+    new_value = 'path/to/folder'
+    config.update_entry_value('defaults', 'folder', new_value)
+    config_parser = configparser.ConfigParser()
+
+    config_parser.read(config_path)
+    updated_value = config_parser['defaults']['folder']
+
+    assert updated_value == new_value
+
+
+def test_update_entry_value_with_incorrect_section_raises_error(config):
+    with pytest.raises(KeyError):
+        config.update_entry_value('ankiConnect', 'port', '12')
+
+
+def test_update_entry_value_with_incorrect_key_raises_error(config):
+    with pytest.raises(KeyError):
+        config.update_entry_value('defaults', 'profile', 'Profile Name')
