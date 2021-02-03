@@ -1,7 +1,7 @@
 import configparser
 import os
 from pathlib import Path
-from typing import Union
+from typing import Union, List
 
 
 class Config:
@@ -24,20 +24,23 @@ class Config:
 
     def _create_default(self):
         """Create default configuration file"""
-        self._config['defaults'] = {
-            'deck': self._default_deck,
-            'folder': self._default_folder
-        }
-        self._config['anki'] = {
-            'profile': self._default_profile,
-            'note_type': self._default_note_type,
-            'front_field': self._default_front_field,
-            'back_field': self._default_back_field
-        }
-        self._config['anki_connect'] = {
-            'port': self._default_port
+        config_dict = {
+            'defaults': {
+                'deck': self._default_deck,
+                'folder': self._default_folder
+            },
+            'anki': {
+                'profile': self._default_profile,
+                'note_type': self._default_note_type,
+                'front_field': self._default_front_field,
+                'back_field': self._default_back_field
+            },
+            'anki_connect': {
+                'port': self._default_port
+            }
         }
 
+        self._config.read_dict(config_dict)
         self._save()
 
     def _read(self):
@@ -60,3 +63,12 @@ class Config:
 
         self._config[section][key] = value
         self._save()
+
+    def get_formatted_entries(self) -> List[str]:
+        """Get list of formatted key-value entries from the config"""
+        formatted_entries = []
+        for section in self._config.sections():
+            for key, value in self._config[section].items():
+                formatted_entries.append(f'{section}.{key}={value}')
+
+        return formatted_entries
