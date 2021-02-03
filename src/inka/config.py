@@ -56,12 +56,12 @@ class Config:
         """Get value of the config entry"""
         return self._config[section][key]
 
-    def update_entry_value(self, section: str, key: str, value: str):
+    def update_entry_value(self, section: str, key: str, new_value: str):
         """Update value of the config entry"""
         if key not in self._config[section]:
-            raise KeyError
+            raise KeyError(f"Section '{section}' doesn't exist in config")
 
-        self._config[section][key] = value
+        self._config[section][key] = new_value
         self._save()
 
     def get_formatted_entries(self) -> List[str]:
