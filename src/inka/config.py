@@ -5,6 +5,8 @@ from typing import Union, List
 
 
 class Config:
+    """Class for working with the configuration file."""
+
     _default_deck = 'Default'
     _default_folder = ''
     _default_profile = ''
