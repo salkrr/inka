@@ -146,13 +146,13 @@ def test_update_entry_value_with_incorrect_key_raises_error(config):
 
 
 def test_get_formatted_list_of_config_entries(config):
-    expected = [f'defaults.deck={config._default_deck}',
-                f'defaults.folder={config._default_folder}',
-                f'anki.profile={config._default_profile}',
-                f'anki.note_type={config._default_note_type}',
-                f'anki.front_field={config._default_front_field}',
-                f'anki.back_field={config._default_back_field}',
-                f'anki_connect.port={config._default_port}']
+    expected = [f'defaults.deck = {config._default_deck}',
+                f'defaults.folder = {config._default_folder}',
+                f'anki.profile = {config._default_profile}',
+                f'anki.note_type = {config._default_note_type}',
+                f'anki.front_field = {config._default_front_field}',
+                f'anki.back_field = {config._default_back_field}',
+                f'anki_connect.port = {config._default_port}']
 
     entries = config.get_formatted_entries()
 

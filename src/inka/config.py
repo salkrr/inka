@@ -71,6 +71,6 @@ class Config:
         formatted_entries = []
         for section in self._config.sections():
             for key, value in self._config[section].items():
-                formatted_entries.append(f'{section}.{key}={value}')
+                formatted_entries.append(f'{section}.{key} = {value}')
 
         return formatted_entries
