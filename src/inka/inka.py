@@ -105,7 +105,6 @@ def list_config_entries(ctx, param, value):
 @click.version_option(version=__version__)
 def cli():
     """Inka - command-line tool for adding Markdown cards to Anki"""
-    # TODO: change program name in usage (because used __main__.py when executed as module)
     pass
 
 
