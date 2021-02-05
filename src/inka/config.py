@@ -61,7 +61,7 @@ class Config:
     def update_entry_value(self, section: str, key: str, new_value: str):
         """Update value of the config entry"""
         if key not in self._config[section]:
-            raise KeyError(f"Section '{section}' doesn't exist in config")
+            raise KeyError
 
         self._config[section][key] = new_value
         self._save()
