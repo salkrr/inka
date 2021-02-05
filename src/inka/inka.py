@@ -15,6 +15,10 @@ FILE_EXTENSIONS = ['.md', '.markdown']
 CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
 
 cfg = Config(CONFIG_PATH)
+anki_api = AnkiApi(cfg.get_entry_value('anki_connect', 'port'),
+                   cfg.get_entry_value('anki', 'note_type'),
+                   cfg.get_entry_value('anki', 'front_field'),
+                   cfg.get_entry_value('anki', 'back_field'))
 
 
 def create_cards_from_file(file_path: str):
@@ -38,7 +42,7 @@ def create_cards_from_file(file_path: str):
 
     print('Sending cards...')
     try:
-        AnkiApi.add_cards(cards_list)
+        anki_api.add_cards(cards_list)
     except requests.exceptions.ConnectionError:
         print("Couldn't connect to Anki. Please, check that Anki is running and try again.")
         sys.exit()
@@ -84,7 +88,7 @@ def get_paths_to_files(paths: Set[str], recursive: bool) -> Set[str]:
 
 def check_anki_connection():
     print("Attempting to connect to Anki...")
-    if not AnkiApi.check_connection():
+    if not anki_api.check_connection():
         print("Couldn't connect to Anki. "
               "Please, check that Anki is running and AnkiConnect plugin is installed.")
         sys.exit()
@@ -160,6 +164,8 @@ def collect(recursive: bool, paths: Tuple[str]):
         Examples:\n
             inka collect path/to/cards.md
     """
+    # TODO: get folder from config and throw error if there isn't one
+    # TODO: get profile name from Anki and throw error if there is more than one
     # Check connection with Anki
     check_anki_connection()
 
