@@ -172,3 +172,6 @@ pip-selfcheck.json
 
 .idea/
 .vscode/
+
+# Ignore inka's config file
+src/inka/config.ini
