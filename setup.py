@@ -1,12 +1,14 @@
 from setuptools import setup, find_packages
 
+from src.inka import __version__
+
 with open('README.md', mode='rt', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
     name='inka',
-    version='0.8.2',
-    author='Salnikov Kirill',
+    version=__version__,
+    author='Kirill Salnikov',
     author_email='salnikov.k54@gmail.com',
     description='Command-line tool for adding Markdown cards to Anki',
     long_description=long_description,
@@ -33,12 +35,13 @@ setup(
     packages=find_packages(where='src'),
     python_requires='>=3.6',
     install_requires=[
-        'mistune>=2.0.0a6',
-        'requests'
+        'mistune~=2.0.0a6',
+        'requests~=2.25.1',
+        'click~=7.1.2'
     ],
     entry_points={
         'console_scripts': [
-            'inka=inka.inka:main'
+            'inka=inka.inka:cli'
         ]
     }
 )
