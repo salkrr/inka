@@ -104,7 +104,7 @@ def list_config_entries(ctx, param, value):
 @click.group()
 @click.version_option(version=__version__)
 def cli():
-    # TODO: add docstring
+    """Inka - command-line tool for adding Markdown cards to Anki"""
     # TODO: change program name in usage (because used __main__.py when executed as module)
     pass
 
@@ -122,7 +122,13 @@ def cli():
 @click.argument('value',
                 required=False)
 def config(list_entries, name, value):
-    # TODO: add docstring
+    """Get and set inka's configuration options.
+
+        NAME - config option name. VALUE - new value for config option.
+
+        Examples:\n
+            inka config anki.profile "My Profile"
+    """
     try:
         section, key = name.split('.')
 
@@ -141,14 +147,20 @@ def config(list_entries, name, value):
 @click.option('-r',
               '--recursive',
               is_flag=True,
-              help='Recursive')
+              help='Search for files in subdirectories.')
 @click.argument('paths',
                 metavar='PATH...',
                 nargs=-1,
                 type=click.Path(exists=True),
                 required=True)
 def collect(recursive: bool, paths: Tuple[str]):
-    # TODO: add docstring
+    """Get cards from files and send them to Anki.
+
+        PATH... - paths to files and/or directories
+
+        Examples:\n
+            inka collect path/to/cards.md
+    """
     # Check connection with Anki
     check_anki_connection()
 
