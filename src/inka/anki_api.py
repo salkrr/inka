@@ -1,6 +1,7 @@
-from typing import Union, List
+from typing import Union, List, Any
 
 import requests
+from requests import RequestException
 
 from .card import Card
 
@@ -21,37 +22,45 @@ class AnkiApi:
         self._back_field_name = back_field_name
 
     def check_connection(self) -> bool:
-        request = self._create_request('version')
-
+        """Check connection with Anki Connect plugin"""
         try:
-            requests.post(self._api_url, json=request)
+            self._send_request('version')
         except requests.exceptions.ConnectionError:
             return False
 
         return True
 
+    def get_profiles(self) -> List[str]:
+        """Get list of user profiles from Anki"""
+        return self._send_request('getProfiles')
+
+    def select_profile(self, profile: str):
+        """Select profile in Anki"""
+        params = {'name': profile}
+        self._send_request('loadProfile', **params)
+
     def add_cards(self, cards: List[Card]):
+        """Add list of cards to Anki"""
+        # TODO: create each deck that doesn't exist
         for card in cards:
             self._add_card(card)
         print('All cards sent successfully!')
         print()
 
     def _add_card(self, card: Card):
+        """Add card to Anki"""
         note_params = self._create_note_params(card)
-        request_dict = self._create_request('addNote', note_params)
-
-        # Send request to AnkiConnect
-        response = requests.post(self._api_url, json=request_dict).json()
-
-        # Show error message
-        if response['result'] is None:
+        try:
+            self._send_request('addNote', **note_params)
+        except RequestException as e:
             card.print_card_info()
             print("ERROR: Can't create the card!")
-            print(f'Reason: "{response["error"]}"')
+            print(f'Reason: "{e.args[0]}"')
             input('Press Enter to continue...')
             print()
 
     def _create_note_params(self, card: Card) -> dict:
+        """Create params field for note adding request"""
         return {
             'note': {
                 'deckName': card.deck_name,
@@ -71,10 +80,23 @@ class AnkiApi:
             }
         }
 
-    @staticmethod
-    def _create_request(action: str, params: dict = None) -> dict:
-        request = {'action': action, 'version': 6}
-        if params is not None:
-            request['params'] = params
+    def _send_request(self, action: str, **params) -> Any:
+        """Send request to Anki Connect and return result"""
+        request_dict = self._create_request(action, **params)
+        response = requests.post(self._api_url, json=request_dict).json()
 
-        return request
+        if len(response) != 2:
+            raise RequestException('response has an unexpected number of fields')
+        if 'error' not in response:
+            raise RequestException('response is missing required error field')
+        if 'result' not in response:
+            raise RequestException('response is missing required result field')
+        if response['error'] is not None:
+            raise RequestException(response['error'])
+
+        return response['result']
+
+    @staticmethod
+    def _create_request(action: str, **params) -> dict:
+        """Create request dictionary"""
+        return {'action': action, 'version': 6, 'params': params}

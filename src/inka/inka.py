@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Tuple, Set
+from typing import Tuple, Set, List
 
 import click
 import requests
@@ -86,6 +86,32 @@ def get_paths_to_files(paths: Set[str], recursive: bool) -> Set[str]:
     return paths_to_files
 
 
+def get_profile_from_user(profiles: List[str], message: str):
+    click.echo(message)
+    click.echo('Getting list of profiles from Anki...')
+    profile = click.prompt('Enter the name of profile you want to use',
+                           type=click.Choice(profiles))
+
+    # Ask user to save profile as default
+    if click.confirm('Save profile as default?'):
+        cfg.update_entry_value('anki', 'profile', profile)
+
+    return profile
+
+
+def get_profile() -> str:
+    profiles = anki_api.get_profiles()
+    click.echo('Getting profile from config...')
+    profile = cfg.get_entry_value('anki', 'profile')
+
+    if not profile:
+        profile = get_profile_from_user(profiles, 'Default profile is not specified.')
+    elif profile not in profiles:
+        profile = get_profile_from_user(profiles, f'Incorrect profile name in config: {profile}')
+
+    return profile
+
+
 def check_anki_connection():
     print("Attempting to connect to Anki...")
     if not anki_api.check_connection():
@@ -164,10 +190,15 @@ def collect(recursive: bool, paths: Tuple[str]):
         Examples:\n
             inka collect path/to/cards.md
     """
-    # TODO: get folder from config and throw error if there isn't one
-    # TODO: get profile name from Anki and throw error if there is more than one
+    # TODO: if no paths specified use default folder from config
+    # TODO: add option to prompt for profile even if one is specified in config
+
     # Check connection with Anki
     check_anki_connection()
+
+    # Get name of profile and select it in Anki
+    profile = get_profile()
+    anki_api.select_profile(profile)
 
     # Get paths to all files
     files = get_paths_to_files(set(paths), recursive)
