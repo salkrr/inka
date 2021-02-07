@@ -54,11 +54,11 @@ class Config:
         with open(self._config_path, mode='wt', encoding='utf-8') as file:
             self._config.write(file)
 
-    def get_entry_value(self, section: str, key: str) -> str:
+    def get_option_value(self, section: str, key: str) -> str:
         """Get value of the config entry"""
         return self._config[section][key]
 
-    def update_entry_value(self, section: str, key: str, new_value: str):
+    def update_option_value(self, section: str, key: str, new_value: str):
         """Update value of the config entry"""
         if key not in self._config[section]:
             raise KeyError
@@ -66,7 +66,7 @@ class Config:
         self._config[section][key] = new_value
         self._save()
 
-    def get_formatted_entries(self) -> List[str]:
+    def get_formatted_options(self) -> List[str]:
         """Get list of formatted key-value entries from the config"""
         formatted_entries = []
         for section in self._config.sections():
@@ -74,3 +74,6 @@ class Config:
                 formatted_entries.append(f'{section}.{key} = {value}')
 
         return formatted_entries
+
+    def __repr__(self):
+        return f"{type(self).__name__}(config_path={repr(self._config_path)})"

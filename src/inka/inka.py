@@ -15,10 +15,10 @@ FILE_EXTENSIONS = ['.md', '.markdown']
 CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
 
 cfg = Config(CONFIG_PATH)
-anki_api = AnkiApi(cfg.get_entry_value('anki_connect', 'port'),
-                   cfg.get_entry_value('anki', 'note_type'),
-                   cfg.get_entry_value('anki', 'front_field'),
-                   cfg.get_entry_value('anki', 'back_field'))
+anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
+                   cfg.get_option_value('anki', 'note_type'),
+                   cfg.get_option_value('anki', 'front_field'),
+                   cfg.get_option_value('anki', 'back_field'))
 
 
 def create_cards_from_file(file_path: str):
@@ -94,7 +94,7 @@ def get_profile_from_user(profiles: List[str], message: str):
 
     # Ask user to save profile as default
     if click.confirm('Save profile as default?'):
-        cfg.update_entry_value('anki', 'profile', profile)
+        cfg.update_option_value('anki', 'profile', profile)
 
     return profile
 
@@ -102,7 +102,7 @@ def get_profile_from_user(profiles: List[str], message: str):
 def get_profile() -> str:
     profiles = anki_api.get_profiles()
     click.echo('Getting profile from config...')
-    profile = cfg.get_entry_value('anki', 'profile')
+    profile = cfg.get_option_value('anki', 'profile')
 
     if not profile:
         profile = get_profile_from_user(profiles, 'Default profile is not specified.')
@@ -126,7 +126,7 @@ def list_config_entries(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
 
-    for entry in cfg.get_formatted_entries():
+    for entry in cfg.get_formatted_options():
         click.echo(entry)
     ctx.exit()
 
@@ -162,10 +162,10 @@ def config(list_entries, name, value):
         section, key = name.split('.')
 
         if not value:
-            click.echo(cfg.get_entry_value(section, key))
+            click.echo(cfg.get_option_value(section, key))
             sys.exit()
 
-        cfg.update_entry_value(section, key, value)
+        cfg.update_option_value(section, key, value)
     except (KeyError, ValueError):
         click.echo('Incorrect name of a config entry!')
         click.echo('To get list of all entries use "--list" flag.')

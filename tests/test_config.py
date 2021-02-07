@@ -100,24 +100,24 @@ def test_if_config_not_found_created_default(config, config_path, default_config
 def test_get_entry_value(config):
     expected = 'Default'
 
-    entry_value = config.get_entry_value('defaults', 'deck')
+    entry_value = config.get_option_value('defaults', 'deck')
 
     assert entry_value == expected
 
 
 def test_get_entry_value_with_incorrect_section_raises_error(config):
     with pytest.raises(KeyError):
-        config.get_entry_value('ankiConnect', 'port')
+        config.get_option_value('ankiConnect', 'port')
 
 
 def test_get_entry_value_with_incorrect_key_raises_error(config):
     with pytest.raises(KeyError):
-        config.get_entry_value('defaults', 'profile')
+        config.get_option_value('defaults', 'profile')
 
 
 def test_updates_entry_value_in_backing_object(config):
     new_value = 'path/to/folder'
-    config.update_entry_value('defaults', 'folder', new_value)
+    config.update_option_value('defaults', 'folder', new_value)
 
     updated_value = config._config['defaults']['folder']
 
@@ -126,7 +126,7 @@ def test_updates_entry_value_in_backing_object(config):
 
 def test_updates_entry_value_in_file(config, config_path):
     new_value = 'path/to/folder'
-    config.update_entry_value('defaults', 'folder', new_value)
+    config.update_option_value('defaults', 'folder', new_value)
     config_parser = configparser.ConfigParser()
 
     config_parser.read(config_path)
@@ -137,12 +137,12 @@ def test_updates_entry_value_in_file(config, config_path):
 
 def test_update_entry_value_with_incorrect_section_raises_error(config):
     with pytest.raises(KeyError):
-        config.update_entry_value('ankiConnect', 'port', '12')
+        config.update_option_value('ankiConnect', 'port', '12')
 
 
 def test_update_entry_value_with_incorrect_key_raises_error(config):
     with pytest.raises(KeyError):
-        config.update_entry_value('defaults', 'profile', 'Profile Name')
+        config.update_option_value('defaults', 'profile', 'Profile Name')
 
 
 def test_get_formatted_list_of_config_entries(config):
@@ -154,6 +154,6 @@ def test_get_formatted_list_of_config_entries(config):
                 f'anki.back_field = {config._default_back_field}',
                 f'anki_connect.port = {config._default_port}']
 
-    entries = config.get_formatted_entries()
+    entries = config.get_formatted_options()
 
     assert entries == expected
