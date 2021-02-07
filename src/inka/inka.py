@@ -86,9 +86,9 @@ def get_paths_to_files(paths: Set[str], recursive: bool) -> Set[str]:
     return paths_to_files
 
 
-def get_profile_from_user(profiles: List[str], message: str):
-    click.echo(message)
-    click.echo('Getting list of profiles from Anki...')
+def get_profile_from_user(profiles: List[str], message: str = None):
+    if message:
+        click.echo(message)
     profile = click.prompt('Enter the name of profile you want to use',
                            type=click.Choice(profiles))
 
@@ -99,15 +99,20 @@ def get_profile_from_user(profiles: List[str], message: str):
     return profile
 
 
-def get_profile() -> str:
+def get_profile(prompt_user: bool) -> str:
+    click.echo('Getting list of profiles from Anki...')
     profiles = anki_api.get_profiles()
-    click.echo('Getting profile from config...')
-    profile = cfg.get_option_value('anki', 'profile')
 
-    if not profile:
-        profile = get_profile_from_user(profiles, 'Default profile is not specified.')
-    elif profile not in profiles:
-        profile = get_profile_from_user(profiles, f'Incorrect profile name in config: {profile}')
+    if prompt_user:
+        profile = get_profile_from_user(profiles)
+    else:
+        click.echo('Getting profile from config...')
+        profile = cfg.get_option_value('anki', 'profile')
+
+        if not profile:
+            profile = get_profile_from_user(profiles, 'Default profile is not specified.')
+        elif profile not in profiles:
+            profile = get_profile_from_user(profiles, f'Incorrect profile name in config: {profile}')
 
     return profile
 
@@ -178,12 +183,16 @@ def config(list_options, name, value):
               '--recursive',
               is_flag=True,
               help='Search for files in subdirectories.')
+@click.option('-p',
+              '--prompt',
+              is_flag=True,
+              help='Show prompt for profile name even if config contains default profile.')
 @click.argument('paths',
                 metavar='[PATH]...',
                 nargs=-1,
                 type=click.Path(exists=True),
                 required=False)
-def collect(recursive: bool, paths: Tuple[str]):
+def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
     """Get cards from files and send them to Anki.
      If no PATH argument is specified, the program will use the default folder from config.
 
@@ -192,9 +201,6 @@ def collect(recursive: bool, paths: Tuple[str]):
         Examples:\n
             inka collect path/to/cards.md
     """
-    # TODO: if no paths specified use default folder from config
-    # TODO: add option to prompt for profile even if one is specified in config
-
     # If no path specified as an argument, search for default path in config
     paths = set(paths)
     if not paths:
@@ -210,7 +216,7 @@ def collect(recursive: bool, paths: Tuple[str]):
     check_anki_connection()
 
     # Get name of profile and select it in Anki
-    profile = get_profile()
+    profile = get_profile(prompt)
     anki_api.select_profile(profile)
 
     # Get paths to all files
