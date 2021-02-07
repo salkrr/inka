@@ -103,16 +103,20 @@ def get_profile(prompt_user: bool) -> str:
     click.echo('Getting list of profiles from Anki...')
     profiles = anki_api.get_profiles()
 
-    if prompt_user:
-        profile = get_profile_from_user(profiles)
-    else:
-        click.echo('Getting profile from config...')
-        profile = cfg.get_option_value('anki', 'profile')
+    # If user has only one profile
+    if len(profiles) == 1:
+        return profiles[0]
 
-        if not profile:
-            profile = get_profile_from_user(profiles, 'Default profile is not specified.')
-        elif profile not in profiles:
-            profile = get_profile_from_user(profiles, f'Incorrect profile name in config: {profile}')
+    # If user used '-p' flag
+    if prompt_user:
+        return get_profile_from_user(profiles)
+
+    click.echo('Getting profile from config...')
+    profile = cfg.get_option_value('anki', 'profile')
+    if not profile:
+        profile = get_profile_from_user(profiles, 'Default profile is not specified.')
+    elif profile not in profiles:
+        profile = get_profile_from_user(profiles, f'Incorrect profile name in config: {profile}')
 
     return profile
 
