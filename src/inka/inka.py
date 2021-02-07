@@ -141,16 +141,16 @@ def cli():
 @cli.command()
 @click.option('-l',
               '--list',
-              'list_entries',
+              'list_options',
               is_flag=True,
               callback=list_config_entries,
               is_eager=True,
-              help='List all values set in config file, along with their values.')
+              help='List all options set in config file, along with their values.')
 @click.argument('name',
                 required=True)
 @click.argument('value',
                 required=False)
-def config(list_entries, name, value):
+def config(list_options, name, value):
     """Get and set inka's configuration options.
 
         NAME - config option name. VALUE - new value for config option.
@@ -158,6 +158,7 @@ def config(list_entries, name, value):
         Examples:\n
             inka config anki.profile "My Profile"
     """
+    # TODO: add option to reset config file
     try:
         section, key = name.split('.')
 
@@ -178,20 +179,32 @@ def config(list_entries, name, value):
               is_flag=True,
               help='Search for files in subdirectories.')
 @click.argument('paths',
-                metavar='PATH...',
+                metavar='[PATH]...',
                 nargs=-1,
                 type=click.Path(exists=True),
-                required=True)
+                required=False)
 def collect(recursive: bool, paths: Tuple[str]):
     """Get cards from files and send them to Anki.
+     If no PATH argument is specified, the program will use the default folder from config.
 
-        PATH... - paths to files and/or directories
+        [PATH]... - paths to files and/or directories
 
         Examples:\n
             inka collect path/to/cards.md
     """
     # TODO: if no paths specified use default folder from config
     # TODO: add option to prompt for profile even if one is specified in config
+
+    # If no path specified as an argument, search for default path in config
+    paths = set(paths)
+    if not paths:
+        default_path = os.path.expanduser(cfg.get_option_value('defaults', 'folder'))
+        if not default_path:
+            click.echo('Default folder is not specified in the config! '
+                       'You must pass the path to a file or folder as an argument.')
+            sys.exit()
+
+        paths.add(default_path)
 
     # Check connection with Anki
     check_anki_connection()
@@ -201,7 +214,7 @@ def collect(recursive: bool, paths: Tuple[str]):
     anki_api.select_profile(profile)
 
     # Get paths to all files
-    files = get_paths_to_files(set(paths), recursive)
+    files = get_paths_to_files(paths, recursive)
 
     # Create and send cards from each file
     initial_directory = os.getcwd()
