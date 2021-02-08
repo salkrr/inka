@@ -167,7 +167,6 @@ def config(list_options, name, value):
         Examples:\n
             inka config anki.profile "My Profile"
     """
-    # TODO: add option to reset config file
     try:
         section, key = name.split('.')
 
@@ -203,7 +202,8 @@ def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
         [PATH]... - paths to files and/or directories
 
         Examples:\n
-            inka collect path/to/cards.md
+            inka collect path/to/cards.md - get cards from file\n
+            inka collect path/to/folder - get cards from all files in folder
     """
     # If no path specified as an argument, search for default path in config
     paths = set(paths)
