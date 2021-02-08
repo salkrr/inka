@@ -94,7 +94,7 @@ def get_profile_from_user(profiles: List[str], message: str = None):
 
     # Ask user to save profile as default
     if click.confirm('Save profile as default?'):
-        cfg.update_option_value('anki', 'profile', profile)
+        cfg.update_option_value('defaults', 'profile', profile)
 
     return profile
 
@@ -112,7 +112,7 @@ def get_profile(prompt_user: bool) -> str:
         return get_profile_from_user(profiles)
 
     click.echo('Getting profile from config...')
-    profile = cfg.get_option_value('anki', 'profile')
+    profile = cfg.get_option_value('defaults', 'profile')
     if not profile:
         profile = get_profile_from_user(profiles, 'Default profile is not specified.')
     elif profile not in profiles:

@@ -2,7 +2,6 @@ import configparser
 import os
 
 import pytest
-
 from src.inka.config import Config
 
 
@@ -23,11 +22,11 @@ def default_config_string():
     """Contents of the default config file"""
     return (
         '[defaults]\n'
+        'profile = \n'
         'deck = Default\n'
         'folder = \n'
         '\n'
         '[anki]\n'
-        'profile = \n'
         'note_type = Basic\n'
         'front_field = Front\n'
         'back_field = Back\n'
@@ -112,7 +111,7 @@ def test_get_entry_value_with_incorrect_section_raises_error(config):
 
 def test_get_entry_value_with_incorrect_key_raises_error(config):
     with pytest.raises(KeyError):
-        config.get_option_value('defaults', 'profile')
+        config.get_option_value('anki_connect', 'profile')
 
 
 def test_updates_entry_value_in_backing_object(config):
@@ -135,24 +134,26 @@ def test_updates_entry_value_in_file(config, config_path):
     assert updated_value == new_value
 
 
-def test_update_entry_value_with_incorrect_section_raises_error(config):
+def test_update_option_value_with_incorrect_section_raises_error(config):
     with pytest.raises(KeyError):
         config.update_option_value('ankiConnect', 'port', '12')
 
 
-def test_update_entry_value_with_incorrect_key_raises_error(config):
+def test_update_option_value_with_incorrect_key_raises_error(config):
     with pytest.raises(KeyError):
-        config.update_option_value('defaults', 'profile', 'Profile Name')
+        config.update_option_value('defaults', 'port', 'Profile Name')
 
 
 def test_get_formatted_list_of_config_entries(config):
-    expected = [f'defaults.deck = {config._default_deck}',
-                f'defaults.folder = {config._default_folder}',
-                f'anki.profile = {config._default_profile}',
-                f'anki.note_type = {config._default_note_type}',
-                f'anki.front_field = {config._default_front_field}',
-                f'anki.back_field = {config._default_back_field}',
-                f'anki_connect.port = {config._default_port}']
+    expected = [
+        f'defaults.profile = {config._default_profile}',
+        f'defaults.deck = {config._default_deck}',
+        f'defaults.folder = {config._default_folder}',
+        f'anki.note_type = {config._default_note_type}',
+        f'anki.front_field = {config._default_front_field}',
+        f'anki.back_field = {config._default_back_field}',
+        f'anki_connect.port = {config._default_port}'
+    ]
 
     entries = config.get_formatted_options()
 

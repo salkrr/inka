@@ -28,11 +28,11 @@ class Config:
         """Create default configuration file"""
         config_dict = {
             'defaults': {
+                'profile': self._default_profile,
                 'deck': self._default_deck,
                 'folder': self._default_folder
             },
             'anki': {
-                'profile': self._default_profile,
                 'note_type': self._default_note_type,
                 'front_field': self._default_front_field,
                 'back_field': self._default_back_field
