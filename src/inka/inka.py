@@ -21,14 +21,14 @@ anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
                    cfg.get_option_value('anki', 'back_field'))
 
 
-def create_cards_from_file(file_path: str):
+def create_cards_from_file(file_path: str, profile: str):
     """Get all cards from file and send them to Anki"""
     print(f'Starting to create cards from "{os.path.basename(file_path)}"!')
 
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
 
-    note_parser = Parser(file_path)
+    note_parser = Parser(file_path, profile)
 
     print('Getting cards from the file...')
     cards_list = note_parser.collect_cards()
@@ -230,7 +230,7 @@ def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
     initial_directory = os.getcwd()
     for file in files:
         try:
-            create_cards_from_file(file)
+            create_cards_from_file(file, profile)
             os.chdir(initial_directory)
         except (OSError, ValueError) as e:
             print(e)

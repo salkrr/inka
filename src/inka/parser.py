@@ -25,13 +25,14 @@ class Parser:
     _answer_regex = r'(?:^>.*?(?:\n|$))+'
 
     def __init__(
-            self, file_path: str,
-            anki_user_name: str = 'User 1',
+            self,
+            file_path: str,
+            anki_profile: str,
     ):
         self._file_path = file_path
 
         anki_folder_path = os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
-        self._anki_media_path = f'{anki_folder_path}/{anki_user_name}/collection.media'
+        self._anki_media_path = f'{anki_folder_path}/{anki_profile}/collection.media'
 
     def collect_cards(self) -> List[Card]:
         """Get all cards from the file which path was passed to the Parser"""
