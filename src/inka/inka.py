@@ -28,13 +28,13 @@ def create_cards_from_file(file_path: str, profile: str):
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
 
-    note_parser = Parser(file_path, profile)
+    default_deck = cfg.get_option_value('defaults', 'deck')
+    note_parser = Parser(file_path, default_deck, profile)
 
     print('Getting cards from the file...')
     cards_list = note_parser.collect_cards()
 
     number_of_cards = len(cards_list)
-
     print(f'Found {number_of_cards} cards!')
 
     print('Converting cards to the html...')

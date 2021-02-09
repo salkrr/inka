@@ -28,9 +28,11 @@ class Parser:
     def __init__(
             self,
             file_path: str,
+            default_deck: str,
             anki_profile: str
     ):
         self._file_path = file_path
+        self._default_deck = default_deck
 
         anki_folder_path = os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
         self._anki_media_path = f'{anki_folder_path}/{anki_profile}/collection.media'
@@ -136,15 +138,18 @@ class Parser:
         tags = matches[0].strip().split()
         return tags
 
-    @classmethod
-    def _get_deck_name(cls, section: str) -> str:
+    def _get_deck_name(self, section: str) -> str:
         """Get deck name specified for this section"""
-        matches = re.findall(cls._deck_name_regex,
+        matches = re.findall(Parser._deck_name_regex,
                              section,
                              re.MULTILINE)
 
+        # If no deck name 
         if not matches:
-            raise ValueError(f"Couldn't find deck name in section:\n{section}")
+            if not self._default_deck:
+                raise ValueError(f"Couldn't find deck name in section:\n{section}")
+
+            return self._default_deck
 
         if len(matches) > 1:
             raise ValueError(f'More than one deck name field in section:\n{section}')

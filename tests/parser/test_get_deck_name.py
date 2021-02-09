@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_section_without_deck_name_field(fake_parser):
+def test_section_without_deck_name_field_and_default_deck_raises_error(fake_parser):
     section = (
         '1. Question?\n'
         '\n'
@@ -12,7 +12,21 @@ def test_section_without_deck_name_field(fake_parser):
         fake_parser._get_deck_name(section)
 
 
-def test_section_with_empty_deck_name_field(fake_parser):
+def test_section_without_deck_name_field_returns_default_deck(fake_parser):
+    section = (
+        '1. Question?\n'
+        '\n'
+        'Answer\n'
+    )
+    fake_parser._default_deck = 'Default'
+    expected = 'Default'
+
+    deck = fake_parser._get_deck_name(section)
+
+    assert expected == deck
+
+
+def test_section_with_empty_deck_name_field_raises_error(fake_parser):
     section = (
         'Deck:\n'
         '1. Question?\n'
@@ -24,7 +38,7 @@ def test_section_with_empty_deck_name_field(fake_parser):
         fake_parser._get_deck_name(section)
 
 
-def test_section_with_only_whitespace_deck_name_field(fake_parser):
+def test_deck_name_field_with_only_whitespace_raises_error(fake_parser):
     section = (
         'Deck:   \n'
         '1. Question?\n'
@@ -83,7 +97,7 @@ def test_section_with_deck_name_field_not_on_top(fake_parser):
     assert deck_name == expected
 
 
-def test_section_with_deck_name_field_inline(fake_parser):
+def test_deck_name_field_inline_without_default_deck_raises_error(fake_parser):
     section = (
         'Some text; Deck: yolo\n'
         '1. Question?\n'
@@ -93,6 +107,21 @@ def test_section_with_deck_name_field_inline(fake_parser):
 
     with pytest.raises(ValueError):
         fake_parser._get_deck_name(section)
+
+
+def test_deck_name_field_inline_with_default_deck(fake_parser):
+    section = (
+        'Some text; Deck: yolo\n'
+        '1. Question?\n'
+        '\n'
+        'Answer\n'
+    )
+    fake_parser._default_deck = 'Default'
+    expected = 'Default'
+
+    deck = fake_parser._get_deck_name(section)
+
+    assert expected == deck
 
 
 def test_section_with_multiple_deck_name_fields(fake_parser):
