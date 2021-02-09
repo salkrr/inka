@@ -17,17 +17,18 @@ DEFAULT_ANKI_FOLDERS = {
 
 
 class Parser:
-    _section_regex = '^---\n(.+?)^---$'
+    _section_regex = r'^---\n(.+?)^---$'
     _deck_name_regex = '(?<=^Deck:).*?$'
     _tags_line_regex = '(?<=^Tags:).*?$'
     _card_substring_regex = r'^\d+\.[\s\S]+?(?:^>.*?(?:\n|$))+'
     _question_regex = r'^\d+\.[\s\S]+?(?=^>)'
+    _question_prefix_regex = r'\d+\.'
     _answer_regex = r'(?:^>.*?(?:\n|$))+'
 
     def __init__(
             self,
             file_path: str,
-            anki_profile: str,
+            anki_profile: str
     ):
         self._file_path = file_path
 
@@ -120,9 +121,10 @@ class Parser:
         # Change path to be just file name (for it to work in Anki)
         image.path = image.file_name
 
-    def _get_tags(self, section: str) -> List[str]:
+    @classmethod
+    def _get_tags(cls, section: str) -> List[str]:
         """Get tags specified for this section"""
-        matches = re.findall(self._tags_line_regex,
+        matches = re.findall(cls._tags_line_regex,
                              section,
                              re.MULTILINE)
         if not matches:
@@ -134,9 +136,10 @@ class Parser:
         tags = matches[0].strip().split()
         return tags
 
-    def _get_deck_name(self, section: str) -> str:
+    @classmethod
+    def _get_deck_name(cls, section: str) -> str:
         """Get deck name specified for this section"""
-        matches = re.findall(self._deck_name_regex,
+        matches = re.findall(cls._deck_name_regex,
                              section,
                              re.MULTILINE)
 
@@ -152,26 +155,29 @@ class Parser:
 
         return deck_name
 
-    def _get_card_substrings(self, section: str) -> List[str]:
+    @classmethod
+    def _get_card_substrings(cls, section: str) -> List[str]:
         """Get all section substrings with question-answer pairs"""
-        return re.findall(self._card_substring_regex,
+        return re.findall(cls._card_substring_regex,
                           section,
                           re.MULTILINE)
 
-    def _get_question(self, text: str) -> str:
+    @classmethod
+    def _get_question(cls, text: str) -> str:
         """Get clean question string from text
          (without digit followed by period and trailing whitespace)"""
-        question_match = re.search(self._question_regex,
+        question_match = re.search(cls._question_regex,
                                    text,
                                    re.MULTILINE)
 
-        question = re.sub(r'\d+\.', '', question_match.group(), 1).strip()
+        question = re.sub(cls._question_prefix_regex, '', question_match.group(), 1).strip()
 
         return question
 
-    def _get_answer(self, text: str) -> str:
+    @classmethod
+    def _get_answer(cls, text: str) -> str:
         """Get clean answer string from text (without '>' and trailing whitespace)"""
-        answer_match = re.search(self._answer_regex,
+        answer_match = re.search(cls._answer_regex,
                                  text,
                                  re.MULTILINE)
 
