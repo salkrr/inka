@@ -85,7 +85,7 @@ def test_reads_correctly_from_existing_config(config_path):
 def test_create_default_config(config, config_path, default_config_string):
     os.remove(config_path)
 
-    config._create_default()
+    config.create_default()
 
     with open(config_path, mode='rt', encoding='utf-8') as file:
         assert file.read() == default_config_string

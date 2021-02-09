@@ -131,7 +131,15 @@ def check_anki_connection():
     print("Connected")
 
 
-def list_config_entries(ctx, param, value):
+def revert_config_file(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+
+    cfg.create_default()
+    ctx.exit()
+
+
+def list_config_options(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
 
@@ -152,14 +160,20 @@ def cli():
               '--list',
               'list_options',
               is_flag=True,
-              callback=list_config_entries,
+              callback=list_config_options,
               is_eager=True,
               help='List all options set in config file, along with their values.')
+@click.option('-r',
+              '--revert',
+              is_flag=True,
+              callback=revert_config_file,
+              is_eager=True,
+              help='Revert config file to default state.')
 @click.argument('name',
                 required=True)
 @click.argument('value',
                 required=False)
-def config(list_options, name, value):
+def config(list_options, reset, name, value):
     """Get and set inka's configuration options.
 
         NAME - config option name. VALUE - new value for config option.

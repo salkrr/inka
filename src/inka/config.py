@@ -20,11 +20,11 @@ class Config:
         self._config_path = config_path
 
         if not os.path.exists(self._config_path):
-            self._create_default()
+            self.create_default()
         else:
             self._read()
 
-    def _create_default(self):
+    def create_default(self):
         """Create default configuration file"""
         config_dict = {
             'defaults': {
