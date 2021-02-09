@@ -41,11 +41,21 @@ class AnkiApi:
 
     def add_cards(self, cards: List[Card]):
         """Add list of cards to Anki"""
-        # TODO: create each deck that doesn't exist
+        # Create decks that doesn't exist
+        decks = {card.deck_name for card in cards}
+        for deck in decks:
+            self._create_deck(deck)
+
         for card in cards:
             self._add_card(card)
+
         print('All cards sent successfully!')
         print()
+
+    def _create_deck(self, deck: str) -> Any:
+        """Create deck in Anki if it doesn't exist"""
+        params = {'deck': deck}
+        return self._send_request('createDeck', **params)
 
     def _add_card(self, card: Card):
         """Add card to Anki"""
