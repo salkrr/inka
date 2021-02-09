@@ -57,3 +57,5 @@ def test_answer_prefix_inside_answer(fake_parser):
     answer = fake_parser._get_answer(text)
 
     assert answer == expected
+
+# TODO: code blocks test

@@ -10,7 +10,8 @@ from src.inka.parser import Parser
 @pytest.fixture
 def fake_parser():
     """Parser class with dummy filename"""
-    return Parser('file_doesnt_exist.md')
+    profile = 'test'
+    return Parser('file_doesnt_exist.md', profile)
 
 
 @pytest.fixture
