@@ -179,7 +179,7 @@ def config(list_options, reset, name, value):
         NAME - config option name. VALUE - new value for config option.
 
         Examples:\n
-            inka config anki.profile "My Profile"
+            inka config defaults.profile "My Profile"
     """
     try:
         section, key = name.split('.')
