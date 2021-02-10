@@ -135,7 +135,7 @@ def revert_config_file(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
 
-    cfg.create_default()
+    cfg.revert_to_default()
     ctx.exit()
 
 
