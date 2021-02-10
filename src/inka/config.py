@@ -24,7 +24,8 @@ class Config:
         else:
             self._read()
 
-    def revert_to_default(self):
+    def reset(self):
+        """Reset config file to default state"""
         self._config = configparser.ConfigParser()
         self._create_default()
 

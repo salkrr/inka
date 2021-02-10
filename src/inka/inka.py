@@ -131,11 +131,11 @@ def check_anki_connection():
     print("Connected")
 
 
-def revert_config_file(ctx, param, value):
+def reset_config_file(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
 
-    cfg.revert_to_default()
+    cfg.reset()
     ctx.exit()
 
 
@@ -164,11 +164,11 @@ def cli():
               is_eager=True,
               help='List all options set in config file, along with their values.')
 @click.option('-r',
-              '--revert',
+              '--reset',
               is_flag=True,
-              callback=revert_config_file,
+              callback=reset_config_file,
               is_eager=True,
-              help='Revert config file to default state.')
+              help='Reset config file to default state.')
 @click.argument('name',
                 required=True)
 @click.argument('value',
