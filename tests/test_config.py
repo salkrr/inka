@@ -2,6 +2,7 @@ import configparser
 import os
 
 import pytest
+
 from src.inka.config import Config
 
 
@@ -158,3 +159,45 @@ def test_get_formatted_list_of_config_entries(config):
     entries = config.get_formatted_options()
 
     assert entries == expected
+
+
+def test_repr_method(config, config_path):
+    expected = f'Config(config_path={repr(config_path)})'
+
+    assert repr(config) == expected
+
+
+def test_reset(config, config_path, default_config_string):
+    config.update_option_value('defaults', 'profile', 'new profile')
+
+    config.reset()
+
+    with open(config_path, mode='rt', encoding='utf-8') as f:
+        assert f.read() == default_config_string
+
+
+def test_new_options_removed_by_reset(config, config_path, default_config_string):
+    config._config = configparser.ConfigParser()
+    new_config = {
+        'defaults': {
+            'profile': config._default_profile,
+            'deck': config._default_deck,
+            'folder': config._default_folder,
+            'new_option': 123456
+        },
+        'anki': {
+            'note_type': config._default_note_type,
+            'front_field': config._default_front_field,
+            'back_field': config._default_back_field
+        },
+        'anki_connect': {
+            'port': config._default_port
+        }
+    }
+    config._config.read_dict(new_config)
+    config._save()
+
+    config.reset()
+
+    with open(config_path, mode='rt', encoding='utf-8') as f:
+        assert f.read() == default_config_string
