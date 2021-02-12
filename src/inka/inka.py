@@ -211,7 +211,7 @@ def config(list_options, reset, name, value):
                 required=False)
 def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
     """Get cards from files and send them to Anki.
-     If no PATH argument is specified, the program will use the default folder from config.
+     If no PATH argument is passed, the program will use the path from config option 'defaults.folder'.
 
         [PATH]... - paths to files and/or directories
 
@@ -224,8 +224,9 @@ def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
     if not paths:
         default_path = os.path.expanduser(cfg.get_option_value('defaults', 'folder'))
         if not default_path:
-            click.echo('Default folder is not specified in the config! '
-                       'You must pass the path to a file or folder as an argument.')
+            click.echo('Default folder is not specified in the config!')
+            click.echo('You must pass the path to a file or folder as an argument.')
+            click.echo("Try 'inka collect --help' for more info.")
             sys.exit()
 
         paths.add(default_path)
