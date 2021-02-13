@@ -28,7 +28,7 @@ You create cards using *Markdown* syntax:
 
 Every question starts with number followed by period (e.g. `1.`, `2.`) and every answer starts with `>`.
 
-> Only basic (question-answer) cards are supported.
+> Only basic (front/back) cards are supported.
 
 ## Features
 
@@ -62,9 +62,10 @@ Tags: learning life-questions
 
 > This means that you can't use the `---` syntax anywhere else in the file for **inka** to work properly. 
 
-You can create any number of such blocks in the file.
+You can create any number of such sections in the file.
 
-Inside the block, it is necessary to specify the name of the deck to which the cards will be added, and also (optionally) you can specify tags for the cards.
+Inside the section, you can specify the name of the deck to which the cards will be added, and tags for the cards.
+If deck name isn't specified, then the one from the [config](https://github.com/lazy-void/Inka/wiki/Config) is used (`Default` by default).
 The deck name is written after `Deck:`, and tags for all cards after `Tags:` with spaces between each tag. 
 
 ### Adding cards to Anki
@@ -72,23 +73,19 @@ The deck name is written after `Deck:`, and tags for all cards after `Tags:` wit
 Add cards from the file: 
 
 ```commandline
-inka path/to/file/with_cards.md
+inka collect path/to/cards.md
 ```
 
 Or from all *Markdown* files in a directory:
 
 ```commandline
-inka path/to/directory
+inka collect path/to/directory
 ```
 
-By default, the program doesn't search for files in subdirectories. To enable this behavior, you must use the `-r` flag:
+You can also pass multiple paths at once:
 
 ```commandline
-inka -r path/to/directory
+inka collect path/to/cards.md path/to/folder
 ```
 
-You can also specify multiple paths at once:
-
-```commandline
-inka path/to/file/with_cards.md path/to/folder
-```
+More info on the [documentation page](https://github.com/lazy-void/Inka/wiki/Adding-cards-to-Anki)
