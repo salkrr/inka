@@ -151,7 +151,14 @@ def list_config_options(ctx, param, value):
 @click.group()
 @click.version_option(version=__version__)
 def cli():
-    """Inka - command-line tool for adding Markdown cards to Anki"""
+    """Inka - command-line tool for adding Markdown cards to Anki
+
+        Documentation:\n
+            https://github.com/lazy-void/Inka/wiki
+
+        Github:\n
+            https://github.com/lazy-void/Inka
+    """
     pass
 
 
