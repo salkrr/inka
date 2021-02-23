@@ -73,8 +73,8 @@ class Parser:
 
             answer = self._get_answer(substring)
 
-            cards.append(Card(front=question,
-                              back=answer,
+            cards.append(Card(front_md=question,
+                              back_md=answer,
                               tags=tags,
                               deck_name=deck_name))
 

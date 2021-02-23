@@ -30,8 +30,8 @@ def test_one_card_without_tags(fake_parser):
         '\n'
         '> Answer'
     )
-    expected = [Card(front='Some question?',
-                     back='Answer',
+    expected = [Card(front_md='Some question?',
+                     back_md='Answer',
                      tags=[],
                      deck_name='Abraham')]
 
@@ -50,8 +50,8 @@ def test_one_card_with_tags(fake_parser):
         '\n'
         '> Answer'
     )
-    expected = [Card(front='Some question?',
-                     back='Answer',
+    expected = [Card(front_md='Some question?',
+                     back_md='Answer',
                      tags=['one', 'two-three'],
                      deck_name='Abraham')]
 
@@ -72,8 +72,8 @@ def test_two_cards_without_tags(fake_parser):
         '\n'
         '> A'
     )
-    expected = [Card(front='Some question?', back='Answer', tags=[], deck_name='Abraham'),
-                Card(front='Q', back='A', tags=[], deck_name='Abraham')]
+    expected = [Card(front_md='Some question?', back_md='Answer', tags=[], deck_name='Abraham'),
+                Card(front_md='Q', back_md='A', tags=[], deck_name='Abraham')]
 
     cards = fake_parser._get_cards_from_section(section)
 
@@ -94,8 +94,8 @@ def test_two_cards_with_tags(fake_parser):
         '\n'
         '> A'
     )
-    expected = [Card(front='Some question?', back='Answer', tags=['one', 'two-three'], deck_name='Abraham'),
-                Card(front='Q', back='A', tags=['one', 'two-three'], deck_name='Abraham')]
+    expected = [Card(front_md='Some question?', back_md='Answer', tags=['one', 'two-three'], deck_name='Abraham'),
+                Card(front_md='Q', back_md='A', tags=['one', 'two-three'], deck_name='Abraham')]
 
     cards = fake_parser._get_cards_from_section(section)
 

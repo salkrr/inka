@@ -22,7 +22,6 @@ setup(
         'Topic :: Text Processing :: Markup :: Markdown',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -33,7 +32,7 @@ setup(
     keywords='anki, markdown, spaced-repetition',
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     install_requires=[
         'mistune~=2.0.0a6',
         'requests~=2.25.1',

@@ -62,12 +62,8 @@ class AnkiApi:
         note_params = self._create_note_params(card)
         try:
             self._send_request('addNote', **note_params)
-        except RequestException as e:
-            card.print_card_info()
-            print("ERROR: Can't create the card!")
-            print(f'Reason: "{e.args[0]}"')
-            input('Press Enter to continue...')
-            print()
+        except RequestException as error:
+            self._print_error_message(card, error)
 
     def _create_note_params(self, card: Card) -> dict:
         """Create params field for note adding request"""
@@ -76,8 +72,8 @@ class AnkiApi:
                 'deckName': card.deck_name,
                 'modelName': self._note_type,
                 'fields': {
-                    self._front_field_name: card.front_converted,
-                    self._back_field_name: card.back_converted
+                    self._front_field_name: card.front_html,
+                    self._back_field_name: card.back_html
                 },
                 'options': {
                     'allowDuplicate': False,
@@ -110,3 +106,18 @@ class AnkiApi:
     def _create_request(action: str, **params) -> dict:
         """Create request dictionary"""
         return {'action': action, 'version': 6, 'params': params}
+
+    @staticmethod
+    def _print_error_message(card: Card, error: Exception = None):
+        print("ERROR: Can't create the card!")
+
+        # Card information
+        print('------------------------------------')
+        print(f'Front: {card.front_md.strip()}')
+        print(f'Back: {card.back_md.strip()}')
+        print('------------------------------------')
+
+        # Error message
+        if error is not None:
+            print(f'Reason: "{error.args[0]}"')
+        input('Press Enter to continue...\n')

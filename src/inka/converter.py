@@ -10,8 +10,8 @@ class Converter:
 
     @classmethod
     def convert_card(cls, card):
-        card.front_converted = cls.convert_string(card.front_raw)
-        card.back_converted = cls.convert_string(card.back_raw)
+        card.front_html = cls.convert_string(card.front_md)
+        card.back_html = cls.convert_string(card.back_md)
 
     @classmethod
     def convert_string(cls, raw_str):
