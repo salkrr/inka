@@ -4,7 +4,8 @@ import random
 import re
 import shutil
 import sys
-from typing import List
+from pathlib import Path
+from typing import List, Union
 
 from .card import Card
 from .image import Image
@@ -20,14 +21,15 @@ class Parser:
     _section_regex = r'^---\n(.+?)^---$'
     _deck_name_regex = '(?<=^Deck:).*?$'
     _tags_line_regex = '(?<=^Tags:).*?$'
-    _card_substring_regex = r'^\d+\.[\s\S]+?(?:^>.*?(?:\n|$))+'
+    _card_substring_regex = r'^(?:<!--ID:.+-->\n)?\d+\.[\s\S]+?(?:^>.*?(?:\n|$))+'
+    _id_regex = r'^<!--ID:(.+)-->$'
     _question_regex = r'^\d+\.[\s\S]+?(?=^>)'
     _question_prefix_regex = r'\d+\.'
     _answer_regex = r'(?:^>.*?(?:\n|$))+'
 
     def __init__(
             self,
-            file_path: str,
+            file_path: Union[str, Path],
             default_deck: str,
             anki_profile: str
     ):
@@ -69,14 +71,15 @@ class Parser:
         # Create cards
         cards = []
         for substring in card_substrings:
+            anki_id = self._get_id(substring)
             question = self._get_question(substring)
-
             answer = self._get_answer(substring)
 
             cards.append(Card(front_md=question,
                               back_md=answer,
                               tags=tags,
-                              deck_name=deck_name))
+                              deck_name=deck_name,
+                              anki_id=anki_id))
 
         return cards
 
@@ -166,6 +169,18 @@ class Parser:
         return re.findall(cls._card_substring_regex,
                           section,
                           re.MULTILINE)
+
+    @classmethod
+    def _get_id(cls, text: str) -> Union[str, None]:
+        """Get card id from text. Returns None if id wasn't found."""
+        id_match = re.search(cls._id_regex,
+                             text,
+                             re.MULTILINE)
+
+        if not id_match:
+            return None
+
+        return id_match.group(1)
 
     @classmethod
     def _get_question(cls, text: str) -> str:

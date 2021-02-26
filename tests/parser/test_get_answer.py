@@ -58,4 +58,23 @@ def test_answer_prefix_inside_answer(fake_parser):
 
     assert answer == expected
 
+
+def test_card_with_id(fake_parser):
+    text = (
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '<!--ID:123456-->\n'
+        '1. Some question?\n'
+        '\n'
+        '> Answer'
+    )
+
+    expected = 'Answer'
+
+    answer = fake_parser._get_answer(text)
+
+    assert answer == expected
+
 # TODO: code blocks test

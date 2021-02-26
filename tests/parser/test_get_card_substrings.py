@@ -238,3 +238,58 @@ def test_two_questions_one_answer(fake_parser):
     card_substrings = fake_parser._get_card_substrings(section)
 
     assert card_substrings == expected
+
+
+def test_card_has_id(fake_parser):
+    section = (
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '<!--ID:123456-->\n'
+        '1. Some question?\n'
+        '\n'
+        '> Answer'
+    )
+    expected = [
+        '<!--ID:123456-->\n'
+        '1. Some question?\n'
+        '\n'
+        '> Answer'
+    ]
+
+    card_substrings = fake_parser._get_card_substrings(section)
+
+    assert card_substrings == expected
+
+
+def test_multiple_cards_with_id(fake_parser):
+    section = (
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '<!--ID:123456-->\n'
+        '1. Some question?\n'
+        '\n'
+        '> Answer\n'
+        '\n'
+        '<!--ID:581925-->\n'
+        '2. Q\n'
+        '\n'
+        '> A'
+    )
+    expected = [
+        ('<!--ID:123456-->\n'
+         '1. Some question?\n'
+         '\n'
+         '> Answer\n'),
+        ('<!--ID:581925-->\n'
+         '2. Q\n'
+         '\n'
+         '> A')
+    ]
+
+    card_substrings = fake_parser._get_card_substrings(section)
+
+    assert card_substrings == expected

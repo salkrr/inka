@@ -77,4 +77,22 @@ def test_multiline_question(fake_parser):
 
     assert question == expected
 
+
+def test_card_with_id(fake_parser):
+    text = (
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '<!--ID:123456-->\n'
+        '1. Some question?\n'
+        '\n'
+        '> Answer'
+    )
+    expected = 'Some question?'
+
+    question = fake_parser._get_question(text)
+
+    assert question == expected
+
 # TODO: code blocks test

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 
 
 @dataclass
@@ -8,6 +8,6 @@ class Card:
     back_md: str
     tags: List[str]
     deck_name: str
+    anki_id: str = None
     front_html: str = None
     back_html: str = None
-    anki_id: Union[str, int] = None
