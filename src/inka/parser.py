@@ -18,11 +18,13 @@ DEFAULT_ANKI_FOLDERS = {
 
 
 class Parser:
+    """Class for getting cards and various information about them from the text file"""
+
     _section_regex = r'^---\n(.+?)^---$'
     _deck_name_regex = '(?<=^Deck:).*?$'
     _tags_line_regex = '(?<=^Tags:).*?$'
     _card_substring_regex = r'^(?:<!--ID:.+-->\n)?\d+\.[\s\S]+?(?:^>.*?(?:\n|$))+'
-    _id_regex = r'^<!--ID:(.+)-->$'
+    _id_regex = r'^<!--ID:(\S+)-->$'
     _question_regex = r'^\d+\.[\s\S]+?(?=^>)'
     _question_prefix_regex = r'\d+\.'
     _answer_regex = r'(?:^>.*?(?:\n|$))+'
@@ -71,7 +73,7 @@ class Parser:
         # Create cards
         cards = []
         for substring in card_substrings:
-            anki_id = self._get_id(substring)
+            anki_id = self.get_id(substring)
             question = self._get_question(substring)
             answer = self._get_answer(substring)
 
@@ -171,8 +173,8 @@ class Parser:
                           re.MULTILINE)
 
     @classmethod
-    def _get_id(cls, text: str) -> Union[str, None]:
-        """Get card id from text. Returns None if id wasn't found."""
+    def get_id(cls, text: str) -> Union[str, None]:
+        """Get card's ID from text. Returns None if id wasn't found."""
         id_match = re.search(cls._id_regex,
                              text,
                              re.MULTILINE)

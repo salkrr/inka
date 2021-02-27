@@ -1,4 +1,4 @@
-def test_no_id(fake_parser):
+def test_returns_none_if_no_id(fake_parser):
     text = (
         'Deck: Abraham\n'
         '\n'
@@ -9,10 +9,10 @@ def test_no_id(fake_parser):
         '> Answer'
     )
 
-    assert fake_parser._get_id(text) is None
+    assert fake_parser.get_id(text) is None
 
 
-def test_empty_id(fake_parser):
+def test_returns_none_if_id_is_empty(fake_parser):
     text = (
         'Deck: Abraham\n'
         '\n'
@@ -24,10 +24,10 @@ def test_empty_id(fake_parser):
         '> Answer'
     )
 
-    assert fake_parser._get_id(text) is None
+    assert fake_parser.get_id(text) is None
 
 
-def test_correct_id(fake_parser):
+def test_correctly_gets_id_from_section(fake_parser):
     anki_id = '1235523'
     text = (
         'Deck: Abraham\n'
@@ -40,4 +40,4 @@ def test_correct_id(fake_parser):
         '> Answer'
     )
 
-    assert fake_parser._get_id(text) == anki_id
+    assert fake_parser.get_id(text) == anki_id
