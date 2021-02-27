@@ -23,7 +23,7 @@ anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
 
 def create_cards_from_file(file_path: str, profile: str):
     """Get all cards from file and send them to Anki"""
-    print(f'Starting to create cards from "{os.path.basename(file_path)}"!')
+    click.echo(f'Starting to create cards from "{os.path.basename(file_path)}"!')
 
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
@@ -31,20 +31,20 @@ def create_cards_from_file(file_path: str, profile: str):
     default_deck = cfg.get_option_value('defaults', 'deck')
     note_parser = Parser(file_path, default_deck, profile)
 
-    print('Getting cards from the file...')
+    click.echo('Getting cards from the file...')
     cards_list = note_parser.collect_cards()
 
     number_of_cards = len(cards_list)
-    print(f'Found {number_of_cards} cards!')
+    click.echo(f'Found {number_of_cards} cards!')
 
-    print('Converting cards to the html...')
+    click.echo('Converting cards to the html...')
     Converter.convert_cards(cards_list)
 
-    print('Sending cards...')
+    click.echo('Sending cards...')
     try:
         anki_api.add_cards(cards_list)
     except requests.exceptions.ConnectionError:
-        print("Couldn't connect to Anki. Please, check that Anki is running and try again.")
+        click.echo("Couldn't connect to Anki. Please, check that Anki is running and try again.")
         sys.exit()
 
 
@@ -122,13 +122,13 @@ def get_profile(prompt_user: bool) -> str:
 
 
 def check_anki_connection():
-    print("Attempting to connect to Anki...")
+    click.echo("Attempting to connect to Anki...")
     if not anki_api.check_connection():
-        print("Couldn't connect to Anki. "
-              "Please, check that Anki is running and AnkiConnect plugin is installed.")
+        click.secho("Couldn't connect to Anki. "
+                    "Please, check that Anki is running and AnkiConnect plugin is installed.", fg='red')
         sys.exit()
 
-    print("Connected")
+    click.echo("Connected")
 
 
 def reset_config_file(ctx, param, value):
@@ -197,7 +197,7 @@ def config(list_options, reset, name, value):
 
         cfg.update_option_value(section, key, value)
     except (KeyError, ValueError):
-        click.echo('Incorrect name of a config entry!')
+        click.secho('Incorrect name of a config entry!', fg='red')
         click.echo('To get list of all entries use "--list" flag.')
         sys.exit()
 
@@ -231,9 +231,8 @@ def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
     if not paths:
         default_path = os.path.expanduser(cfg.get_option_value('defaults', 'folder'))
         if not default_path:
-            click.echo('Default folder is not specified in the config!')
-            click.echo('You must pass the path to a file or folder as an argument.')
-            click.echo("Try 'inka collect --help' for more info.")
+            click.secho('Default folder is not specified in the config!\n'
+                        'You must pass the path to a file or folder as an argument.', fg='red')
             sys.exit()
 
         paths.add(default_path)
@@ -255,6 +254,5 @@ def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
             create_cards_from_file(file, profile)
             os.chdir(initial_directory)
         except (OSError, ValueError) as e:
-            print(e)
-            print('Skipping file...')
-            input('Press Enter to continue...\n')
+            click.secho(str(e), fg='red')
+            click.secho('Skipping file...', fg='red')
