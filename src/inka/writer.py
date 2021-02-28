@@ -31,14 +31,19 @@ class Writer:
             # Search for existing line with ID
             line_before_question = self._file_content[:newline_index].splitlines()[-1]
             existing_id = Parser.get_id(line_before_question)
+
+            # Skip if ID hasn't changed
+            if existing_id == card.anki_id:
+                continue
+
             id_string = f'<!--ID:{card.anki_id}-->'
             if existing_id is None:
-                # Add line with id after newline
+                # Add line with ID after newline
                 self._file_content = (self._file_content[:newline_index + 1] +
                                       id_string + '\n' +
                                       self._file_content[newline_index + 1:])
             else:
-                # Substitute existing id with the new one
+                # Substitute existing ID with the new one
                 self._file_content = self._file_content.replace(f'<!--ID:{existing_id}-->', id_string)
 
         self._save()

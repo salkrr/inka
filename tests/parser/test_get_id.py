@@ -28,7 +28,7 @@ def test_returns_none_if_id_is_empty(fake_parser):
 
 
 def test_correctly_gets_id_from_section(fake_parser):
-    anki_id = '1235523'
+    anki_id = 1235523
     text = (
         'Deck: Abraham\n'
         '\n'
@@ -41,3 +41,19 @@ def test_correctly_gets_id_from_section(fake_parser):
     )
 
     assert fake_parser.get_id(text) == anki_id
+
+
+def test_if_id_is_not_number(fake_parser):
+    anki_id = '123a'
+    text = (
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        f'<!--ID:{anki_id}-->\n'
+        '1. Some question?\n'
+        '\n'
+        '> Answer'
+    )
+
+    assert fake_parser.get_id(text) is None

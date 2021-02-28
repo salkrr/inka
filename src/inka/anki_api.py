@@ -47,43 +47,52 @@ class AnkiApi:
             self._create_deck(deck)
 
         for card in cards:
-            self._add_card(card)
-
-        print('All cards sent successfully!')
-        print()
+            if card.anki_id:
+                self._update_card(card)
+            else:
+                self._add_card(card)
 
     def _create_deck(self, deck: str) -> Any:
         """Create deck in Anki if it doesn't exist"""
         params = {'deck': deck}
         return self._send_request('createDeck', **params)
 
+    def _update_card(self, card: Card):
+        """Update existing card with changes from file"""
+        note_params = self._create_note_params(card)
+        note_params['id'] = card.anki_id
+
+        try:
+            self._send_request('updateNoteFields', note=note_params)
+        except RequestException as error:
+            # If card doesn't exist, create new one
+            self._add_card(card)
+
     def _add_card(self, card: Card):
-        """Add card to Anki"""
+        """Add card to Anki and update it's ID"""
         note_params = self._create_note_params(card)
         try:
-            self._send_request('addNote', **note_params)
+            card.anki_id = self._send_request('addNote', note=note_params)
         except RequestException as error:
             self._print_error_message(card, error)
 
     def _create_note_params(self, card: Card) -> dict:
-        """Create params field for note adding request"""
+        """Create dict with params required to add note to Anki"""
         return {
-            'note': {
-                'deckName': card.deck_name,
-                'modelName': self._note_type,
-                'fields': {
-                    self._front_field_name: card.front_html,
-                    self._back_field_name: card.back_html
-                },
-                'options': {
-                    'allowDuplicate': False,
-                    'duplicateScope': None,
-                    'duplicateScopeOptions': {
-                        'checkChildren': False
-                    }
-                },
-                'tags': card.tags
-            }
+            'deckName': card.deck_name,
+            'modelName': self._note_type,
+            'fields': {
+                self._front_field_name: card.front_html,
+                self._back_field_name: card.back_html
+            },
+            'options': {
+                'allowDuplicate': False,
+                'duplicateScope': None,
+                'duplicateScopeOptions': {
+                    'checkChildren': False
+                }
+            },
+            'tags': card.tags
         }
 
     def _send_request(self, action: str, **params) -> Any:
@@ -109,6 +118,7 @@ class AnkiApi:
 
     @staticmethod
     def _print_error_message(card: Card, error: Exception = None):
+        # TODO: change to click.secho with red color
         print("ERROR: Can't create the card!")
 
         # Card information
@@ -119,5 +129,6 @@ class AnkiApi:
 
         # Error message
         if error is not None:
+            # TODO: change to str(error)
             print(f'Reason: "{error.args[0]}"')
         input('Press Enter to continue...\n')

@@ -10,6 +10,7 @@ from .anki_api import AnkiApi
 from .config import Config
 from .converter import Converter
 from .parser import Parser
+from .writer import Writer
 
 FILE_EXTENSIONS = ['.md', '.markdown']
 CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
@@ -46,6 +47,10 @@ def create_cards_from_file(file_path: str, profile: str):
     except requests.exceptions.ConnectionError:
         click.echo("Couldn't connect to Anki. Please, check that Anki is running and try again.")
         sys.exit()
+
+    # Add id's to cards in file
+    click.echo('Adding IDs to cards...')
+    Writer(file_path, cards_list).write_card_ids()
 
 
 def get_file_paths_from_directory(dir_path: str, search_recursive: bool) -> Set[str]:

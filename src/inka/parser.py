@@ -173,16 +173,16 @@ class Parser:
                           re.MULTILINE)
 
     @classmethod
-    def get_id(cls, text: str) -> Union[str, None]:
-        """Get card's ID from text. Returns None if id wasn't found."""
+    def get_id(cls, text: str) -> Union[int, None]:
+        """Get card's ID from text. Returns None if id wasn't found or if it is incorrect."""
         id_match = re.search(cls._id_regex,
                              text,
                              re.MULTILINE)
 
-        if not id_match:
+        try:
+            return int(id_match.group(1))
+        except (ValueError, AttributeError):
             return None
-
-        return id_match.group(1)
 
     @classmethod
     def _get_question(cls, text: str) -> str:

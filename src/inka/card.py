@@ -8,6 +8,6 @@ class Card:
     back_md: str
     tags: List[str]
     deck_name: str
-    anki_id: str = None
+    anki_id: int = None
     front_html: str = None
     back_html: str = None
