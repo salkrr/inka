@@ -10,7 +10,7 @@ from src.inka.writer import Writer
 
 
 @pytest.fixture
-def file(tmp_path) -> Path:
+def file(tmp_path: Path) -> Path:
     """Temporary markdown file with cards"""
     file_path = tmp_path / 'file.md'
     with open(file_path, mode='wt', encoding='utf-8') as f:
@@ -83,7 +83,53 @@ def test_does_not_add_id_if_it_no_id_in_card(fake_writer, file, cards):
         '---'
     )
 
-    fake_writer.write_card_ids()
+    fake_writer.update_card_ids()
+
+    with open(file, mode='rt', encoding='utf-8') as f:
+        assert f.read() == expected
+
+
+def test_removes_id_from_file_if_card_object_has_no_id(fake_writer, file, cards):
+    fake_writer._file_content = (
+        '---\n'
+        '\n'
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        f'<!--ID:{cards[0].anki_id}-->\n'
+        '1. Some question?\n'
+        '\n'
+        '> First answer\n'
+        '\n'
+        f'<!--ID:{cards[1].anki_id}-->\n'
+        '2. Another question\n'
+        '\n'
+        '> Second answer\n'
+        '\n'
+        '---'
+    )
+    expected = (
+        '---\n'
+        '\n'
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '1. Some question?\n'
+        '\n'
+        '> First answer\n'
+        '\n'
+        f'<!--ID:{cards[1].anki_id}-->\n'
+        '2. Another question\n'
+        '\n'
+        '> Second answer\n'
+        '\n'
+        '---'
+    )
+    cards[0].anki_id = None
+
+    fake_writer.update_card_ids()
 
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected
@@ -110,7 +156,7 @@ def test_writes_id_before_question(fake_writer, file, cards):
         '---'
     )
 
-    fake_writer.write_card_ids()
+    fake_writer.update_card_ids()
 
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected
@@ -155,7 +201,7 @@ def test_updates_id_if_another_is_written(file, fake_writer, cards):
         '---'
     )
 
-    fake_writer.write_card_ids()
+    fake_writer.update_card_ids()
 
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected

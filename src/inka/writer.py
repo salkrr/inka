@@ -15,13 +15,9 @@ class Writer:
         with open(self._file_path, mode='rt', encoding='utf-8') as f:
             self._file_content = f.read()
 
-    def write_card_ids(self):
-        """Add lines with IDs to the cards from the file"""
+    def update_card_ids(self):
+        """Update lines with IDs of the cards from the file"""
         for card in self._cards:
-            # Skip cards without ID
-            if card.anki_id is None:
-                continue
-
             # Find card's question in file string
             question_start = self._file_content.find(card.front_md)
 
@@ -36,15 +32,19 @@ class Writer:
             if existing_id == card.anki_id:
                 continue
 
-            id_string = f'<!--ID:{card.anki_id}-->'
+            id_string = f'<!--ID:{card.anki_id}-->\n'
+            if not card.anki_id:
+                # To delete ID from card in file if Card object has no ID
+                id_string = ''
+
             if existing_id is None:
                 # Add line with ID after newline
                 self._file_content = (self._file_content[:newline_index + 1] +
-                                      id_string + '\n' +
+                                      id_string +
                                       self._file_content[newline_index + 1:])
             else:
                 # Substitute existing ID with the new one
-                self._file_content = self._file_content.replace(f'<!--ID:{existing_id}-->', id_string)
+                self._file_content = self._file_content.replace(f'<!--ID:{existing_id}-->\n', id_string)
 
         self._save()
 

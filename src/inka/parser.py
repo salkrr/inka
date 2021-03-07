@@ -5,7 +5,7 @@ import re
 import shutil
 import sys
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Optional
 
 from .card import Card
 from .image import Image
@@ -173,7 +173,7 @@ class Parser:
                           re.MULTILINE)
 
     @classmethod
-    def get_id(cls, text: str) -> Union[int, None]:
+    def get_id(cls, text: str) -> Optional[int]:
         """Get card's ID from text. Returns None if id wasn't found or if it is incorrect."""
         id_match = re.search(cls._id_regex,
                              text,

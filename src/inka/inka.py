@@ -7,6 +7,7 @@ import requests
 
 from . import __version__
 from .anki_api import AnkiApi
+from .card import Card
 from .config import Config
 from .converter import Converter
 from .parser import Parser
@@ -22,35 +23,58 @@ anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
                    cfg.get_option_value('anki', 'back_field'))
 
 
-def create_cards_from_file(file_path: str, profile: str):
-    """Get all cards from file and send them to Anki"""
-    click.echo(f'Starting to create cards from "{os.path.basename(file_path)}"!')
+def convert_cards_to_html(cards: List[Card]):
+    click.echo('Converting cards to the html...')
+    Converter.convert_cards(cards)
+
+
+def get_cards_from_file(file_path: str, profile: str) -> List[Card]:
+    click.echo('Getting cards from the file...')
 
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
 
     default_deck = cfg.get_option_value('defaults', 'deck')
     note_parser = Parser(file_path, default_deck, profile)
+    cards = note_parser.collect_cards()
 
-    click.echo('Getting cards from the file...')
-    cards_list = note_parser.collect_cards()
-
-    number_of_cards = len(cards_list)
+    number_of_cards = len(cards)
     click.echo(f'Found {number_of_cards} cards!')
 
-    click.echo('Converting cards to the html...')
-    Converter.convert_cards(cards_list)
+    return cards
+
+
+def create_cards_from_file(file_path: str, profile: str):
+    """Get all cards from file and send them to Anki"""
+    click.echo(f'Starting to create cards from "{os.path.basename(file_path)}"!')
+
+    cards = get_cards_from_file(file_path, profile)
+    convert_cards_to_html(cards)
 
     click.echo('Sending cards...')
     try:
-        anki_api.add_cards(cards_list)
+        anki_api.add_cards(cards)
     except requests.exceptions.ConnectionError:
         click.echo("Couldn't connect to Anki. Please, check that Anki is running and try again.")
         sys.exit()
 
     # Add id's to cards in file
     click.echo('Adding IDs to cards...')
-    Writer(file_path, cards_list).write_card_ids()
+    Writer(file_path, cards).update_card_ids()
+
+
+def update_card_ids_in_file(file_path: str, profile: str):
+    """Update IDs of cards in file by getting their IDs from Anki"""
+    click.echo(f'Starting to update IDs of cards from "{os.path.basename(file_path)}"!')
+
+    cards = get_cards_from_file(file_path, profile)
+    convert_cards_to_html(cards)
+
+    click.echo('Getting card IDs from Anki...')
+    anki_api.update_card_ids(cards)
+
+    click.echo('Adding IDs to cards...')
+    Writer(file_path, cards).update_card_ids()
 
 
 def get_file_paths_from_directory(dir_path: str, search_recursive: bool) -> Set[str]:
@@ -216,12 +240,17 @@ def config(list_options, reset, name, value):
               '--prompt',
               is_flag=True,
               help='Show prompt for profile name even if config contains default profile.')
+@click.option('-u',
+              '--update-ids',
+              'update_ids',
+              is_flag=True,
+              help='Update incorrect or absent IDs of cards from file(s) by searching for these cards in Anki.')
 @click.argument('paths',
                 metavar='[PATH]...',
                 nargs=-1,
                 type=click.Path(exists=True),
                 required=False)
-def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
+def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]):
     """Get cards from files and send them to Anki.
      If no PATH argument is passed, the program will use the path from config option 'defaults.folder'.
 
@@ -252,12 +281,19 @@ def collect(recursive: bool, prompt: bool, paths: Tuple[str]):
     # Get paths to all files
     files = get_paths_to_files(paths, recursive)
 
-    # Create and send cards from each file
+    # Perform action on cards from each file
     initial_directory = os.getcwd()
     for file in files:
         try:
-            create_cards_from_file(file, profile)
+            if update_ids:
+                update_card_ids_in_file(file, profile)
+            else:
+                create_cards_from_file(file, profile)
+
             os.chdir(initial_directory)
         except (OSError, ValueError) as e:
-            click.secho(str(e), fg='red')
+            # TODO: handle requests.exceptions.ConnectionError
+            click.secho(f'Error: {e}', fg='red')
             click.secho('Skipping file...', fg='red')
+
+    click.echo('Finished!')

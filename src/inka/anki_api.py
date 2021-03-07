@@ -4,6 +4,7 @@ import requests
 from requests import RequestException
 
 from .card import Card
+from .util import escape_special_chars
 
 
 class AnkiApi:
@@ -52,6 +53,22 @@ class AnkiApi:
             else:
                 self._add_card(card)
 
+    def update_card_ids(self, cards: List[Card]):
+        """Update incorrect or absent IDs of cards"""
+        # Handle None
+        card_ids = [card.anki_id if card.anki_id else -1
+                    for card in cards]
+
+        cards_info = self._send_request('cardsInfo', cards=card_ids)
+        for i, card in enumerate(cards):
+            # Don't update ID if card with this ID exists
+            if cards_info[i]:
+                continue
+
+            query = escape_special_chars(card.front_html)
+            found_notes = self._send_request('findNotes', query=query)
+            card.anki_id = found_notes[0] if found_notes else None
+
     def _create_deck(self, deck: str) -> Any:
         """Create deck in Anki if it doesn't exist"""
         params = {'deck': deck}
@@ -66,6 +83,7 @@ class AnkiApi:
             self._send_request('updateNoteFields', note=note_params)
         except RequestException as error:
             # If card doesn't exist, create new one
+            # TODO: print error message with hint to '-u' flag
             self._add_card(card)
 
     def _add_card(self, card: Card):
