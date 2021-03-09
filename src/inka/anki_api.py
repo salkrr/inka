@@ -1,8 +1,10 @@
 from typing import Union, List, Any
 
+import click
 import requests
 from requests import RequestException
 
+from . import converter
 from .card import Card
 from .util import escape_special_chars
 
@@ -21,6 +23,8 @@ class AnkiApi:
         self._note_type = note_type
         self._front_field_name = front_field_name
         self._back_field_name = back_field_name
+        self._change_tag = 'changed'
+        self._delete_tag = 'delete'
 
     def check_connection(self) -> bool:
         """Check connection with Anki Connect plugin"""
@@ -41,17 +45,19 @@ class AnkiApi:
         self._send_request('loadProfile', **params)
 
     def add_cards(self, cards: List[Card]):
-        """Add list of cards to Anki"""
+        """Add new cards to Anki"""
         # Create decks that doesn't exist
         decks = {card.deck_name for card in cards}
         for deck in decks:
             self._create_deck(deck)
 
+        # Send cards to Anki
         for card in cards:
-            if card.anki_id:
-                self._update_card(card)
-            else:
-                self._add_card(card)
+            note_params = self._create_note_params(card)
+            try:
+                card.anki_id = self._send_request('addNote', note=note_params)
+            except RequestException as error:
+                self._print_error_message(card, error)
 
     def update_card_ids(self, cards: List[Card]):
         """Update incorrect or absent IDs of cards"""
@@ -69,30 +75,57 @@ class AnkiApi:
             found_notes = self._send_request('findNotes', query=query)
             card.anki_id = found_notes[0] if found_notes else None
 
+    def update_cards(self, cards: List[Card]):
+        """Synchronize changes in cards with Anki"""
+        # Get info about cards from Anki
+        cards_info = self._send_request('notesInfo', notes=[card.anki_id for card in cards])
+
+        for i, card in enumerate(cards):
+            # If card wasn't found
+            if not cards_info[i]:
+                self._print_error_message(card, Exception(f'Card with ID {card.anki_id} was not found.'))
+                continue
+
+            # If card is staged for deletion
+            if self._delete_tag in cards_info[i]['tags']:
+                card.to_delete = True
+                continue
+
+            # If card is marked as changed
+            if self._change_tag in cards_info[i]['tags']:
+                # Convert updated card fields to markdown
+                card.front_html = cards_info[i]['fields'][self._front_field_name]['value']
+                card.back_html = cards_info[i]['fields'][self._back_field_name]['value']
+                converter.convert_card_to_md(card)
+
+                # Mark card as changed
+                card.changed = True
+                continue
+
+            try:
+                # Push changes from file to Anki
+                note_params = self._create_note_params(card)
+                note_params['id'] = card.anki_id
+                self._send_request('updateNoteFields', note=note_params)
+            except RequestException as e:
+                # TODO: print error message with hint to '-u' flag
+                self._print_error_message(card, e)
+
+    def delete_cards(self, cards: List[Card]):
+        """Delete cards from Anki"""
+        self._send_request('deleteNotes',
+                           notes=[card.anki_id for card in cards])
+
+    def remove_change_mark_from_cards(self, cards: List[Card]):
+        """Remove marking that card was changed from cards in Anki"""
+        self._send_request('removeTags',
+                           notes=[card.anki_id for card in cards],
+                           tags=self._change_tag)
+
     def _create_deck(self, deck: str) -> Any:
         """Create deck in Anki if it doesn't exist"""
         params = {'deck': deck}
         return self._send_request('createDeck', **params)
-
-    def _update_card(self, card: Card):
-        """Update existing card with changes from file"""
-        note_params = self._create_note_params(card)
-        note_params['id'] = card.anki_id
-
-        try:
-            self._send_request('updateNoteFields', note=note_params)
-        except RequestException as error:
-            # If card doesn't exist, create new one
-            # TODO: print error message with hint to '-u' flag
-            self._add_card(card)
-
-    def _add_card(self, card: Card):
-        """Add card to Anki and update it's ID"""
-        note_params = self._create_note_params(card)
-        try:
-            card.anki_id = self._send_request('addNote', note=note_params)
-        except RequestException as error:
-            self._print_error_message(card, error)
 
     def _create_note_params(self, card: Card) -> dict:
         """Create dict with params required to add note to Anki"""
@@ -136,17 +169,15 @@ class AnkiApi:
 
     @staticmethod
     def _print_error_message(card: Card, error: Exception = None):
-        # TODO: change to click.secho with red color
-        print("ERROR: Can't create the card!")
-
         # Card information
-        print('------------------------------------')
-        print(f'Front: {card.front_md.strip()}')
-        print(f'Back: {card.back_md.strip()}')
-        print('------------------------------------')
+        click.secho('------------------------------------', fg='red')
+        click.secho(f'Front: {card.front_md.strip()}', fg='red')
+        click.secho(f'Back: {card.back_md.strip()}', fg='red')
+        click.secho('------------------------------------', fg='red')
 
         # Error message
         if error is not None:
-            # TODO: change to str(error)
-            print(f'Reason: "{error.args[0]}"')
+            click.secho(f'Error: "{error}"', fg='red')
+        else:
+            click.secho("Error: Can't create the card!", fg='red')
         input('Press Enter to continue...\n')
