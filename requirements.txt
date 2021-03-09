@@ -1,4 +1,5 @@
 mistune==2.0.0a6
+markdownify==0.6.5
 Pillow==8.1.0
 pytest==6.2.2
 requests==2.25.1
