@@ -5,7 +5,7 @@ def test_no_question_raises_error(fake_parser):
     text = 'Some text'
 
     with pytest.raises(AttributeError):
-        fake_parser._get_question(text)
+        fake_parser.get_question(text)
 
 
 def test_oneliner_question(fake_parser):
@@ -20,7 +20,7 @@ def test_oneliner_question(fake_parser):
     )
     expected = 'Some question?'
 
-    question = fake_parser._get_question(text)
+    question = fake_parser.get_question(text)
 
     assert question == expected
 
@@ -37,7 +37,7 @@ def test_two_digit_question_prefix(fake_parser):
     )
     expected = 'Some question?'
 
-    question = fake_parser._get_question(text)
+    question = fake_parser.get_question(text)
 
     assert question == expected
 
@@ -54,7 +54,7 @@ def test_three_digit_question_prefix(fake_parser):
     )
     expected = 'Some question?'
 
-    question = fake_parser._get_question(text)
+    question = fake_parser.get_question(text)
 
     assert question == expected
 
@@ -73,7 +73,7 @@ def test_multiline_question(fake_parser):
     )
     expected = 'Some question?\n\nMore info on question.\n\nAnd even more!'
 
-    question = fake_parser._get_question(text)
+    question = fake_parser.get_question(text)
 
     assert question == expected
 
@@ -91,7 +91,7 @@ def test_card_with_id(fake_parser):
     )
     expected = 'Some question?'
 
-    question = fake_parser._get_question(text)
+    question = fake_parser.get_question(text)
 
     assert question == expected
 

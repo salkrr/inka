@@ -25,8 +25,7 @@ class Parser:
     _tags_line_regex = '(?<=^Tags:).*?$'
     _card_substring_regex = r'^(?:<!--ID:.+-->\n)?\d+\.[\s\S]+?(?:^>.*?(?:\n|$))+'
     _id_regex = r'^<!--ID:(\S+)-->$'
-    _question_regex = r'^\d+\.[\s\S]+?(?=^>)'
-    _question_prefix_regex = r'\d+\.'
+    _question_regex = r'^\d+\.([\s\S]+?)(?=^>)'
     _answer_regex = r'(?:^>.*?(?:\n|$))+'
 
     def __init__(
@@ -46,7 +45,7 @@ class Parser:
         with open(self._file_path, mode='rt', encoding='utf-8') as f:
             file_string = f.read()
 
-        question_sections = self._get_sections(file_string)
+        question_sections = self.get_sections(file_string)
 
         cards = []
         for section in question_sections:
@@ -54,9 +53,10 @@ class Parser:
 
         return cards
 
-    def _get_sections(self, file_contents: str) -> List[str]:
+    @classmethod
+    def get_sections(cls, file_contents: str) -> List[str]:
         """Get all sections (groups of cards) from the file string"""
-        return re.findall(self._section_regex,
+        return re.findall(cls._section_regex,
                           file_contents,
                           re.MULTILINE | re.DOTALL)
 
@@ -68,14 +68,14 @@ class Parser:
         deck_name = self._get_deck_name(section)
 
         # Get all section's substrings which contain question-answer pairs
-        card_substrings = self._get_card_substrings(section)
+        card_substrings = self.get_card_substrings(section)
 
         # Create cards
         cards = []
         for substring in card_substrings:
             anki_id = self.get_id(substring)
-            question = self._get_question(substring)
-            answer = self._get_answer(substring)
+            question = self.get_question(substring)
+            answer = self._get_cleaned_answer(substring)
 
             cards.append(Card(front_md=question,
                               back_md=answer,
@@ -166,8 +166,9 @@ class Parser:
         return deck_name
 
     @classmethod
-    def _get_card_substrings(cls, section: str) -> List[str]:
-        """Get all section substrings with question-answer pairs"""
+    def get_card_substrings(cls, section: str) -> List[str]:
+        """Get all section substrings with question-answer pairs and an ID"""
+        # TODO: rename method and variables/comments from 'substring' to 'string'
         return re.findall(cls._card_substring_regex,
                           section,
                           re.MULTILINE)
@@ -185,29 +186,36 @@ class Parser:
             return None
 
     @classmethod
-    def _get_question(cls, text: str) -> str:
+    def get_question(cls, text: str) -> str:
         """Get clean question string from text
          (without digit followed by period and trailing whitespace)"""
         question_match = re.search(cls._question_regex,
                                    text,
                                    re.MULTILINE)
 
-        question = re.sub(cls._question_prefix_regex, '', question_match.group(), 1).strip()
+        question = question_match.group(1).strip()
 
         return question
 
     @classmethod
-    def _get_answer(cls, text: str) -> str:
-        """Get clean answer string from text (without '>' and trailing whitespace)"""
+    def get_answer(cls, text: str) -> str:
+        """Get answer string from text"""
         answer_match = re.search(cls._answer_regex,
                                  text,
                                  re.MULTILINE)
+        return answer_match.group()
 
+    @classmethod
+    def _get_cleaned_answer(cls, text: str) -> str:
+        """Get clean answer string from text (without '>' and trailing whitespace)"""
         # Remove first char ('>') and whitespace at the start
         # and the end of each line
-        lines = answer_match.group().splitlines()
+        lines = cls.get_answer(text).splitlines()
+        # TODO: make more tests for this fix of the bug.
+        #  Why doesn't add one space symbol when converted to html?
+        # lines = map(lambda l: l[1:].rstrip(), lines)
         lines = map(lambda l: l[1:].strip(), lines)
 
-        answer = '\n'.join(lines)
+        answer = '\n\n'.join(lines)
 
         return answer

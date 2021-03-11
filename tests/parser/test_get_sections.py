@@ -1,5 +1,5 @@
 def test_empty_string(fake_parser):
-    sections = fake_parser._get_sections('')
+    sections = fake_parser.get_sections('')
 
     assert sections == []
 
@@ -11,7 +11,7 @@ def test_string_without_sections(fake_parser):
         '\t 123 51'
     )
 
-    sections = fake_parser._get_sections(string_without_sections)
+    sections = fake_parser.get_sections(string_without_sections)
 
     assert sections == []
 
@@ -22,7 +22,7 @@ def test_string_with_empty_section(fake_parser):
         '---'
     )
 
-    sections = fake_parser._get_sections(string_with_empty_section)
+    sections = fake_parser.get_sections(string_with_empty_section)
 
     assert sections == []
 
@@ -34,7 +34,7 @@ def test_string_with_incorrect_section_start(fake_parser):
         '---'
     )
 
-    sections = fake_parser._get_sections(string)
+    sections = fake_parser.get_sections(string)
 
     assert sections == []
 
@@ -46,7 +46,7 @@ def test_string_with_section_with_incorrect_section_end(fake_parser):
         'a---'
     )
 
-    sections = fake_parser._get_sections(string)
+    sections = fake_parser.get_sections(string)
 
     assert sections == []
 
@@ -58,7 +58,7 @@ def test_string_with_section_without_section_end(fake_parser):
         'Ok'
     )
 
-    sections = fake_parser._get_sections(string)
+    sections = fake_parser.get_sections(string)
 
     assert sections == []
 
@@ -71,7 +71,7 @@ def test_string_with_one_section(fake_parser):
     )
     expected = ['Text inside section\n']
 
-    sections = fake_parser._get_sections(string_with_one_section)
+    sections = fake_parser.get_sections(string_with_one_section)
 
     assert sections == expected
 
@@ -86,7 +86,7 @@ def test_string_with_multiline_section_content(fake_parser):
     )
     expected = ['First\nSecond\nThird\n']
 
-    sections = fake_parser._get_sections(string_with_one_section)
+    sections = fake_parser.get_sections(string_with_one_section)
 
     assert sections == expected
 
@@ -102,7 +102,7 @@ def test_string_with_two_sections(fake_parser):
     )
     expected = ['First one\n', 'Second one\n']
 
-    sections = fake_parser._get_sections(string_with_two_sections)
+    sections = fake_parser.get_sections(string_with_two_sections)
 
     assert sections == expected
 
@@ -119,6 +119,6 @@ def test_string_with_two_sections_and_text_between_them(fake_parser):
     )
     expected = ['First one\n', 'Second one\n']
 
-    sections = fake_parser._get_sections(string_with_two_sections)
+    sections = fake_parser.get_sections(string_with_two_sections)
 
     assert sections == expected

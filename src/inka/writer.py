@@ -48,6 +48,35 @@ class Writer:
 
         self._save()
 
+    def update_card_fields(self):
+        """Update question and answer fields in cards in file"""
+        card_strings = Parser.get_card_substrings(self._file_content)
+
+        for card in self._cards:
+            if not card.changed:
+                continue
+
+            # Find string with this card by its ID
+            card_string = ''
+            for string in card_strings:
+                if string.find(str(card.anki_id)) != -1:
+                    card_string = string
+                    break
+
+            # Substitute question field
+            current_question = Parser.get_question(card_string)
+            self._file_content = self._file_content.replace(current_question, card.front_md)
+
+            # Create new answer field (with '>')
+            current_answer = Parser.get_answer(card_string).rstrip()
+            lines = card.back_md.replace('\n\n', '\n').splitlines()
+            new_answer = '\n'.join(map(lambda line: f'> {line}', lines))
+
+            # Substitute answer field
+            self._file_content = self._file_content.replace(current_answer, new_answer)
+
+        self._save()
+
     def _save(self):
         """Save file state into the file system"""
         with open(self._file_path, mode='wt', encoding='utf-8') as f:

@@ -2,7 +2,7 @@ import pytest
 
 
 def test_empty(fake_parser):
-    card_substrings = fake_parser._get_card_substrings('')
+    card_substrings = fake_parser.get_card_substrings('')
 
     assert card_substrings == []
 
@@ -23,7 +23,7 @@ def test_one_card(fake_parser):
         '> Answer'
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -40,7 +40,7 @@ def test_without_empty_line_between_question_and_answer(fake_parser):
         '> Answer'
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -68,7 +68,7 @@ def test_two_cards(fake_parser):
          '> A')
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -93,7 +93,7 @@ def test_two_cards_without_empty_line_between_answer_and_new_question(fake_parse
          '> A')
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -120,7 +120,7 @@ def test_one_card_with_multiline_question(fake_parser):
         '> Answer'
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -147,7 +147,7 @@ def test_one_card_with_multiline_answer(fake_parser):
         '> And more to it'
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -182,7 +182,7 @@ def test_one_card_with_multiline_question_and_answer(fake_parser):
         '> And more to it'
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -196,7 +196,7 @@ def test_card_with_incorrect_question_syntax_ignored(fake_parser):
         '> Answer\n'
     )
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == []
 
@@ -210,7 +210,7 @@ def test_card_with_incorrect_answer_syntax_ignored(fake_parser):
         'Answer\n'
     )
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == []
 
@@ -235,7 +235,7 @@ def test_two_questions_one_answer(fake_parser):
         '> Answer'
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -258,7 +258,7 @@ def test_card_has_id(fake_parser):
         '> Answer'
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
 
@@ -290,6 +290,6 @@ def test_multiple_cards_with_id(fake_parser):
          '> A')
     ]
 
-    card_substrings = fake_parser._get_card_substrings(section)
+    card_substrings = fake_parser.get_card_substrings(section)
 
     assert card_substrings == expected
