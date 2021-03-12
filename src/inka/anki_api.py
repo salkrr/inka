@@ -116,8 +116,8 @@ class AnkiApi:
         self._send_request('deleteNotes',
                            notes=[card.anki_id for card in cards])
 
-    def remove_change_mark_from_cards(self, cards: List[Card]):
-        """Remove marking that card was changed from cards in Anki"""
+    def remove_change_tag_from_cards(self, cards: List[Card]):
+        """Remove the tag which marks card as changed from cards in Anki"""
         self._send_request('removeTags',
                            notes=[card.anki_id for card in cards],
                            tags=self._change_tag)

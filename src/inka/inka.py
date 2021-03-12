@@ -3,13 +3,12 @@ import sys
 from typing import Tuple, Set, List
 
 import click
-import requests
 
 from . import __version__
+from . import converter
 from .anki_api import AnkiApi
 from .card import Card
 from .config import Config
-from .converter import Converter
 from .parser import Parser
 from .writer import Writer
 
@@ -21,11 +20,6 @@ anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
                    cfg.get_option_value('anki', 'note_type'),
                    cfg.get_option_value('anki', 'front_field'),
                    cfg.get_option_value('anki', 'back_field'))
-
-
-def convert_cards_to_html(cards: List[Card]):
-    click.echo('Converting cards to the html...')
-    Converter.convert_cards(cards)
 
 
 def get_cards_from_file(file_path: str, profile: str) -> List[Card]:
@@ -49,18 +43,26 @@ def create_cards_from_file(file_path: str, profile: str):
     click.echo(f'Starting to create cards from "{os.path.basename(file_path)}"!')
 
     cards = get_cards_from_file(file_path, profile)
-    convert_cards_to_html(cards)
+    click.echo('Converting cards to the html...')
+    converter.convert_cards_to_html(cards)
 
-    click.echo('Sending cards...')
-    try:
-        anki_api.add_cards(cards)
-    except requests.exceptions.ConnectionError:
-        click.echo("Couldn't connect to Anki. Please, check that Anki is running and try again.")
-        sys.exit()
+    click.echo('Synchronizing changes...')
+    cards_with_id = [card for card in cards if card.anki_id]
+    anki_api.update_cards(cards_with_id)
+    writer = Writer(file_path, cards)
+    writer.update_card_fields()
+    anki_api.remove_change_tag_from_cards([card for card in cards_with_id if card.changed])
+
+    # TODO: remove deleted from file
+    # anki_api.delete_cards([card for card in cards_with_id if card.to_delete])
+
+    click.echo('Sending new cards...')
+    cards_without_id = [card for card in cards if not card.anki_id]
+    anki_api.add_cards(cards_without_id)
 
     # Add id's to cards in file
     click.echo('Adding IDs to cards...')
-    Writer(file_path, cards).update_card_ids()
+    writer.update_card_ids()
 
 
 def update_card_ids_in_file(file_path: str, profile: str):
@@ -68,7 +70,8 @@ def update_card_ids_in_file(file_path: str, profile: str):
     click.echo(f'Starting to update IDs of cards from "{os.path.basename(file_path)}"!')
 
     cards = get_cards_from_file(file_path, profile)
-    convert_cards_to_html(cards)
+    click.echo('Converting cards to the html...')
+    converter.convert_cards_to_html(cards)
 
     click.echo('Getting card IDs from Anki...')
     anki_api.update_card_ids(cards)
