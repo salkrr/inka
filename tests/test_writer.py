@@ -74,17 +74,67 @@ def test_repr_method(writer, file, cards):
     assert repr(writer) == expected
 
 
-def test_saving(writer, file):
+def test_update_ids_saves_to_file_system(writer, file):
     expected = 'Some string'
     writer._file_content = expected
 
-    writer._save()
+    writer.update_card_ids()
 
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected
 
 
-def test_does_not_add_id_if_it_no_id_in_card(writer, file, cards):
+def test_update_ids_skips_card_if_it_was_not_found(writer, cards):
+    writer._file_content = (
+        '---\n'
+        '\n'
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '2. Another question\n'
+        '\n'
+        'More info on question.\n'
+        '\n'
+        'And even more!\n'
+        '\n'
+        '> Second answer\n'
+        '> \n'
+        '> Additional info\n'
+        '> \n'
+        '> And more to it\n'
+        '\n'
+        '---'
+    )
+    expected = (
+        '---\n'
+        '\n'
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        f'<!--ID:{cards[1].anki_id}-->\n'
+        '2. Another question\n'
+        '\n'
+        'More info on question.\n'
+        '\n'
+        'And even more!\n'
+        '\n'
+        '> Second answer\n'
+        '> \n'
+        '> Additional info\n'
+        '> \n'
+        '> And more to it\n'
+        '\n'
+        '---'
+    )
+
+    writer.update_card_ids()
+
+    assert writer._file_content == expected
+
+
+def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, cards):
     cards[0].anki_id = None
     expected = (
         '---\n'
@@ -115,11 +165,10 @@ def test_does_not_add_id_if_it_no_id_in_card(writer, file, cards):
 
     writer.update_card_ids()
 
-    with open(file, mode='rt', encoding='utf-8') as f:
-        assert f.read() == expected
+    assert writer._file_content == expected
 
 
-def test_removes_id_from_file_if_card_object_has_no_id(writer, file, cards):
+def test_update_ids_removes_id_from_file_if_card_object_has_no_id(writer, cards):
     writer._file_content = (
         '---\n'
         '\n'
@@ -177,11 +226,10 @@ def test_removes_id_from_file_if_card_object_has_no_id(writer, file, cards):
 
     writer.update_card_ids()
 
-    with open(file, mode='rt', encoding='utf-8') as f:
-        assert f.read() == expected
+    assert writer._file_content == expected
 
 
-def test_writes_id_before_question(writer, file, cards):
+def test_update_ids_writes_id_before_question(writer, cards):
     expected = (
         '---\n'
         '\n'
@@ -212,11 +260,10 @@ def test_writes_id_before_question(writer, file, cards):
 
     writer.update_card_ids()
 
-    with open(file, mode='rt', encoding='utf-8') as f:
-        assert f.read() == expected
+    assert writer._file_content == expected
 
 
-def test_updates_id_if_another_is_written(file, writer, cards):
+def test_updates_id_if_another_is_written(writer, cards):
     writer._file_content = (
         '---\n'
         '\n'
@@ -273,11 +320,20 @@ def test_updates_id_if_another_is_written(file, writer, cards):
 
     writer.update_card_ids()
 
+    assert writer._file_content == expected
+
+
+def test_update_card_fields_saves_to_file_system(writer, file):
+    expected = 'Some string'
+    writer._file_content = expected
+
+    writer.update_card_fields()
+
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected
 
 
-def test_update_card_fields_skips_not_changed_cards(writer_with_ids, cards, file):
+def test_update_card_fields_skips_not_changed_cards(writer_with_ids, cards):
     cards[0].changed = False
     cards[0].front_md = 'Amazing new text'
     cards[0].back_md = 'Amazing new answer'
@@ -311,11 +367,10 @@ def test_update_card_fields_skips_not_changed_cards(writer_with_ids, cards, file
 
     writer_with_ids.update_card_fields()
 
-    with open(file, mode='rt', encoding='utf-8') as f:
-        assert f.read() == expected
+    assert writer_with_ids._file_content == expected
 
 
-def test_updates_question_field(writer_with_ids, cards, file):
+def test_updates_question_field(writer_with_ids, cards):
     cards[0].changed = True
     cards[0].front_md = 'Amazing new text'
     expected = (
@@ -348,11 +403,10 @@ def test_updates_question_field(writer_with_ids, cards, file):
 
     writer_with_ids.update_card_fields()
 
-    with open(file, mode='rt', encoding='utf-8') as f:
-        assert f.read() == expected
+    assert writer_with_ids._file_content == expected
 
 
-def test_updates_multiline_question_field(writer_with_ids, cards, file):
+def test_updates_multiline_question_field(writer_with_ids, cards):
     cards[1].changed = True
     cards[1].front_md = 'Something new\n\nhere'
     expected = (
@@ -381,11 +435,10 @@ def test_updates_multiline_question_field(writer_with_ids, cards, file):
 
     writer_with_ids.update_card_fields()
 
-    with open(file, mode='rt', encoding='utf-8') as f:
-        assert f.read() == expected
+    assert writer_with_ids._file_content == expected
 
 
-def test_updates_answer_field(writer_with_ids, cards, file):
+def test_updates_answer_field(writer_with_ids, cards):
     cards[0].changed = True
     cards[0].back_md = 'New answer'
     expected = (
@@ -418,11 +471,10 @@ def test_updates_answer_field(writer_with_ids, cards, file):
 
     writer_with_ids.update_card_fields()
 
-    with open(file, mode='rt', encoding='utf-8') as f:
-        assert f.read() == expected
+    assert writer_with_ids._file_content == expected
 
 
-def test_updates_multiline_answer_field(writer_with_ids, cards, file):
+def test_updates_multiline_answer_field(writer_with_ids, cards):
     cards[1].changed = True
     cards[1].back_md = 'New\n\nmultiline\n\nanswer'
     expected = (
@@ -453,8 +505,7 @@ def test_updates_multiline_answer_field(writer_with_ids, cards, file):
 
     writer_with_ids.update_card_fields()
 
-    with open(file, mode='rt', encoding='utf-8') as f:
-        assert f.read() == expected
+    assert writer_with_ids._file_content == expected
 
 
 def test_delete_saves_changes_to_file_system(writer, cards, file):

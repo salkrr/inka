@@ -21,6 +21,9 @@ class Writer:
         for card in self._cards:
             # Find card's question in file string
             question_start = self._file_content.find(card.front_md)
+            # Card may not be found cause it was deleted
+            if question_start == -1:
+                continue
 
             # Find newline character that comes before question
             newline_index = self._file_content[:question_start].rfind('\n')
