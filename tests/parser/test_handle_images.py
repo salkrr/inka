@@ -25,22 +25,22 @@ def test_no_images(fake_parser):
 def test_updates_links_for_one_image(fake_parser, image):
     section = (
         'Deck: Abraham\n'
-        f'{image.original_md_link}'
+        f'{image.initial_md_link}'
         '\n'
         '1. Some question?\n'
         ''
         '\n'
         '> Answer\n'
-        f'> {image.original_md_link}'
+        f'> {image.initial_md_link}'
     )
     expected = (
         'Deck: Abraham\n'
-        f'{image.updated_md_link}'
+        f'{image.current_md_link}'
         '\n'
         '1. Some question?\n'
         '\n'
         '> Answer\n'
-        f'> {image.updated_md_link}'
+        f'> {image.current_md_link}'
     )
 
     result = fake_parser._handle_images(section)
@@ -51,22 +51,22 @@ def test_updates_links_for_one_image(fake_parser, image):
 def test_updates_links_for_two_images(fake_parser, image, another_image):
     section = (
         'Deck: Abraham\n'
-        f'{image.original_md_link}'
+        f'{image.initial_md_link}'
         '\n'
         '1. Some question?\n'
         ''
         '\n'
         '> Answer\n'
-        f'> {another_image.original_md_link}'
+        f'> {another_image.initial_md_link}'
     )
     expected = (
         'Deck: Abraham\n'
-        f'{image.updated_md_link}'
+        f'{image.current_md_link}'
         '\n'
         '1. Some question?\n'
         '\n'
         '> Answer\n'
-        f'> {another_image.updated_md_link}'
+        f'> {another_image.current_md_link}'
     )
 
     result = fake_parser._handle_images(section)

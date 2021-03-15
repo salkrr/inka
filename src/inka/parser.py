@@ -100,10 +100,10 @@ class Parser:
             try:
                 self._copy_image_to_anki_media(image)
             except OSError:
-                raise OSError(f"Couldn't find image '{image.original_md_link}' in path '{image.abs_path}'!")
+                raise OSError(f"Couldn't find image '{image.initial_md_link}' in path '{image.abs_path}'!")
 
             # Update all image link occurrences with new one which has updated source
-            section = section.replace(image.original_md_link, image.updated_md_link)
+            section = section.replace(image.initial_md_link, image.current_md_link)
 
         return section
 

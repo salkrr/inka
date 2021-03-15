@@ -1,55 +1,57 @@
 import os
 import re
+from pathlib import Path
+from typing import Union
 
 
 class Image:
 
-    def __init__(self, markdown_link):
-        self._original_md_link = markdown_link
-        self.updated_md_link = markdown_link
+    def __init__(self, markdown_link: str):
+        self._initial_md_link = markdown_link
+        self._current_md_link = markdown_link
 
     @property
-    def original_md_link(self):
-        return self._original_md_link
+    def initial_md_link(self) -> str:
+        """Initial markdown link to the image"""
+        return self._initial_md_link
 
     @property
-    def updated_md_link(self):
-        return self._updated_md_link
+    def current_md_link(self) -> str:
+        """Current markdown link to the image"""
+        return self._current_md_link
 
-    @updated_md_link.setter
-    def updated_md_link(self, new_link):
-        self._updated_md_link = new_link
-        self._path = re.search(r'(?<=\().+?(?=\))', self._updated_md_link).group()
-        self._file_name = os.path.basename(self._path)
+    @current_md_link.setter
+    def current_md_link(self, new_link: str) -> None:
+        self._current_md_link = new_link
 
     @property
-    def path(self):
-        return self._path
+    def path(self) -> str:
+        """Path to image from markdown image link"""
+        return re.search(r'(?<=\().+?(?=\))', self._current_md_link).group()
 
     @path.setter
-    def path(self, new_path):
-        self._path = new_path
-        self._updated_md_link = re.sub(r'(?<=\().+(?=\))', new_path, self._updated_md_link)
-        self._file_name = os.path.basename(new_path)
+    def path(self, new_path: Union[str, Path]) -> None:
+        self.current_md_link = re.sub(r'(?<=\().+(?=\))', new_path, self._current_md_link)
 
     @property
-    def file_name(self):
-        return self._file_name
+    def abs_path(self) -> str:
+        """Absolute path to the image"""
+        return os.path.realpath(self.path)
 
     @property
-    def abs_path(self):
-        return os.path.realpath(self._path)
+    def file_name(self) -> str:
+        """File name of the image"""
+        return os.path.basename(self.path)
 
-    def rename(self, new_file_name):
+    def rename(self, new_file_name: str) -> None:
         """
-        Rename original image file
+        Rename the original image file and update its markdown links in file
 
-        :param str new_file_name: new name of the file (with extension)
+        Args:
+            new_file_name: new name of the file (with extension)
         """
-        folder = os.path.dirname(self._path)
+        # TODO: update links in file
+        folder = os.path.dirname(self.path)
         new_path = f'{folder}/{new_file_name}'
-        os.rename(self._path, new_path)
-
-        self._file_name = new_file_name
-        self._path = new_path
-        self._updated_md_link = re.sub(r'(?<=\().+(?=\))', new_path, self._updated_md_link)
+        os.rename(self.path, new_path)
+        self.current_md_link = re.sub(r'(?<=\().+(?=\))', new_path, self._current_md_link)
