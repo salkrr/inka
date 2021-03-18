@@ -1,4 +1,4 @@
-mistune==2.0.0a6
+mistune==2.0.0rc1
 markdownify==0.6.5
 Pillow==8.1.0
 pytest==6.2.2
