@@ -47,21 +47,17 @@ def create_cards_from_file(file_path: str, profile: str):
     converter.convert_cards_to_html(cards)
 
     click.echo('Synchronizing changes...')
-    cards_with_id = [card for card in cards if card.anki_id]
+    cards_with_id = [card for card in cards
+                     if card.anki_id]
     anki_api.update_cards(cards_with_id)
-    writer = Writer(file_path, cards)
-    writer.update_card_fields()
-    anki_api.remove_change_tag_from_cards([card for card in cards_with_id if card.changed])
-
-    # TODO: remove deleted from file
-    # anki_api.delete_cards([card for card in cards_with_id if card.to_delete])
 
     click.echo('Sending new cards...')
-    cards_without_id = [card for card in cards if not card.anki_id]
+    cards_without_id = [card for card in cards
+                        if not card.anki_id]
     anki_api.add_cards(cards_without_id)
 
-    # Add id's to cards in file
     click.echo('Adding IDs to cards...')
+    writer = Writer(file_path, cards)
     writer.update_card_ids()
 
 
