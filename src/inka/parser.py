@@ -208,14 +208,35 @@ class Parser:
     @classmethod
     def _get_cleaned_answer(cls, text: str) -> str:
         """Get clean answer string from text (without '>' and trailing whitespace)"""
-        # Remove first char ('>') and whitespace at the start
-        # and the end of each line
+        # Remove '>' and first whitespace char after it (if there is any)
         lines = cls.get_answer(text).splitlines()
-        # TODO: make more tests for this fix of the bug.
-        #  Why doesn't add one space symbol when converted to html?
-        # lines = map(lambda l: l[1:].rstrip(), lines)
-        lines = map(lambda l: l[1:].strip(), lines)
+        cleaned_lines = []
+        for line in lines:
+            if len(line) > 1 and line[1].isspace():
+                cleaned_lines.append(line[2:].rstrip())
+            else:
+                cleaned_lines.append(line[1:].rstrip())
 
-        answer = '\n\n'.join(lines)
+        # Join lines differently: if inside code block '\n' else '\n\n'
+        answer = ''
+        inside_code_block = False
+        for i, line in enumerate(cleaned_lines):
+            delimiter = '\n\n'
+            # If start or end of code block
+            if line.find('```') != -1:
+                if inside_code_block:
+                    inside_code_block = False
+                    delimiter = '\n'
+                else:
+                    inside_code_block = True
+                    delimiter = '\n\n'
+            elif inside_code_block:
+                delimiter = '\n'
+
+            # First line doesn't need delimiter
+            if i == 0:
+                delimiter = ''
+
+            answer = answer + delimiter + line
 
         return answer
