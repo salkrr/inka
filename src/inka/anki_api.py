@@ -6,7 +6,7 @@ from requests import RequestException
 
 from . import converter
 from .card import Card
-from .util import escape_special_chars
+from .util import create_anki_search_query
 
 
 class AnkiApi:
@@ -71,7 +71,7 @@ class AnkiApi:
             if cards_info[i]:
                 continue
 
-            query = escape_special_chars(card.front_html)
+            query = create_anki_search_query(card.front_html)
             found_notes = self._send_request('findNotes', query=query)
             card.anki_id = found_notes[0] if found_notes else None
 
