@@ -61,3 +61,9 @@ def image_anki(path_to_anki_image):
     Img.new('RGBA', size=(50, 50), color=(100, 0, 0)).save(path_to_anki_image, format='png')
 
     return Image(markdown_link)
+
+
+@pytest.fixture
+def non_existing_image() -> Image:
+    """Image object of non-existing image file"""
+    return Image('![](does/not/exist.jpg)')
