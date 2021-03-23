@@ -38,7 +38,7 @@ def get_cards_from_file(file_path: str, profile: str) -> List[Card]:
     return cards
 
 
-def create_cards_from_file(file_path: str, profile: str):
+def create_cards_from_file(file_path: str, profile: str) -> None:
     """Get all cards from file and send them to Anki"""
     click.echo(f'Starting to create cards from "{os.path.basename(file_path)}"!')
 
@@ -114,7 +114,7 @@ def get_paths_to_files(paths: Set[str], recursive: bool) -> Set[str]:
     return paths_to_files
 
 
-def get_profile_from_user(profiles: List[str], message: str = None):
+def get_profile_from_user(profiles: List[str], message: str = None) -> str:
     if message:
         click.echo(message)
     profile = click.prompt('Enter the name of profile you want to use',
@@ -149,7 +149,7 @@ def get_profile(prompt_user: bool) -> str:
     return profile
 
 
-def check_anki_connection():
+def check_anki_connection() -> None:
     click.echo("Attempting to connect to Anki...")
     if not anki_api.check_connection():
         click.secho("Couldn't connect to Anki. "
@@ -159,7 +159,7 @@ def check_anki_connection():
     click.echo("Connected")
 
 
-def reset_config_file(ctx, param, value):
+def reset_config_file(ctx, param, value) -> None:
     if not value or ctx.resilient_parsing:
         return
 
@@ -167,7 +167,7 @@ def reset_config_file(ctx, param, value):
     ctx.exit()
 
 
-def list_config_options(ctx, param, value):
+def list_config_options(ctx, param, value) -> None:
     if not value or ctx.resilient_parsing:
         return
 
@@ -178,7 +178,7 @@ def list_config_options(ctx, param, value):
 
 @click.group()
 @click.version_option(version=__version__)
-def cli():
+def cli() -> None:
     """Inka - command-line tool for adding Markdown cards to Anki
 
         Documentation:\n
@@ -208,7 +208,7 @@ def cli():
                 required=True)
 @click.argument('value',
                 required=False)
-def config(list_options, reset, name, value):
+def config(list_options: bool, reset: bool, name: str, value: str) -> None:
     """Get and set inka's configuration options.
 
         NAME - config option name. VALUE - new value for config option.
@@ -249,7 +249,7 @@ def config(list_options, reset, name, value):
                 nargs=-1,
                 type=click.Path(exists=True),
                 required=False)
-def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]):
+def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) -> None:
     """Get cards from files and send them to Anki.
      If no PATH argument is passed, the program will use the path from config option 'defaults.folder'.
 
