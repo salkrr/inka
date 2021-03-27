@@ -4,9 +4,9 @@ from typing import Tuple, Set, List
 
 import click
 
-from . import __version__
-from . import converter
+from . import __version__, image_handler, converter
 from .anki_api import AnkiApi
+from .anki_media import AnkiMedia
 from .card import Card
 from .config import Config
 from .parser import Parser
@@ -29,11 +29,13 @@ def get_cards_from_file(file_path: str, profile: str) -> List[Card]:
     os.chdir(os.path.dirname(file_path))
 
     default_deck = cfg.get_option_value('defaults', 'deck')
-    note_parser = Parser(file_path, default_deck, profile)
+    note_parser = Parser(file_path, default_deck)
     cards = note_parser.collect_cards()
 
     number_of_cards = len(cards)
     click.echo(f'Found {number_of_cards} cards!')
+
+    image_handler.handle_images_in(cards, AnkiMedia(profile))
 
     return cards
 
@@ -292,6 +294,7 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
             os.chdir(initial_directory)
         except (OSError, ValueError) as e:
             # TODO: handle requests.exceptions.ConnectionError
+            # TODO: handle FileNotFoundError from AnkiMedia
             click.secho(f'Error: {e}', fg='red')
             click.secho('Skipping file...', fg='red')
 

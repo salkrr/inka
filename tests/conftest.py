@@ -3,47 +3,48 @@ import os
 import pytest
 from PIL import Image as Img
 
-from src.inka.image import Image
+from src.inka.anki_media import AnkiMedia
 from src.inka.parser import Parser
 
 
 @pytest.fixture
-def fake_parser():
+def anki_media() -> AnkiMedia:
+    """Instance of AnkiMedia class with profile 'test'."""
+    return AnkiMedia(anki_profile='test')
+
+
+@pytest.fixture
+def fake_parser() -> Parser:
     """Parser class with dummy filename, default_deck. It uses 'test' profile."""
-    profile = 'test'
-    return Parser('file_doesnt_exist.md', '', profile)
+    return Parser('file_doesnt_exist.md', '')
 
 
 @pytest.fixture
-def image():
-    """Temporary image in working directory"""
-    filename = 'image_for_testing.png'
-    markdown_link = f'![]({filename})'
-    Img.new('RGBA', size=(50, 50), color=(155, 0, 0)).save(filename, format='png')
+def image() -> str:
+    """Path to temp image in working directory"""
+    path = 'image_for_testing.png'
+    Img.new('RGBA', size=(50, 50), color=(155, 0, 0)).save(path, format='png')
 
-    image = Image(markdown_link)
-    yield image
+    yield path
 
-    os.remove(image.abs_path)
+    os.remove(path)
 
 
 @pytest.fixture
-def another_image():
-    """Temporary image in working directory"""
-    filename = 'another_image_for_testing.png'
-    markdown_link = f'![]({filename})'
-    Img.new('RGBA', size=(50, 50), color=(155, 0, 123)).save(filename, format='png')
+def another_image() -> str:
+    """Path to temp image in working directory"""
+    path = 'another_image_for_testing.png'
+    Img.new('RGBA', size=(50, 50), color=(155, 0, 123)).save(path, format='png')
 
-    image = Image(markdown_link)
-    yield image
+    yield path
 
-    os.remove(image.abs_path)
+    os.remove(path)
 
 
 @pytest.fixture
-def path_to_anki_image(fake_parser, image):
-    """Path to image (with the same name as 'image' fixture returns) in anki media folder"""
-    path_to_anki_image = f'{fake_parser._anki_media_path}/{image.file_name}'
+def path_to_anki_image(anki_media, image):
+    """Path to non-existing image (with the same name as 'image' fixture returns) in anki media folder"""
+    path_to_anki_image = f'{anki_media._anki_media_path}/{image}'
 
     yield path_to_anki_image
 
@@ -55,15 +56,24 @@ def path_to_anki_image(fake_parser, image):
 
 
 @pytest.fixture
-def image_anki(path_to_anki_image):
-    """Temporary image in anki media folder with the same name as 'image' fixture returns"""
-    markdown_link = f'![]({path_to_anki_image})'
-    Img.new('RGBA', size=(50, 50), color=(100, 0, 0)).save(path_to_anki_image, format='png')
+def path_to_another_anki_image(anki_media, another_image):
+    """Path to non-existing image (with the same name as 'another_image' fixture returns) in anki media folder"""
+    path = f'{anki_media._anki_media_path}/{another_image}'
 
-    return Image(markdown_link)
+    yield path
+
+    # Remove image if it was created
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 @pytest.fixture
-def non_existing_image() -> Image:
-    """Image object of non-existing image file"""
-    return Image('![](does/not/exist.jpg)')
+def image_anki(anki_media, path_to_anki_image) -> str:
+    """Temporary image in anki media folder with the same name as 'image' fixture returns
+    but different content.
+    """
+    Img.new('RGBA', size=(50, 50), color=(100, 0, 0)).save(path_to_anki_image, format='png')
+
+    return path_to_anki_image

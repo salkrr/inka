@@ -46,7 +46,7 @@ def file(tmp_path: Path) -> Path:
 @pytest.fixture
 def cards(file: Path) -> List[Card]:
     """Cards from the temporary file with randomly generated ids"""
-    parser = Parser(file, '', '')
+    parser = Parser(file, '')
     cards = parser.collect_cards()
     for card in cards:
         card.anki_id = random.randint(1000000000, 9999999999)

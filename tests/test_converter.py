@@ -12,7 +12,7 @@ def card():
 
 
 def test_converting_oneliner_front_to_html(card):
-    card.front_md = 'some text here'
+    card.updated_front_md = 'some text here'
     expected = '<p>some text here</p>'
 
     converter.convert_cards_to_html([card])
@@ -21,7 +21,7 @@ def test_converting_oneliner_front_to_html(card):
 
 
 def test_converting_oneliner_back_to_html(card):
-    card.back_md = 'some text here'
+    card.updated_back_md = 'some text here'
     expected = '<p>some text here</p>'
 
     converter.convert_cards_to_html([card])
@@ -30,7 +30,7 @@ def test_converting_oneliner_back_to_html(card):
 
 
 def test_converts_front_to_html_without_newline_before_or_after_tags(card):
-    card.front_md = (
+    card.updated_front_md = (
         '1. Item1\n'
         '2. Item2\n'
         '3. Item3\n'
@@ -52,7 +52,7 @@ def test_converts_front_to_html_without_newline_before_or_after_tags(card):
 
 
 def test_converts_back_to_html_without_newline_before_or_after_tags(card):
-    card.back_md = (
+    card.updated_back_md = (
         '1. Item1\n'
         '2. Item2\n'
         '3. Item3\n'
@@ -74,7 +74,7 @@ def test_converts_back_to_html_without_newline_before_or_after_tags(card):
 
 
 def test_converting_front_with_line_break_to_html(card):
-    card.front_md = (
+    card.updated_front_md = (
         'some text here\n'
         'and more text'
     )
@@ -86,7 +86,7 @@ def test_converting_front_with_line_break_to_html(card):
 
 
 def test_converting_back_with_line_break_to_html(card):
-    card.back_md = (
+    card.updated_back_md = (
         'some text here\n'
         'and more text'
     )
@@ -98,7 +98,7 @@ def test_converting_back_with_line_break_to_html(card):
 
 
 def test_converting_multiline_front_to_html(card):
-    card.front_md = (
+    card.updated_front_md = (
         'some text here\n'
         '\n'
         'more text'
@@ -111,7 +111,7 @@ def test_converting_multiline_front_to_html(card):
 
 
 def test_converting_multiline_back_to_html(card):
-    card.back_md = (
+    card.updated_back_md = (
         'some text here\n'
         '\n'
         'more text'

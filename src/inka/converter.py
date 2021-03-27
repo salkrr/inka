@@ -13,10 +13,10 @@ def convert_cards_to_html(cards: List[Card]):
         # We delete '\n' before and after each html tag because Anki is rendering them as newlines
         card.front_html = re.sub(r'\n?(<.+?>)\n?',
                                  lambda tag_match: tag_match.group(1),
-                                 mistune.html(card.front_md))
+                                 mistune.html(card.updated_front_md))
         card.back_html = re.sub(r'\n?(<.+?>)\n?',
                                 lambda tag_match: tag_match.group(1),
-                                mistune.html(card.back_md))
+                                mistune.html(card.updated_back_md))
 
 
 def convert_card_to_md(card: Card):

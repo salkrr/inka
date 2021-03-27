@@ -1,20 +1,8 @@
-import filecmp
-import os
-import random
 import re
-import shutil
-import sys
 from pathlib import Path
 from typing import List, Union, Optional
 
 from .card import Card
-from .image import Image
-
-DEFAULT_ANKI_FOLDERS = {
-    'win32': r'~\AppData\Roaming\Anki2',
-    'linux': '~/.local/share/Anki2',
-    'darwin': '~/Library/Application Support/Anki2'
-}
 
 
 class Parser:
@@ -32,13 +20,9 @@ class Parser:
             self,
             file_path: Union[str, Path],
             default_deck: str,
-            anki_profile: str
     ):
         self._file_path = file_path
         self._default_deck = default_deck
-
-        anki_folder_path = os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
-        self._anki_media_path = f'{anki_folder_path}/{anki_profile}/collection.media'
 
     def collect_cards(self) -> List[Card]:
         """Get all cards from the file which path was passed to the Parser"""
@@ -62,8 +46,6 @@ class Parser:
 
     def _get_cards_from_section(self, section: str) -> List[Card]:
         """Get all Cards from the section string"""
-        section = self._handle_images(section)
-
         tags = self._get_tags(section)
         deck_name = self._get_deck_name(section)
 
@@ -84,49 +66,6 @@ class Parser:
                               anki_id=anki_id))
 
         return cards
-
-    def _handle_images(self, section: str) -> str:
-        """
-        Copy images to Anki media folder and change their source
-        to be just filename (for Anki to find them)
-        """
-        # Find all unique images in the text
-        image_links = set(re.findall(r'!\[.*?]\(.*?\)', section))
-        images = [Image(link) for link in image_links]
-
-        # Copy images to Anki Media folder
-        # And change all image links in section string
-        for image in images:
-            try:
-                self._copy_image_to_anki_media(image)
-            except OSError:
-                raise OSError(f"Couldn't find image '{image.initial_md_link}' in path '{image.abs_path}'!")
-
-            # Update all image link occurrences with new one which has updated source
-            section = section.replace(image.initial_md_link, image.current_md_link)
-
-        return section
-
-    def _copy_image_to_anki_media(self, image: Image):
-        """Copy image to Anki media folder"""
-        path_to_anki_image = f'{self._anki_media_path}/{image.file_name}'
-
-        # Check if image already exists in Anki Media folder
-        if os.path.exists(path_to_anki_image):
-            # If same image is already in folder then skip
-            if filecmp.cmp(image.abs_path, path_to_anki_image):
-                image.path = image.file_name
-                return
-
-            # If not same then rename our image
-            image.rename(f'{random.randint(100000, 999999)}_{image.file_name}')
-            path_to_anki_image = f'{self._anki_media_path}/{image.file_name}'
-
-        # Copy image
-        shutil.copyfile(image.abs_path, path_to_anki_image)
-
-        # Change path to be just file name (for it to work in Anki)
-        image.path = image.file_name
 
     @classmethod
     def _get_tags(cls, section: str) -> List[str]:
