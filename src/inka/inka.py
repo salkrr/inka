@@ -33,9 +33,11 @@ def get_cards_from_file(file_path: str, profile: str) -> List[Card]:
     cards = note_parser.collect_cards()
 
     number_of_cards = len(cards)
-    click.echo(f'Found {number_of_cards} cards!')
-
-    image_handler.handle_images_in(cards, AnkiMedia(profile))
+    if number_of_cards == 0:
+        click.echo(f"Cards weren't found!")
+    else:
+        click.echo(f'Found {number_of_cards} cards!')
+        image_handler.handle_images_in(cards, AnkiMedia(profile))
 
     return cards
 
@@ -45,6 +47,9 @@ def create_cards_from_file(file_path: str, profile: str) -> None:
     click.echo(f'Starting to create cards from "{os.path.basename(file_path)}"!')
 
     cards = get_cards_from_file(file_path, profile)
+    if not cards:
+        return
+
     click.echo('Converting cards to the html...')
     converter.convert_cards_to_html(cards)
 
@@ -68,6 +73,9 @@ def update_card_ids_in_file(file_path: str, profile: str):
     click.echo(f'Starting to update IDs of cards from "{os.path.basename(file_path)}"!')
 
     cards = get_cards_from_file(file_path, profile)
+    if not cards:
+        return
+
     click.echo('Converting cards to the html...')
     converter.convert_cards_to_html(cards)
 
