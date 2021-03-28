@@ -14,6 +14,7 @@ class Config:
     _default_front_field = 'Front'
     _default_back_field = 'Back'
     _default_port = '8765'
+    _default_highlight_style = 'monokai'
 
     def __init__(self, config_path: Union[str, Path]):
         self._config = configparser.ConfigParser()
@@ -35,7 +36,7 @@ class Config:
             'defaults': {
                 'profile': self._default_profile,
                 'deck': self._default_deck,
-                'folder': self._default_folder
+                'folder': self._default_folder,
             },
             'anki': {
                 'note_type': self._default_note_type,
@@ -44,7 +45,10 @@ class Config:
             },
             'anki_connect': {
                 'port': self._default_port
-            }
+            },
+            'highlight': {
+                'style': self._default_highlight_style,
+            },
         }
 
         self._config.read_dict(config_dict)

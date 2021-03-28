@@ -35,6 +35,9 @@ def default_config_string():
         '[anki_connect]\n'
         'port = 8765\n'
         '\n'
+        '[highlight]\n'
+        'style = monokai\n'
+        '\n'
     )
 
 
@@ -153,7 +156,8 @@ def test_get_formatted_list_of_config_entries(config):
         f'anki.note_type = {config._default_note_type}',
         f'anki.front_field = {config._default_front_field}',
         f'anki.back_field = {config._default_back_field}',
-        f'anki_connect.port = {config._default_port}'
+        f'anki_connect.port = {config._default_port}',
+        f'highlight.style = {config._default_highlight_style}',
     ]
 
     entries = config.get_formatted_options()
