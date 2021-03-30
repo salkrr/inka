@@ -4,7 +4,7 @@ from typing import Tuple, Set, List
 
 import click
 
-from . import __version__, image_handler, converter
+from . import __version__, image_handler, converter, highlight
 from .anki_api import AnkiApi
 from .anki_media import AnkiMedia
 from .card import Card
@@ -18,11 +18,12 @@ CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
 cfg = Config(CONFIG_PATH)
 anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
                    cfg.get_option_value('anki', 'note_type'),
+                   cfg.get_option_value('anki', 'card_type'),
                    cfg.get_option_value('anki', 'front_field'),
                    cfg.get_option_value('anki', 'back_field'))
 
 
-def get_cards_from_file(file_path: str, profile: str) -> List[Card]:
+def get_cards_from_file(file_path: str, anki_media: AnkiMedia) -> List[Card]:
     click.echo('Getting cards from the file...')
 
     # We need to change working directory because images in file can have relative path
@@ -37,16 +38,16 @@ def get_cards_from_file(file_path: str, profile: str) -> List[Card]:
         click.echo(f"Cards weren't found!")
     else:
         click.echo(f'Found {number_of_cards} cards!')
-        image_handler.handle_images_in(cards, AnkiMedia(profile))
+        image_handler.handle_images_in(cards, anki_media)
 
     return cards
 
 
-def create_cards_from_file(file_path: str, profile: str) -> None:
+def create_cards_from_file(file_path: str, anki_media: AnkiMedia) -> None:
     """Get all cards from file and send them to Anki"""
     click.echo(f'Starting to create cards from "{os.path.basename(file_path)}"!')
 
-    cards = get_cards_from_file(file_path, profile)
+    cards = get_cards_from_file(file_path, anki_media)
     if not cards:
         return
 
@@ -68,11 +69,11 @@ def create_cards_from_file(file_path: str, profile: str) -> None:
     writer.update_card_ids()
 
 
-def update_card_ids_in_file(file_path: str, profile: str):
+def update_card_ids_in_file(file_path: str, anki_media: AnkiMedia):
     """Update IDs of cards in file by getting their IDs from Anki"""
     click.echo(f'Starting to update IDs of cards from "{os.path.basename(file_path)}"!')
 
-    cards = get_cards_from_file(file_path, profile)
+    cards = get_cards_from_file(file_path, anki_media)
     if not cards:
         return
 
@@ -287,6 +288,14 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
     profile = get_profile(prompt)
     anki_api.select_profile(profile)
 
+    anki_media = AnkiMedia(profile)
+    try:
+        highlight.add_code_highlight_to_note_type(
+            cfg.get_option_value('highlight', 'style'), anki_api, anki_media
+        )
+    except ConnectionError as e:
+        click.secho(str(e), fg='yellow')
+
     # Get paths to all files
     files = get_paths_to_files(paths, recursive)
 
@@ -295,9 +304,9 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
     for file in files:
         try:
             if update_ids:
-                update_card_ids_in_file(file, profile)
+                update_card_ids_in_file(file, anki_media)
             else:
-                create_cards_from_file(file, profile)
+                create_cards_from_file(file, anki_media)
 
             os.chdir(initial_directory)
         except (OSError, ValueError) as e:
