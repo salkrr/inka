@@ -1,21 +1,56 @@
 import re
 
 import requests
+from requests import HTTPError
 
 from .anki_api import AnkiApi
 from .anki_media import AnkiMedia
 
 HLJS_VERSION = "10.7.1"
 BASE_URL = f"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/{HLJS_VERSION}"
+AUTOSTART_SCRIPT = """<script>
+function color() {
+    var selector = 'pre code';
+    if (typeof hljs !== 'undefined') {
+        codes = document.querySelectorAll(selector)
+        codes.forEach(element => {
+            hljs.highlightBlock(element);
+        });
+    } else {
+        setTimeout(color, 50)
+    }
+}
+color()
+</script>"""
 
 
 def add_code_highlight_to_note_type(style_name: str, anki_api: AnkiApi, anki_media: AnkiMedia) -> None:
-    # Handle style
-    # Handle highlight.js
-    pass
+    """Add highlighting of code blocks to the current note type
+
+    Args:
+        style_name: name of the highlight.js style to use
+        anki_api: instance of AnkiApi used to modify note type
+        anki_media: instance of AnkiMedia used to save highlight.js files
+    Raises:
+        ConnectionError: if something gone wrong during download of highlight.js style or script
+    """
+    try:
+        _update_style_in_note_type(style_name, anki_api)
+    except HTTPError as e:
+        raise ConnectionError(f"Couldn't download styles for code highlighting. Reason: {e}")
+    except requests.exceptions.ConnectionError:
+        raise ConnectionError(f"Couldn't download styles for code highlighting. Check your internet connection.")
+
+    try:
+        _handle_highlighjs_script(anki_media, anki_api)
+    except HTTPError as e:
+        raise ConnectionError(f"Couldn't download highlight.js script for code highlighting. Reason: {e}")
+    except requests.exceptions.ConnectionError:
+        raise ConnectionError(
+            f"Couldn't download highlight.js script for code highlighting. Check your internet connection.")
 
 
-def update_style_in_note_type(style_name: str, anki_api: AnkiApi) -> None:
+def _update_style_in_note_type(style_name: str, anki_api: AnkiApi) -> None:
     """Adds highlight.js style to the note type
 
     Raises:
@@ -54,8 +89,29 @@ def update_style_in_note_type(style_name: str, anki_api: AnkiApi) -> None:
     anki_api.update_note_type_styling(new_styles)
 
 
-def handle_highlighjs_script(anki_media: AnkiMedia, anki_api: AnkiApi) -> None:
-    # Search for file in anki media folder. Return if exists
-    # Download script from CDN (raise error if can't)
+def _handle_highlighjs_script(anki_media: AnkiMedia, anki_api: AnkiApi) -> None:
+    script_name = "_hl.pack.js"
+    if not anki_media.exists(script_name):
+        # Download script from CDN
+        response = requests.get(f"{BASE_URL}/highlight.min.js")
+        response.raise_for_status()
+        script_content = response.text
+
+        anki_media.create_file(script_name, script_content)
+
+    # Get values of Front and Back fields from note type
+    fields = anki_api.fetch_note_type_fields()
+
     # Add link to script and script for automatic execution at the end of Front and Back fields
-    pass
+    script_elements = f'<script src="{script_name}"></script>\n{AUTOSTART_SCRIPT}'
+    new_fields = {}
+    for field, value in fields.items():
+        new_fields[field] = value
+        if value.find(script_elements) == -1:
+            new_fields[field] += f"\n{script_elements}"
+
+    # Don't update fields if nothing changed
+    if fields == new_fields:
+        return
+
+    anki_api.update_note_type_fields(new_fields)

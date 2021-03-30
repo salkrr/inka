@@ -16,6 +16,12 @@ def anki_media() -> AnkiMedia:
 
 
 @pytest.fixture
+def anki_media_mock(mocker) -> MagicMock:
+    """Mock of AnkiMedia instance"""
+    return mocker.MagicMock(spec=AnkiMedia)
+
+
+@pytest.fixture
 def fake_parser() -> Parser:
     """Parser class with dummy filename, default_deck. It uses 'test' profile."""
     return Parser('file_doesnt_exist.md', '')
@@ -23,10 +29,14 @@ def fake_parser() -> Parser:
 
 @pytest.fixture
 def anki_api() -> AnkiApi:
-    return AnkiApi(port='8765', note_type='Basic', front_field_name='Front', back_field_name='Back')
+    """Instance of AnkiApi class """
+    return AnkiApi(port='8765', note_type='Basic', card_type='Card 1',
+                   front_field_name='Front', back_field_name='Back')
+
 
 @pytest.fixture
 def anki_api_mock(mocker) -> MagicMock:
+    """Mock of AnkiApi instance"""
     return mocker.MagicMock(spec=AnkiApi)
 
 

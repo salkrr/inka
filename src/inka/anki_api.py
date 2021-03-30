@@ -1,4 +1,4 @@
-from typing import Union, List, Any
+from typing import Union, List, Any, Dict
 
 import click
 import requests
@@ -16,11 +16,13 @@ class AnkiApi:
             self,
             port: Union[str, int],
             note_type: str,
+            card_type: str,
             front_field_name: str,
             back_field_name: str
     ):
         self._api_url = f'http://localhost:{port}'
         self._note_type = note_type
+        self._card_type = card_type
         self._front_field_name = front_field_name
         self._back_field_name = back_field_name
         self._change_tag = 'changed'
@@ -135,6 +137,22 @@ class AnkiApi:
             }
         }
         self._send_request('updateModelStyling', **params)
+
+    def fetch_note_type_fields(self) -> Dict[str, str]:
+        """Get fields of note type for card type specified in config"""
+        return self._send_request('modelTemplates', modelName=self._note_type)[self._card_type]
+
+    def update_note_type_fields(self, fields: Dict[str, str]) -> None:
+        """Update note type fields for card type specified in config"""
+        params = {
+            'model': {
+                'name': self._note_type,
+                'templates': {
+                    self._card_type: fields
+                }
+            }
+        }
+        self._send_request('updateModelTemplates', **params)
 
     def _create_deck(self, deck: str) -> Any:
         """Create deck in Anki if it doesn't exist"""
