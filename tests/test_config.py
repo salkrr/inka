@@ -29,6 +29,7 @@ def default_config_string():
         '\n'
         '[anki]\n'
         'note_type = Basic\n'
+        'card_type = Card 1\n'
         'front_field = Front\n'
         'back_field = Back\n'
         '\n'
@@ -154,6 +155,7 @@ def test_get_formatted_list_of_config_entries(config):
         f'defaults.deck = {config._default_deck}',
         f'defaults.folder = {config._default_folder}',
         f'anki.note_type = {config._default_note_type}',
+        f'anki.card_type = {config._default_card_type}',
         f'anki.front_field = {config._default_front_field}',
         f'anki.back_field = {config._default_back_field}',
         f'anki_connect.port = {config._default_port}',
