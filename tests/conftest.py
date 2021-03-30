@@ -1,8 +1,10 @@
 import os
+from unittest.mock import MagicMock
 
 import pytest
 from PIL import Image as Img
 
+from src.inka.anki_api import AnkiApi
 from src.inka.anki_media import AnkiMedia
 from src.inka.parser import Parser
 
@@ -17,6 +19,15 @@ def anki_media() -> AnkiMedia:
 def fake_parser() -> Parser:
     """Parser class with dummy filename, default_deck. It uses 'test' profile."""
     return Parser('file_doesnt_exist.md', '')
+
+
+@pytest.fixture
+def anki_api() -> AnkiApi:
+    return AnkiApi(port='8765', note_type='Basic', front_field_name='Front', back_field_name='Back')
+
+@pytest.fixture
+def anki_api_mock(mocker) -> MagicMock:
+    return mocker.MagicMock(spec=AnkiApi)
 
 
 @pytest.fixture

@@ -122,6 +122,20 @@ class AnkiApi:
                            notes=[card.anki_id for card in cards],
                            tags=self._change_tag)
 
+    def fetch_note_type_styling(self) -> str:
+        """Get styling of note type that used to add cards"""
+        return self._send_request('modelStyling', modelName=self._note_type)['css']
+
+    def update_note_type_styling(self, new_styles: str) -> None:
+        """Update styling of note type that used to add cards"""
+        params = {
+            'model': {
+                'name': self._note_type,
+                'css': new_styles
+            }
+        }
+        self._send_request('updateModelStyling', **params)
+
     def _create_deck(self, deck: str) -> Any:
         """Create deck in Anki if it doesn't exist"""
         params = {'deck': deck}
