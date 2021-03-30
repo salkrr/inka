@@ -3,6 +3,7 @@ import sys
 from typing import Tuple, Set, List
 
 import click
+import requests
 
 from . import __version__, image_handler, converter, highlight
 from .anki_api import AnkiApi
@@ -165,7 +166,7 @@ def check_anki_connection() -> None:
     if not anki_api.check_connection():
         click.secho("Couldn't connect to Anki. "
                     "Please, check that Anki is running and AnkiConnect plugin is installed.", fg='red')
-        sys.exit()
+        sys.exit(1)
 
     click.echo("Connected")
 
@@ -238,7 +239,7 @@ def config(list_options: bool, reset: bool, name: str, value: str) -> None:
     except (KeyError, ValueError):
         click.secho('Incorrect name of a config entry!', fg='red')
         click.echo('To get list of all entries use "--list" flag.')
-        sys.exit()
+        sys.exit(1)
 
 
 @cli.command()
@@ -277,7 +278,7 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
         if not default_path:
             click.secho('Default folder is not specified in the config!\n'
                         'You must pass the path to a file or folder as an argument.', fg='red')
-            sys.exit()
+            sys.exit(1)
 
         paths.add(default_path)
 
@@ -295,6 +296,9 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
         )
     except ConnectionError as e:
         click.secho(str(e), fg='yellow')
+    except requests.exceptions.RequestException as e:
+        click.secho(f'Error while adding code highlight: "{e}"', fg='red')
+        sys.exit(1)
 
     # Get paths to all files
     files = get_paths_to_files(paths, recursive)
@@ -309,10 +313,11 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
                 create_cards_from_file(file, anki_media)
 
             os.chdir(initial_directory)
-        except (OSError, ValueError) as e:
-            # TODO: handle requests.exceptions.ConnectionError
-            # TODO: handle FileNotFoundError from AnkiMedia
-            click.secho(f'Error: {e}', fg='red')
+        except (OSError, ValueError, FileNotFoundError, FileExistsError) as e:
+            click.secho(f'Error: "{e}"', fg='red')
             click.secho('Skipping file...', fg='red')
+        except (requests.exceptions.RequestException, requests.exceptions.ConnectionError) as e:
+            click.secho(f'Error while communicating with Anki: "{e}"', fg='red')
+            sys.exit(1)
 
     click.echo('Finished!')
