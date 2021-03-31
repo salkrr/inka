@@ -53,6 +53,9 @@ def add_code_highlight_to_note_type(style_name: str, anki_api: AnkiApi, anki_med
 def _update_style_in_note_type(style_name: str, anki_api: AnkiApi) -> None:
     """Adds highlight.js style to the note type
 
+    Args:
+        style_name: name of the highlight.js style to use
+        anki_api: instance of AnkiApi used to modify note type
     Raises:
         ValueError: style_name is empty string or None
         HTTPError: something gone wrong during process of downloading style
@@ -90,6 +93,14 @@ def _update_style_in_note_type(style_name: str, anki_api: AnkiApi) -> None:
 
 
 def _handle_highlighjs_script(anki_media: AnkiMedia, anki_api: AnkiApi) -> None:
+    """Adds highlight.js library and script that executes it in note type fields
+
+    Args:
+        anki_api: instance of AnkiApi used to modify note type
+        anki_media: instance of AnkiMedia used to save highlight.js files
+    Raises:
+        HTTPError: something gone wrong during process of downloading style
+    """
     script_name = "_hl.pack.js"
     if not anki_media.exists(script_name):
         # Download script from CDN
@@ -99,19 +110,21 @@ def _handle_highlighjs_script(anki_media: AnkiMedia, anki_api: AnkiApi) -> None:
 
         anki_media.create_file(script_name, script_content)
 
-    # Get values of Front and Back fields from note type
-    fields = anki_api.fetch_note_type_fields()
+    # Get templates from note type
+    templates = anki_api.fetch_note_type_templates()
 
-    # Add link to script and script for automatic execution at the end of Front and Back fields
+    # Add link to script and script for automatic execution at the end of all fields of templates
     script_elements = f'<script src="{script_name}"></script>\n{AUTOSTART_SCRIPT}'
-    new_fields = {}
-    for field, value in fields.items():
-        new_fields[field] = value
-        if value.find(script_elements) == -1:
-            new_fields[field] += f"\n{script_elements}"
+    new_templates = {}
+    for template, fields in templates.items():
+        new_templates[template] = {}
+        for field, value in fields.items():
+            new_templates[template][field] = value
+            if value.find(script_elements) == -1:
+                new_templates[template][field] += f"\n{script_elements}"
 
-    # Don't update fields if nothing changed
-    if fields == new_fields:
+    # Don't update templates if nothing changed
+    if templates == new_templates:
         return
 
-    anki_api.update_note_type_fields(new_fields)
+    anki_api.update_note_type_templates(new_templates)

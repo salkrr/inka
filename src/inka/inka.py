@@ -19,7 +19,6 @@ CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
 cfg = Config(CONFIG_PATH)
 anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
                    cfg.get_option_value('anki', 'note_type'),
-                   cfg.get_option_value('anki', 'card_type'),
                    cfg.get_option_value('anki', 'front_field'),
                    cfg.get_option_value('anki', 'back_field'))
 

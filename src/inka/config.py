@@ -11,7 +11,6 @@ class Config:
     _default_folder = ''
     _default_profile = ''
     _default_note_type = 'Basic'
-    _default_card_type = 'Card 1'
     _default_front_field = 'Front'
     _default_back_field = 'Back'
     _default_port = '8765'
@@ -41,7 +40,6 @@ class Config:
             },
             'anki': {
                 'note_type': self._default_note_type,
-                'card_type': self._default_card_type,
                 'front_field': self._default_front_field,
                 'back_field': self._default_back_field
             },

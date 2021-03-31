@@ -123,24 +123,27 @@ def test_handle_highlighjs_script_when_script_exists_in_anki_media_does_not_down
     anki_media_mock.assert_not_called()
 
 
-# TODO: adds usage of script in the end of front and back of note type if it doesn't exist (use mock for anki_api)
 def test_handle_highlighjs_script_adds_scripts_to_front_and_back_of_note_type(
         anki_api_mock, anki_media_mock
 ):
     anki_media_mock.exists.return_value = True
-    anki_api_mock.fetch_note_type_fields.return_value = {
-        "Front": "{{Front}}",
-        "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}"
+    anki_api_mock.fetch_note_type_templates.return_value = {
+        "Card 1": {
+            "Front": "{{Front}}",
+            "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}"
+        }
     }
     script_elements = f'<script src="_hl.pack.js"></script>\n{highlight.AUTOSTART_SCRIPT}'
     expected = {
-        "Front": "{{Front}}" + f"\n{script_elements}",
-        "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}" + f"\n{script_elements}"
+        "Card 1": {
+            "Front": "{{Front}}" + f"\n{script_elements}",
+            "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}" + f"\n{script_elements}"
+        }
     }
 
     highlight._handle_highlighjs_script(anki_media_mock, anki_api_mock)
 
-    anki_api_mock.update_note_type_fields.assert_called_once_with(expected)
+    anki_api_mock.update_note_type_templates.assert_called_once_with(expected)
 
 
 def test_handle_highlighjs_script_when_front_of_note_type_has_scripts_does_not_add_more_to_it(
@@ -149,18 +152,22 @@ def test_handle_highlighjs_script_when_front_of_note_type_has_scripts_does_not_a
     anki_media_mock.exists.return_value = True
     script_elements = f'<script src="_hl.pack.js"></script>\n{highlight.AUTOSTART_SCRIPT}'
     front_value = "{{Front}}" + f"\n{script_elements}"
-    anki_api_mock.fetch_note_type_fields.return_value = {
-        "Front": front_value,
-        "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}"
+    anki_api_mock.fetch_note_type_templates.return_value = {
+        "Card 1": {
+            "Front": front_value,
+            "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}"
+        }
     }
     expected = {
-        "Front": front_value,
-        "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}" + f"\n{script_elements}"
+        "Card 1": {
+            "Front": front_value,
+            "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}" + f"\n{script_elements}"
+        }
     }
 
     highlight._handle_highlighjs_script(anki_media_mock, anki_api_mock)
 
-    anki_api_mock.update_note_type_fields.assert_called_once_with(expected)
+    anki_api_mock.update_note_type_templates.assert_called_once_with(expected)
 
 
 def test_handle_highlighjs_script_when_back_of_note_type_has_scripts_does_not_add_more_to_it(
@@ -169,18 +176,22 @@ def test_handle_highlighjs_script_when_back_of_note_type_has_scripts_does_not_ad
     anki_media_mock.exists.return_value = True
     script_elements = f'<script src="_hl.pack.js"></script>\n{highlight.AUTOSTART_SCRIPT}'
     back_value = "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}" + f"\n{script_elements}"
-    anki_api_mock.fetch_note_type_fields.return_value = {
-        "Front": "{{Front}}",
-        "Back": back_value
+    anki_api_mock.fetch_note_type_templates.return_value = {
+        "Card 1": {
+            "Front": "{{Front}}",
+            "Back": back_value
+        }
     }
     expected = {
-        "Front": "{{Front}}" + f"\n{script_elements}",
-        "Back": back_value
+        "Card 1": {
+            "Front": "{{Front}}" + f"\n{script_elements}",
+            "Back": back_value
+        }
     }
 
     highlight._handle_highlighjs_script(anki_media_mock, anki_api_mock)
 
-    anki_api_mock.update_note_type_fields.assert_called_once_with(expected)
+    anki_api_mock.update_note_type_templates.assert_called_once_with(expected)
 
 
 def test_handle_highlighjs_script_if_fields_have_not_change_no_update_request_sent(
@@ -188,11 +199,44 @@ def test_handle_highlighjs_script_if_fields_have_not_change_no_update_request_se
 ):
     anki_media_mock.exists.return_value = True
     script_elements = f'<script src="_hl.pack.js"></script>\n{highlight.AUTOSTART_SCRIPT}'
-    anki_api_mock.fetch_note_type_fields.return_value = {
-        "Front": "{{Front}}" + f"\n{script_elements}",
-        "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}" + f"\n{script_elements}"
+    anki_api_mock.fetch_note_type_templates.return_value = {
+        "Card 1": {
+            "Front": "{{Front}}" + f"\n{script_elements}",
+            "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}" + f"\n{script_elements}"
+        }
     }
 
     highlight._handle_highlighjs_script(anki_media_mock, anki_api_mock)
 
-    anki_api_mock.update_note_type_fields.assert_not_called()
+    anki_api_mock.update_note_type_templates.assert_not_called()
+
+
+def test_handle_highlighjs_script_adds_scripts_to_multiple_templates(
+        anki_api_mock, anki_media_mock
+):
+    anki_media_mock.exists.return_value = True
+    anki_api_mock.fetch_note_type_templates.return_value = {
+        "Card 1": {
+            "Front": "{{Front}}",
+            "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}"
+        },
+        "Different": {
+            "Front": "{{Front}} {{Front}}",
+            "Back": "{{Back}}"
+        }
+    }
+    script_elements = f'<script src="_hl.pack.js"></script>\n{highlight.AUTOSTART_SCRIPT}'
+    expected = {
+        "Card 1": {
+            "Front": "{{Front}}" + f"\n{script_elements}",
+            "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}" + f"\n{script_elements}"
+        },
+        "Different": {
+            "Front": "{{Front}} {{Front}}" + f"\n{script_elements}",
+            "Back": "{{Back}}" + f"\n{script_elements}"
+        }
+    }
+
+    highlight._handle_highlighjs_script(anki_media_mock, anki_api_mock)
+
+    anki_api_mock.update_note_type_templates.assert_called_once_with(expected)
