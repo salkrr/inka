@@ -1,4 +1,4 @@
-from typing import Union, List, Any
+from typing import Union, List, Any, Dict
 
 import click
 import requests
@@ -121,6 +121,34 @@ class AnkiApi:
         self._send_request('removeTags',
                            notes=[card.anki_id for card in cards],
                            tags=self._change_tag)
+
+    def fetch_note_type_styling(self) -> str:
+        """Get styling of note type that used to add cards"""
+        return self._send_request('modelStyling', modelName=self._note_type)['css']
+
+    def update_note_type_styling(self, new_styles: str) -> None:
+        """Update styling of note type that used to add cards"""
+        params = {
+            'model': {
+                'name': self._note_type,
+                'css': new_styles
+            }
+        }
+        self._send_request('updateModelStyling', **params)
+
+    def fetch_note_type_templates(self) -> Dict[str, Dict[str, str]]:
+        """Get fields of note type for card type specified in config"""
+        return self._send_request('modelTemplates', modelName=self._note_type)
+
+    def update_note_type_templates(self, templates: Dict[str, Dict[str, str]]) -> None:
+        """Update note type fields for card type specified in config"""
+        params = {
+            'model': {
+                'name': self._note_type,
+                'templates': templates
+            }
+        }
+        self._send_request('updateModelTemplates', **params)
 
     def _create_deck(self, deck: str) -> Any:
         """Create deck in Anki if it doesn't exist"""
