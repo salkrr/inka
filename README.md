@@ -19,7 +19,7 @@ Cards are created using plain *markdown* syntax:
 
 2. Another question?
 
-![](path/to/image.png)
+Second line of question.
 
 > Answer
 > With Image
@@ -27,7 +27,7 @@ Cards are created using plain *markdown* syntax:
 > ![](path/to/another/image.png)
 ```
 
-Every question starts with number followed by period (e.g. `1.`, `2.`) and every answer starts with `>`.
+Every question starts with number followed by period (e.g. `1.`, `2.`) and every line of the answer starts with `>`.
 
 > Only basic (front/back) cards are supported.
 
