@@ -8,6 +8,9 @@ from .anki_media import AnkiMedia
 
 HLJS_VERSION = "10.7.1"
 BASE_URL = f"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/{HLJS_VERSION}"
+
+# Thanks u/arthurmilchior for the initial idea.
+# https://www.reddit.com/r/Anki/comments/kzttw2/syntax_coloring_of_code_in_anki/
 AUTOSTART_SCRIPT = """<script>
 function color() {
     var selector = 'pre code';
