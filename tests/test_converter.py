@@ -11,148 +11,60 @@ def card():
                 back_html='dummy', tags=[], deck_name='')
 
 
-def test_converting_oneliner_front_to_html(card):
-    card.updated_front_md = 'some text here'
-    expected = '<p>some text here</p>'
+test_strings = {
+    'some text here': '<p>some text here</p>',
+    ('1. Item1\n'
+     '2. Item2\n'
+     '3. Item3\n'
+     '\n'
+     '```javascript\n'
+     'let a = 12;\n'
+     'let b = a;\n'
+     '```\n'
+     '\n'
+     '[google](https://google.com)\n'): ('<ol><li>Item1</li><li>Item2</li><li>Item3</li></ol>'
+                                         '<pre><code class="language-javascript">let a = 12;\nlet b = a;</code></pre>'
+                                         '<p><a href="https://google.com">google</a></p>'),
+    ('some text here\n'
+     'and more text'): '<p>some text here\nand more text</p>',
+    ('some text here\n'
+     '\n'
+     'more text'): '<p>some text here</p><p>more text</p>',
+}
+
+
+@pytest.mark.parametrize('test_input, expected', test_strings.items())
+def test_convert_cards_to_html_front_of_card(card, test_input, expected):
+    card.updated_front_md = test_input
 
     converter.convert_cards_to_html([card])
 
     assert card.front_html == expected
 
 
-def test_converting_oneliner_back_to_html(card):
-    card.updated_back_md = 'some text here'
-    expected = '<p>some text here</p>'
+@pytest.mark.parametrize('test_input, expected', test_strings.items())
+def test_convert_cards_to_html_back_of_card(card, test_input, expected):
+    card.updated_back_md = test_input
 
     converter.convert_cards_to_html([card])
 
     assert card.back_html == expected
 
 
-def test_converts_front_to_html_without_newline_before_or_after_tags(card):
-    card.updated_front_md = (
-        '1. Item1\n'
-        '2. Item2\n'
-        '3. Item3\n'
-        '\n'
-        '```javascript\n'
-        'let a = 12;\n'
-        'let b = a;\n'
-        '```\n'
-        '\n'
-        '[google](https://google.com)\n'
-    )
-    expected = ('<ol><li>Item1</li><li>Item2</li><li>Item3</li></ol>'
-                '<pre><code class="language-javascript">let a = 12;\nlet b = a;</code></pre>'
-                '<p><a href="https://google.com">google</a></p>')
-
-    converter.convert_cards_to_html([card])
-
-    assert card.front_html == expected
-
-
-def test_converts_back_to_html_without_newline_before_or_after_tags(card):
-    card.updated_back_md = (
-        '1. Item1\n'
-        '2. Item2\n'
-        '3. Item3\n'
-        '\n'
-        '```javascript\n'
-        'let a = 12;\n'
-        'let b = a;\n'
-        '```\n'
-        '\n'
-        '[google](https://google.com)\n'
-    )
-    expected = ('<ol><li>Item1</li><li>Item2</li><li>Item3</li></ol>'
-                '<pre><code class="language-javascript">let a = 12;\nlet b = a;</code></pre>'
-                '<p><a href="https://google.com">google</a></p>')
-
-    converter.convert_cards_to_html([card])
-
-    assert card.back_html == expected
-
-
-def test_converting_front_with_line_break_to_html(card):
-    card.updated_front_md = (
-        'some text here\n'
-        'and more text'
-    )
-    expected = '<p>some text here\nand more text</p>'
-
-    converter.convert_cards_to_html([card])
-
-    assert card.front_html == expected
-
-
-def test_converting_back_with_line_break_to_html(card):
-    card.updated_back_md = (
-        'some text here\n'
-        'and more text'
-    )
-    expected = '<p>some text here\nand more text</p>'
-
-    converter.convert_cards_to_html([card])
-
-    assert card.back_html == expected
-
-
-def test_converting_multiline_front_to_html(card):
-    card.updated_front_md = (
-        'some text here\n'
-        '\n'
-        'more text'
-    )
-    expected = '<p>some text here</p><p>more text</p>'
-
-    converter.convert_cards_to_html([card])
-
-    assert card.front_html == expected
-
-
-def test_converting_multiline_back_to_html(card):
-    card.updated_back_md = (
-        'some text here\n'
-        '\n'
-        'more text'
-    )
-    expected = '<p>some text here</p><p>more text</p>'
-
-    converter.convert_cards_to_html([card])
-
-    assert card.back_html == expected
-
-
-def test_converting_oneliner_front_to_md(card):
-    card.front_html = '<p>some text here</p>'
-    expected = 'some text here'
+@pytest.mark.skip('WIP')
+@pytest.mark.parametrize('expected, test_input', test_strings.items())
+def test_convert_card_to_md_front_of_card(card, test_input, expected):
+    card.front_html = test_input
 
     converter.convert_card_to_md(card)
 
     assert card.front_md == expected
 
 
-def test_converting_oneliner_back_to_md(card):
-    card.back_html = '<p>some text here</p>'
-    expected = 'some text here'
-
-    converter.convert_card_to_md(card)
-
-    assert card.back_md == expected
-
-
-def test_converting_multiline_front_to_md(card):
-    card.front_html = '<p>some text here</p><p>more text</p>'
-    expected = 'some text here\n\nmore text'
-
-    converter.convert_card_to_md(card)
-
-    assert card.front_md == expected
-
-
-def test_converting_multiline_back_to_md(card):
-    card.back_html = '<p>some text here</p><p>more text</p>'
-    expected = 'some text here\n\nmore text'
+@pytest.mark.skip('WIP')
+@pytest.mark.parametrize('expected, test_input', test_strings.items())
+def test_convert_card_to_md_back_of_card(card, test_input, expected):
+    card.back_html = test_input
 
     converter.convert_card_to_md(card)
 
