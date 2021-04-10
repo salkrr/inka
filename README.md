@@ -39,6 +39,7 @@ Every question starts with number followed by period (e.g. `1.`, `2.`) and every
 - [Synchronization of changes with Anki](https://github.com/lazy-void/inka/wiki/Synchronization-with-Anki)
 - [Configuration via config file](https://github.com/lazy-void/inka/wiki/Config)
 - [Code highlight](https://github.com/lazy-void/inka/wiki/Code-highlight)
+- [MathJax support](https://github.com/lazy-void/inka/wiki/Mathjax)
 
 ## Usage
 
