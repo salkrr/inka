@@ -30,6 +30,38 @@ test_strings = {
     ('some text here\n'
      '\n'
      'more text'): '<p>some text here</p><p>more text</p>',
+    # inline mathjax
+    r'$\sqrt{5}$': r'<p>\(\sqrt{5}\)</p>',
+    r'$\sqrt{5} $': r'<p>\(\sqrt{5} \)</p>',
+    r'$ \sqrt{5}$': r'<p>\( \sqrt{5}\)</p>',
+    r'$multiple words$': r'<p>\(multiple words\)</p>',
+    r'weird$mathjax$more word$1$s': r'<p>weird\(mathjax\)more word\(1\)s</p>',
+    '$\\sqrt{5}\n$': '<p>$\\sqrt{5}\n$</p>',
+    '$\n\\sqrt{5}$': '<p>$\n\\sqrt{5}$</p>',
+    r'\$\sqrt{5}$': r'<p>$\sqrt{5}$</p>',
+    r'$\sqrt{5}\$': r'<p>$\sqrt{5}$</p>',
+    r'\$\sqrt{5}\$': r'<p>$\sqrt{5}$</p>',
+    r'text $$ here': r'<p>text \(\) here</p>',
+    r'\$$$$': r'<p>$\(\)$</p>',
+    r'\$$\sqrt{2}$$': r'<p>$\(\sqrt{2}\)$</p>',
+    r'$\$\sqrt{2}$$': r'<p>\(\$\sqrt{2}\)$</p>',
+    r'$$\sqrt{2}\$$': r'<p>\(\)\sqrt{2}$$</p>',
+    r'$$\sqrt{2}$\$': r'<p>\(\)\sqrt{2}$$</p>',
+    r'\$\$\sqrt{2}$$': r'<p>$$\sqrt{2}\(\)</p>',
+    r'$$\sqrt{2}\$\$': r'<p>\(\)\sqrt{2}$$</p>',
+    '$$$': r'<p>\(\)$</p>',
+    # block mathjax
+    '$$$$': r'<p>\[\]</p>',
+    r'$$\sqrt{2}$$': r'<p>\[\sqrt{2}\]</p>',
+    r'inside $$\sqrt{2}$$ text': r'<p>inside \[\sqrt{2}\] text</p>',
+    r'$$ text here $$': r'<p>\[ text here \]</p>',
+    '$$multi\nline$$': '<p>\\[multi\nline\\]</p>',
+    '$$\n\\sqrt{2}\n\\frac{1}{2}\n$$': '<p>\\[\n\\sqrt{2}\n\\frac{1}{2}\n\\]</p>',
+    '$$\\sqrt{2}$$ some text in between $$\n\\sqrt{2}\n\\frac{1}{2}\n$$':
+        '<p>\\[\\sqrt{2}\\] some text in between \\[\n\\sqrt{2}\n\\frac{1}{2}\n\\]</p>',
+    # both inline and block mathjax
+    '$$\\sqrt{2}$$ some text $\\sqrt{6}$ in between $$\n\\sqrt{2}\n\\frac{1}{2}\n$$':
+        '<p>\\[\\sqrt{2}\\] some text \\(\\sqrt{6}\\) in between \\[\n\\sqrt{2}\n\\frac{1}{2}\n\\]</p>'
 }
 
 
