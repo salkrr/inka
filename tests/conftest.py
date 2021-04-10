@@ -28,13 +28,6 @@ def fake_parser() -> Parser:
 
 
 @pytest.fixture
-def anki_api() -> AnkiApi:
-    """Instance of AnkiApi class """
-    return AnkiApi(port='8765', note_type='Basic', card_type='Card 1',
-                   front_field_name='Front', back_field_name='Back')
-
-
-@pytest.fixture
 def anki_api_mock(mocker) -> MagicMock:
     """Mock of AnkiApi instance"""
     return mocker.MagicMock(spec=AnkiApi)
