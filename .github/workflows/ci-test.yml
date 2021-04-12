@@ -35,8 +35,7 @@ jobs:
       - name: Test with pytest
         run: |
           mkdir -p ~/.local/share/Anki2/test/collection.media/
-          export PYTHONPATH="."
-          pytest --cov=src.inka --cov-report=xml:coverage-${{ matrix.python }}.xml
+          python -m pytest --cov=src/inka --cov-report=xml:coverage-${{ matrix.python }}.xml
 
       - name: Upload pytest coverage artifact
         uses: actions/upload-artifact@v2
@@ -56,9 +55,8 @@ jobs:
           name: coverage-3.9.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage-3.9.xml
-          flags: unittests
-          name: GitHub
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          pip install codecov
+          codecov --file coverage-3.9.xml
