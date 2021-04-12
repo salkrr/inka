@@ -1,0 +1,64 @@
+name: Run tests
+
+on:
+  push:
+    paths:
+      - '.github/workflows/ci-test.yml'
+      - 'src/**'
+      - 'tests/**'
+  pull_request:
+    paths:
+      - '.github/workflows/ci-test.yml'
+      - 'src/**'
+      - 'tests/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python: [3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Test with pytest
+        run: |
+          mkdir -p ~/.local/share/Anki2/test/collection.media/
+          export PYTHONPATH="."
+          pytest --cov=src.inka --cov-report=xml:coverage-${{ matrix.python }}.xml
+
+      - name: Upload pytest coverage artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-${{ matrix.python }}.xml
+          path: ./coverage-${{ matrix.python }}.xml
+          retention-days: 1
+
+  coverage:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download pytest coverage artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage-3.9.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage-3.9.xml
+          flags: unittests
+          name: GitHub

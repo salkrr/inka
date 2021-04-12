@@ -88,6 +88,5 @@ def image_anki(anki_media, path_to_anki_image) -> str:
     """Temporary image in anki media folder with the same name as 'image' fixture returns
     but different content.
     """
-    Img.new('RGBA', size=(50, 50), color=(100, 0, 0)).save(path_to_anki_image, format='png')
-
+    Img.new('RGBA', size=(20, 150), color=(100, 13, 35)).save(path_to_anki_image, format='png')
     return path_to_anki_image
