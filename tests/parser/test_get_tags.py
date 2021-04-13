@@ -1,92 +1,51 @@
 import pytest
 
+test_cases = {
 
-def test_section_without_tag_field(fake_parser):
-    section = (
-        '1. Question?\n'
-        '\n'
-        'Answer\n'
-    )
+    ('1. Question?\n'
+     '\n'
+     'Answer\n'): [],
 
-    tags = fake_parser._get_tags(section)
+    ('Tags:\n'
+     '1. Question?\n'
+     '\n'
+     'Answer\n'): [],
 
-    assert tags == []
+    ('Tags: yolo\n'
+     '1. Question?\n'
+     '\n'
+     'Answer\n'): ['yolo'],
 
+    ('Tags: yolo abc new1\n'
+     '1. Question?\n'
+     '\n'
+     'Answer\n'): ['yolo', 'abc', 'new1'],
 
-def test_section_with_empty_tag_field(fake_parser):
-    section = (
-        'Tags:\n'
-        '1. Question?\n'
-        '\n'
-        'Answer\n'
-    )
+    ('1. Question?\n'
+     '\n'
+     'Answer\n'
+     '\n'
+     'Tags: yolo\n'
+     '\n'
+     '2. Q?\n'
+     '\n'
+     'A\n'): ['yolo'],
 
-    tags = fake_parser._get_tags(section)
-
-    assert tags == []
-
-
-def test_section_with_not_empty_tag_field(fake_parser):
-    section = (
-        'Tags: yolo\n'
-        '1. Question?\n'
-        '\n'
-        'Answer\n'
-    )
-    expected = ['yolo']
-
-    tags = fake_parser._get_tags(section)
-
-    assert tags == expected
+    ('Some text; Tags: yolo abc new1\n'
+     '1. Question?\n'
+     '\n'
+     'Answer\n'): [],
+}
 
 
-def test_section_with_tag_field_with_multiple_tags(fake_parser):
-    section = (
-        'Tags: yolo abc new1\n'
-        '1. Question?\n'
-        '\n'
-        'Answer\n'
-    )
-    expected = ['yolo', 'abc', 'new1']
-
+@pytest.mark.parametrize('section, expected', test_cases.items())
+def test_get_tags(fake_parser, section, expected):
     tags = fake_parser._get_tags(section)
 
     assert tags == expected
 
 
-def test_section_with_tag_field_not_on_top(fake_parser):
-    section = (
-        '1. Question?\n'
-        '\n'
-        'Answer\n'
-        '\n'
-        'Tags: yolo\n'
-        '\n'
-        '2. Q?\n'
-        '\n'
-        'A\n'
-    )
-    expected = ['yolo']
-
-    tags = fake_parser._get_tags(section)
-
-    assert tags == expected
-
-
-def test_section_with_tag_field_inline(fake_parser):
-    section = (
-        'Some text; Tags: yolo abc new1\n'
-        '1. Question?\n'
-        '\n'
-        'Answer\n'
-    )
-
-    tags = fake_parser._get_tags(section)
-
-    assert tags == []
-
-
-def test_section_with_multiple_tag_fields(fake_parser):
+def test_get_tags_when_section_with_multiple_tag_fields_raises_error(fake_parser):
     section = (
         'Tags: yolo abc new1\n'
         '1. Question?\n'

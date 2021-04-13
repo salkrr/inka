@@ -1,102 +1,62 @@
+import pytest
+
 from src.inka.card import Card
 
+test_cases = {
+    'Deck: Abraham\n': [],
 
-def test_section_with_only_deck_field(fake_parser):
-    section = (
-        'Deck: Abraham\n'
-    )
+    ('Deck: Abraham\n'
+     'Tags: some tags here'): [],
 
-    cards = fake_parser._get_cards_from_section(section)
+    ('Deck: Abraham\n'
+     '\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer'): [Card(front_md='Some question?',
+                        back_md='Answer',
+                        tags=[],
+                        deck_name='Abraham')],
 
-    assert cards == []
+    ('Deck: Abraham\n'
+     '\n'
+     'Tags: one two-three\n'
+     '\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer'): [Card(front_md='Some question?',
+                        back_md='Answer',
+                        tags=['one', 'two-three'],
+                        deck_name='Abraham')],
 
+    ('Deck: Abraham\n'
+     '\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer\n'
+     '\n'
+     '2. Q\n'
+     '\n'
+     '> A'): [Card(front_md='Some question?', back_md='Answer', tags=[], deck_name='Abraham'),
+              Card(front_md='Q', back_md='A', tags=[], deck_name='Abraham')],
 
-def test_section_with_only_deck_and_tags_fields(fake_parser):
-    section = (
-        'Deck: Abraham\n'
-        'Tags: some tags here'
-    )
+    ('Deck: Abraham\n'
+     '\n'
+     'Tags: one two-three\n'
+     '\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer\n'
+     '\n'
+     '2. Q\n'
+     '\n'
+     '> A'): [Card(front_md='Some question?', back_md='Answer', tags=['one', 'two-three'], deck_name='Abraham'),
+              Card(front_md='Q', back_md='A', tags=['one', 'two-three'], deck_name='Abraham')],
 
-    cards = fake_parser._get_cards_from_section(section)
-
-    assert cards == []
-
-
-def test_one_card_without_tags(fake_parser):
-    section = (
-        'Deck: Abraham\n'
-        '\n'
-        '1. Some question?\n'
-        '\n'
-        '> Answer'
-    )
-    expected = [Card(front_md='Some question?',
-                     back_md='Answer',
-                     tags=[],
-                     deck_name='Abraham')]
-
-    cards = fake_parser._get_cards_from_section(section)
-
-    assert cards == expected
-
-
-def test_one_card_with_tags(fake_parser):
-    section = (
-        'Deck: Abraham\n'
-        '\n'
-        'Tags: one two-three\n'
-        '\n'
-        '1. Some question?\n'
-        '\n'
-        '> Answer'
-    )
-    expected = [Card(front_md='Some question?',
-                     back_md='Answer',
-                     tags=['one', 'two-three'],
-                     deck_name='Abraham')]
-
-    cards = fake_parser._get_cards_from_section(section)
-
-    assert cards == expected
+}
 
 
-def test_two_cards_without_tags(fake_parser):
-    section = (
-        'Deck: Abraham\n'
-        '\n'
-        '1. Some question?\n'
-        '\n'
-        '> Answer\n'
-        '\n'
-        '2. Q\n'
-        '\n'
-        '> A'
-    )
-    expected = [Card(front_md='Some question?', back_md='Answer', tags=[], deck_name='Abraham'),
-                Card(front_md='Q', back_md='A', tags=[], deck_name='Abraham')]
-
-    cards = fake_parser._get_cards_from_section(section)
-
-    assert cards == expected
-
-
-def test_two_cards_with_tags(fake_parser):
-    section = (
-        'Deck: Abraham\n'
-        '\n'
-        'Tags: one two-three\n'
-        '\n'
-        '1. Some question?\n'
-        '\n'
-        '> Answer\n'
-        '\n'
-        '2. Q\n'
-        '\n'
-        '> A'
-    )
-    expected = [Card(front_md='Some question?', back_md='Answer', tags=['one', 'two-three'], deck_name='Abraham'),
-                Card(front_md='Q', back_md='A', tags=['one', 'two-three'], deck_name='Abraham')]
-
+@pytest.mark.parametrize('section, expected', test_cases.items())
+def test_get_cards_from_section(fake_parser, section, expected):
     cards = fake_parser._get_cards_from_section(section)
 
     assert cards == expected

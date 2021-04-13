@@ -1,59 +1,48 @@
-def test_returns_none_if_no_id(fake_parser):
-    text = (
-        'Deck: Abraham\n'
-        '\n'
-        'Tags: one two-three\n'
-        '\n'
-        '1. Some question?\n'
-        '\n'
-        '> Answer'
-    )
+import pytest
 
-    assert fake_parser.get_id(text) is None
+test_cases = {
+    ('Deck: Abraham\n'
+     '\n'
+     'Tags: one two-three\n'
+     '\n'
+     '<!--ID:1235523-->\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer'): 1235523,
+
+    ('<!--ID:215321-->\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer'): 215321,
+
+    ('Deck: Abraham\n'
+     '\n'
+     'Tags: one two-three\n'
+     '\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer'): None,
+
+    ('Deck: Abraham\n'
+     '\n'
+     'Tags: one two-three\n'
+     '\n'
+     '<!--ID:-->\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer'): None,
+
+    ('Deck: Abraham\n'
+     '\n'
+     'Tags: one two-three\n'
+     '\n'
+     f'<!--ID:123a-->\n'
+     '1. Some question?\n'
+     '\n'
+     '> Answer'): None
+}
 
 
-def test_returns_none_if_id_is_empty(fake_parser):
-    text = (
-        'Deck: Abraham\n'
-        '\n'
-        'Tags: one two-three\n'
-        '\n'
-        '<!--ID:-->\n'
-        '1. Some question?\n'
-        '\n'
-        '> Answer'
-    )
-
-    assert fake_parser.get_id(text) is None
-
-
-def test_correctly_gets_id_from_section(fake_parser):
-    anki_id = 1235523
-    text = (
-        'Deck: Abraham\n'
-        '\n'
-        'Tags: one two-three\n'
-        '\n'
-        f'<!--ID:{anki_id}-->\n'
-        '1. Some question?\n'
-        '\n'
-        '> Answer'
-    )
-
-    assert fake_parser.get_id(text) == anki_id
-
-
-def test_if_id_is_not_number(fake_parser):
-    anki_id = '123a'
-    text = (
-        'Deck: Abraham\n'
-        '\n'
-        'Tags: one two-three\n'
-        '\n'
-        f'<!--ID:{anki_id}-->\n'
-        '1. Some question?\n'
-        '\n'
-        '> Answer'
-    )
-
-    assert fake_parser.get_id(text) is None
+@pytest.mark.parametrize('text, expected', test_cases.items())
+def test_get_id(fake_parser, text, expected):
+    assert fake_parser.get_id(text) == expected
