@@ -39,12 +39,12 @@ class AnkiApi:
         """Get list of user profiles from Anki"""
         return self._send_request('getProfiles')
 
-    def select_profile(self, profile: str):
+    def select_profile(self, profile: str) -> None:
         """Select profile in Anki"""
         params = {'name': profile}
         self._send_request('loadProfile', **params)
 
-    def add_cards(self, cards: List[Card]):
+    def add_cards(self, cards: List[Card]) -> None:
         """Add new cards to Anki"""
         # Create decks that doesn't exist
         decks = {card.deck_name for card in cards}
@@ -59,7 +59,7 @@ class AnkiApi:
             except RequestException as error:
                 self._print_error_message(card, error)
 
-    def update_card_ids(self, cards: List[Card]):
+    def update_card_ids(self, cards: List[Card]) -> None:
         """Update incorrect or absent IDs of cards"""
         # Handle None
         card_ids = [card.anki_id if card.anki_id else -1
@@ -75,7 +75,7 @@ class AnkiApi:
             found_notes = self._send_request('findNotes', query=query)
             card.anki_id = found_notes[0] if found_notes else None
 
-    def update_cards(self, cards: List[Card]):
+    def update_cards(self, cards: List[Card]) -> None:
         """Synchronize changes in cards with Anki"""
         # Get info about cards from Anki
         cards_info = self._send_request('notesInfo', notes=[card.anki_id for card in cards])
@@ -111,12 +111,12 @@ class AnkiApi:
                 # TODO: print error message with hint to '-u' flag
                 self._print_error_message(card, e)
 
-    def delete_cards(self, cards: List[Card]):
+    def delete_cards(self, cards: List[Card]) -> None:
         """Delete cards from Anki"""
         self._send_request('deleteNotes',
                            notes=[card.anki_id for card in cards])
 
-    def remove_change_tag_from_cards(self, cards: List[Card]):
+    def remove_change_tag_from_cards(self, cards: List[Card]) -> None:
         """Remove the tag which marks card as changed from cards in Anki"""
         self._send_request('removeTags',
                            notes=[card.anki_id for card in cards],
@@ -196,7 +196,7 @@ class AnkiApi:
         return {'action': action, 'version': 6, 'params': params}
 
     @staticmethod
-    def _print_error_message(card: Card, error: Exception = None):
+    def _print_error_message(card: Card, error: Exception = None) -> None:
         # Card information
         click.secho('------------------------------------', fg='red')
         click.secho(f'Front: {card.front_md.strip()}', fg='red')
