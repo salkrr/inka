@@ -7,8 +7,7 @@ from src.inka.card import Card
 @pytest.fixture
 def card():
     """Card object with dummy data"""
-    return Card(front_md='dummy', back_md='dummy', front_html='dummy',
-                back_html='dummy', tags=[], deck_name='')
+    return Card(front_md='dummy', back_md='dummy', tags=[], deck_name='')
 
 
 test_strings = {

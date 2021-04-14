@@ -6,19 +6,21 @@ import mistune
 from .card import Card
 from .mathjax import plugin_mathjax
 
+MD = mistune.create_markdown(plugins=['strikethrough', 'footnotes', 'table', plugin_mathjax])
+
 
 def convert_cards_to_html(cards: List[Card]):
     """Convert front_md and back_md fields to html and write result into front_md and back_md fields"""
-    markdown = mistune.create_markdown(plugins=['strikethrough', 'footnotes', 'table', plugin_mathjax])
     for card in cards:
-        # We delete '\n' before and after each html tag because Anki is rendering them as newlines
-        card.front_html = re.sub(r'\n?(<.+?>)\n?',
-                                 lambda tag_match: tag_match.group(1),
-                                 markdown(card.updated_front_md))
-        card.back_html = re.sub(r'\n?(<.+?>)\n?',
-                                lambda tag_match: tag_match.group(1),
-                                markdown(card.updated_back_md))
+        card.front_html = convert_md_to_html(card.updated_front_md)
+        card.back_html = convert_md_to_html(card.updated_back_md)
 
+
+def convert_md_to_html(text: str) -> str:
+    # We delete '\n' before and after each html tag because Anki is rendering them as newlines
+    return re.sub(r'\n?(<.+?>)\n?',
+                  lambda tag_match: tag_match.group(1),
+                  MD(text))
 
 # def convert_card_to_md(card: Card):
 #     """Convert front_html and back_html fields to markdown and write result into front_md and back_md fields"""
