@@ -9,9 +9,9 @@ class Parser:
     """Class for getting cards and various information about them from the text file"""
 
     _section_regex = r'^---\n(.+?)^---$'
-    _deck_name_regex = '(?<=^Deck:).*?$'
-    _tags_line_regex = '(?<=^Tags:).*?$'
-    _card_substring_regex = r'^(?:<!--ID:.+-->\n)?\d+\.[\s\S]+?(?:^>.*?(?:\n|$))+'
+    _deck_name_regex = r'(?<=^Deck:).*?$'
+    _tags_line_regex = r'(?<=^Tags:).*?$'
+    _card_substring_regex = r'^(?:<!--ID:\S+-->\n)?\d+\.[\s\S]+?(?:^>.*?(?:\n|$))+'
     _id_regex = r'^<!--ID:(\S+)-->$'
     _question_regex = r'^\d+\.([\s\S]+?)(?=^>)'
     _answer_regex = r'(?:^>.*?(?:\n|$))+'
@@ -29,7 +29,7 @@ class Parser:
         with open(self._file_path, mode='rt', encoding='utf-8') as f:
             file_string = f.read()
 
-        question_sections = self.get_sections(file_string)
+        question_sections = self._get_sections(file_string)
 
         cards = []
         for section in question_sections:
@@ -37,27 +37,20 @@ class Parser:
 
         return cards
 
-    @classmethod
-    def get_sections(cls, file_contents: str) -> List[str]:
-        """Get all sections (groups of cards) from the file string"""
-        return re.findall(cls._section_regex,
-                          file_contents,
-                          re.MULTILINE | re.DOTALL)
-
     def _get_cards_from_section(self, section: str) -> List[Card]:
         """Get all Cards from the section string"""
         tags = self._get_tags(section)
         deck_name = self._get_deck_name(section)
 
         # Get all section's substrings which contain question-answer pairs
-        card_substrings = self.get_card_substrings(section)
+        card_strings = self.get_card_strings(section)
 
         # Create cards
         cards = []
-        for substring in card_substrings:
-            anki_id = self.get_id(substring)
-            question = self.get_question(substring)
-            answer = self._get_cleaned_answer(substring)
+        for string in card_strings:
+            anki_id = self.get_id(string)
+            question = self.get_question(string)
+            answer = self._get_cleaned_answer(string)
 
             cards.append(Card(front_md=question,
                               back_md=answer,
@@ -66,21 +59,6 @@ class Parser:
                               anki_id=anki_id))
 
         return cards
-
-    @classmethod
-    def _get_tags(cls, section: str) -> List[str]:
-        """Get tags specified for this section"""
-        matches = re.findall(cls._tags_line_regex,
-                             section,
-                             re.MULTILINE)
-        if not matches:
-            return []
-
-        if len(matches) > 1:
-            raise ValueError(f'More than one tag field in section:\n{section}')
-
-        tags = matches[0].strip().split()
-        return tags
 
     def _get_deck_name(self, section: str) -> str:
         """Get deck name specified for this section"""
@@ -105,9 +83,30 @@ class Parser:
         return deck_name
 
     @classmethod
-    def get_card_substrings(cls, section: str) -> List[str]:
-        """Get all section substrings with question-answer pairs and an ID"""
-        # TODO: rename method and variables/comments from 'substring' to 'string'
+    def _get_sections(cls, file_contents: str) -> List[str]:
+        """Get all sections (groups of cards) from the file string"""
+        return re.findall(cls._section_regex,
+                          file_contents,
+                          re.MULTILINE | re.DOTALL)
+
+    @classmethod
+    def _get_tags(cls, section: str) -> List[str]:
+        """Get tags specified for this section"""
+        matches = re.findall(cls._tags_line_regex,
+                             section,
+                             re.MULTILINE)
+        if not matches:
+            return []
+
+        if len(matches) > 1:
+            raise ValueError(f'More than one tag field in section:\n{section}')
+
+        tags = matches[0].strip().split()
+        return tags
+
+    @classmethod
+    def get_card_strings(cls, section: str) -> List[str]:
+        """Get all section strings with question-answer pairs and an ID"""
         return re.findall(cls._card_substring_regex,
                           section,
                           re.MULTILINE)

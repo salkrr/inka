@@ -51,6 +51,6 @@ test_cases = {
 
 @pytest.mark.parametrize('text, expected', test_cases.items())
 def test_get_sections(fake_parser, text, expected):
-    sections = fake_parser.get_sections(text)
+    sections = fake_parser._get_sections(text)
 
     assert sections == expected

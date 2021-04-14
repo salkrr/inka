@@ -14,7 +14,7 @@ class Writer:
 
         with open(self._file_path, mode='rt', encoding='utf-8') as f:
             self._file_content = f.read()
-        self._card_strings = Parser.get_card_substrings(self._file_content)
+        self._card_strings = Parser.get_card_strings(self._file_content)
 
     def update_card_ids(self):
         """Update lines with IDs of the cards from the file"""
@@ -93,7 +93,7 @@ class Writer:
         """Save file state into the file system"""
         with open(self._file_path, mode='wt', encoding='utf-8') as f:
             f.write(self._file_content)
-        self._card_strings = Parser.get_card_substrings(self._file_content)
+        self._card_strings = Parser.get_card_strings(self._file_content)
 
     def _get_card_string_by_id(self, card_id: int) -> Optional[str]:
         """Gets card string from the file by cards ID. If card wasn't found returns None"""
