@@ -1,6 +1,3 @@
-# Created by https://www.toptal.com/developers/gitignore/api/git,python,virtualenv
-# Edit at https://www.toptal.com/developers/gitignore?templates=git,python,virtualenv
-
 ### Git ###
 # Created by git for backups. To disable backups in Git:
 # $ git config --global mergetool.keepBackup false
@@ -71,37 +68,6 @@ coverage.xml
 .pytest_cache/
 pytestdebug.log
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-doc/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
 # pyenv
 .python-version
 
@@ -115,13 +81,6 @@ ipython_config.py
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
 __pypackages__/
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
 # Environments
 .env
 .venv
@@ -131,16 +90,6 @@ ENV/
 env.bak/
 venv.bak/
 pythonenv*
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
 
 # mypy
 .mypy_cache/
@@ -168,10 +117,10 @@ dmypy.json
 pyvenv.cfg
 pip-selfcheck.json
 
-# End of https://www.toptal.com/developers/gitignore/api/git,python,virtualenv
-
+### IDE ###
 .idea/
 .vscode/
 
+### inka ###
 # Ignore inka's config file
 src/inka/config.ini
