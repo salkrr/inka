@@ -4,7 +4,6 @@ import click
 import requests
 from requests import RequestException
 
-from . import converter
 from .card import Card
 from .util import create_anki_search_query
 
@@ -96,7 +95,7 @@ class AnkiApi:
                 # Convert updated card fields to markdown
                 card.front_html = cards_info[i]['fields'][self._front_field_name]['value']
                 card.back_html = cards_info[i]['fields'][self._back_field_name]['value']
-                converter.convert_card_to_md(card)
+                # converter.convert_card_to_md(card)
 
                 # Mark card as changed
                 card.changed = True

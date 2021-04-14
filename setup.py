@@ -35,7 +35,6 @@ setup(
     python_requires='>=3.7',
     install_requires=[
         'mistune~=2.0.0rc1',
-        'markdownify~=0.6.5',
         'requests~=2.25.1',
         'click~=7.1.2'
     ],
