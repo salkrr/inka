@@ -1,7 +1,7 @@
 import pytest
 
-from src.inka import converter
-from src.inka.card import Card
+from src.inka.models import converter
+from src.inka.models.card import Card
 
 
 @pytest.fixture

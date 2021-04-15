@@ -4,9 +4,9 @@ from typing import List
 
 import pytest
 
-from src.inka.card import Card
-from src.inka.parser import Parser
-from src.inka.writer import Writer
+from src.inka.models.card import Card
+from src.inka.models.parser import Parser
+from src.inka.models.writer import Writer
 
 
 @pytest.fixture

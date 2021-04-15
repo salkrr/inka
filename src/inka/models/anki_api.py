@@ -5,7 +5,7 @@ import requests
 from requests import RequestException
 
 from .card import Card
-from .util import create_anki_search_query
+from ..util import create_anki_search_query
 
 
 class AnkiApi:

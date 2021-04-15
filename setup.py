@@ -40,7 +40,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'inka=inka.inka:cli'
+            'inka=inka.cli:cli'
         ]
     }
 )

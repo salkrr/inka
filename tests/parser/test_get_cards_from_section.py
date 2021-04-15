@@ -1,6 +1,6 @@
 import pytest
 
-from src.inka.card import Card
+from src.inka.models.card import Card
 
 test_cases = {
     'Deck: Abraham\n': [],

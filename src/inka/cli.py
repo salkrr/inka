@@ -5,13 +5,14 @@ from typing import Tuple, Set, List
 import click
 import requests
 
-from . import __version__, image_handler, converter, highlight
-from .anki_api import AnkiApi
-from .anki_media import AnkiMedia
-from .card import Card
-from .config import Config
-from .parser import Parser
-from .writer import Writer
+from . import __version__
+from .models import highlighter, converter, img_handler
+from .models.anki_api import AnkiApi
+from .models.anki_media import AnkiMedia
+from .models.card import Card
+from .models.config import Config
+from .models.parser import Parser
+from .models.writer import Writer
 
 FILE_EXTENSIONS = ['.md', '.markdown']
 CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
@@ -38,7 +39,7 @@ def get_cards_from_file(file_path: str, anki_media: AnkiMedia) -> List[Card]:
         click.echo(f"Cards weren't found!")
     else:
         click.echo(f'Found {number_of_cards} cards!')
-        image_handler.handle_images_in(cards, anki_media)
+        img_handler.handle_images_in(cards, anki_media)
 
     return cards
 
@@ -290,7 +291,7 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
 
     anki_media = AnkiMedia(profile)
     try:
-        highlight.add_code_highlight_to_note_type(
+        highlighter.add_code_highlight_to_note_type(
             cfg.get_option_value('highlight', 'style'), anki_api, anki_media
         )
     except ConnectionError as e:

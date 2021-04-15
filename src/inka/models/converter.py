@@ -4,7 +4,7 @@ from typing import List
 import mistune
 
 from .card import Card
-from .mathjax import plugin_mathjax
+from ..mistune_plugins.mathjax import plugin_mathjax
 
 MD = mistune.create_markdown(plugins=['strikethrough', 'footnotes', 'table', plugin_mathjax])
 
