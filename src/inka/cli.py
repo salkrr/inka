@@ -9,8 +9,8 @@ from . import __version__
 from .models import highlighter, converter, img_handler
 from .models.anki_api import AnkiApi
 from .models.anki_media import AnkiMedia
-from .models.card import Card
 from .models.config import Config
+from .models.notes.basic_note import BasicNote
 from .models.parser import Parser
 from .models.writer import Writer
 
@@ -24,68 +24,68 @@ anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
                    cfg.get_option_value('anki', 'back_field'))
 
 
-def get_cards_from_file(file_path: str, anki_media: AnkiMedia) -> List[Card]:
+def get_notes_from_file(file_path: str, anki_media: AnkiMedia) -> List[BasicNote]:
     click.echo('Getting cards from the file...')
 
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
 
     default_deck = cfg.get_option_value('defaults', 'deck')
-    note_parser = Parser(file_path, default_deck)
-    cards = note_parser.collect_cards()
+    parser = Parser(file_path, default_deck)
+    notes = parser.collect_notes()
 
-    number_of_cards = len(cards)
-    if number_of_cards == 0:
+    note_num = len(notes)
+    if note_num == 0:
         click.echo(f"Cards weren't found!")
     else:
-        click.echo(f'Found {number_of_cards} cards!')
-        img_handler.handle_images_in(cards, anki_media)
+        click.echo(f'Found {note_num} cards!')
+        img_handler.handle_images_in(notes, anki_media)
 
-    return cards
+    return notes
 
 
-def create_cards_from_file(file_path: str, anki_media: AnkiMedia) -> None:
-    """Get all cards from file and send them to Anki"""
-    click.echo(f'Starting to create cards from "{os.path.basename(file_path)}"!')
+def create_notes_from_file(file_path: str, anki_media: AnkiMedia) -> None:
+    """Get all notes from file and send them to Anki"""
+    click.echo(f'Starting to collect cards from "{os.path.basename(file_path)}"!')
 
-    cards = get_cards_from_file(file_path, anki_media)
-    if not cards:
+    notes = get_notes_from_file(file_path, anki_media)
+    if not notes:
         return
 
     click.echo('Converting cards to the html...')
-    converter.convert_cards_to_html(cards)
+    converter.convert_notes_to_html(notes)
 
     click.echo('Synchronizing changes...')
-    cards_with_id = [card for card in cards
-                     if card.anki_id]
-    anki_api.update_cards(cards_with_id)
+    notes_with_id = [note for note in notes
+                     if note.anki_id]
+    anki_api.update_notes(notes_with_id)
 
     click.echo('Sending new cards...')
-    cards_without_id = [card for card in cards
-                        if not card.anki_id]
-    anki_api.add_cards(cards_without_id)
+    notes_without_id = [note for note in notes
+                        if not note.anki_id]
+    anki_api.add_notes(notes_without_id)
 
     click.echo('Adding IDs to cards...')
-    writer = Writer(file_path, cards)
-    writer.update_card_ids()
+    writer = Writer(file_path, notes)
+    writer.update_note_ids()
 
 
-def update_card_ids_in_file(file_path: str, anki_media: AnkiMedia):
-    """Update IDs of cards in file by getting their IDs from Anki"""
+def update_note_ids_in_file(file_path: str, anki_media: AnkiMedia):
+    """Update IDs of notes in file by getting their IDs from Anki"""
     click.echo(f'Starting to update IDs of cards from "{os.path.basename(file_path)}"!')
 
-    cards = get_cards_from_file(file_path, anki_media)
-    if not cards:
+    notes = get_notes_from_file(file_path, anki_media)
+    if not notes:
         return
 
     click.echo('Converting cards to the html...')
-    converter.convert_cards_to_html(cards)
+    converter.convert_notes_to_html(notes)
 
     click.echo('Getting card IDs from Anki...')
-    anki_api.update_card_ids(cards)
+    anki_api.update_note_ids(notes)
 
     click.echo('Adding IDs to cards...')
-    Writer(file_path, cards).update_card_ids()
+    Writer(file_path, notes).update_note_ids()
 
 
 def get_file_paths_from_directory(dir_path: str, search_recursive: bool) -> Set[str]:
@@ -194,10 +194,10 @@ def cli() -> None:
     """Inka - command-line tool for adding Markdown cards to Anki
 
         Documentation:\n
-            https://github.com/lazy-void/Inka/wiki
+            https://github.com/lazy-void/inka/wiki
 
         Github:\n
-            https://github.com/lazy-void/Inka
+            https://github.com/lazy-void/inka
     """
     pass
 
@@ -303,14 +303,14 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
     # Get paths to all files
     files = get_paths_to_files(paths, recursive)
 
-    # Perform action on cards from each file
+    # Perform action on notes from each file
     initial_directory = os.getcwd()
     for file in files:
         try:
             if update_ids:
-                update_card_ids_in_file(file, anki_media)
+                update_note_ids_in_file(file, anki_media)
             else:
-                create_cards_from_file(file, anki_media)
+                create_notes_from_file(file, anki_media)
 
             os.chdir(initial_directory)
         except (OSError, ValueError, FileNotFoundError, FileExistsError) as e:

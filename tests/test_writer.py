@@ -4,7 +4,7 @@ from typing import List
 
 import pytest
 
-from src.inka.models.card import Card
+from src.inka.models.notes.basic_note import BasicNote
 from src.inka.models.parser import Parser
 from src.inka.models.writer import Writer
 
@@ -44,10 +44,10 @@ def file(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def cards(file: Path) -> List[Card]:
-    """Cards from the temporary file with randomly generated ids"""
+def notes(file: Path) -> List[BasicNote]:
+    """Notes from the temporary file with randomly generated ids"""
     parser = Parser(file, '')
-    cards = parser.collect_cards()
+    cards = parser.collect_notes()
     for card in cards:
         card.anki_id = random.randint(1000000000, 9999999999)
 
@@ -55,36 +55,30 @@ def cards(file: Path) -> List[Card]:
 
 
 @pytest.fixture
-def writer(file: Path, cards: List[Card]) -> Writer:
+def writer(file: Path, notes: List[BasicNote]) -> Writer:
     """Fake writer which uses temporary file"""
-    return Writer(file, cards)
+    return Writer(file, notes)
 
 
 @pytest.fixture
-def writer_with_ids(file: Path, cards: List[Card]) -> Writer:
+def writer_with_ids(file: Path, notes: List[BasicNote]) -> Writer:
     """Fake writer which uses temporary file and has IDs on cards"""
-    writer = Writer(file, cards)
-    writer.update_card_ids()
+    writer = Writer(file, notes)
+    writer.update_note_ids()
     return writer
-
-
-def test_repr_method(writer, file, cards):
-    expected = f'Writer(file_path={file!r}, cards={cards!r})'
-
-    assert repr(writer) == expected
 
 
 def test_update_ids_saves_to_file_system(writer, file):
     expected = 'Some string'
     writer._file_content = expected
 
-    writer.update_card_ids()
+    writer.update_note_ids()
 
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected
 
 
-def test_update_ids_skips_card_if_it_was_not_found(writer, cards):
+def test_update_ids_skips_card_if_it_was_not_found(writer, notes):
     writer._file_content = (
         '---\n'
         '\n'
@@ -113,7 +107,7 @@ def test_update_ids_skips_card_if_it_was_not_found(writer, cards):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -129,13 +123,13 @@ def test_update_ids_skips_card_if_it_was_not_found(writer, cards):
         '---'
     )
 
-    writer.update_card_ids()
+    writer.update_note_ids()
 
     assert writer._file_content == expected
 
 
-def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, cards):
-    cards[0].anki_id = None
+def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, notes):
+    notes[0].anki_id = None
     expected = (
         '---\n'
         '\n'
@@ -147,7 +141,7 @@ def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, cards):
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -163,12 +157,12 @@ def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, cards):
         '---'
     )
 
-    writer.update_card_ids()
+    writer.update_note_ids()
 
     assert writer._file_content == expected
 
 
-def test_update_ids_removes_id_from_file_if_card_object_has_no_id(writer, cards):
+def test_update_ids_removes_id_from_file_if_card_object_has_no_id(writer, notes):
     writer._file_content = (
         '---\n'
         '\n'
@@ -176,12 +170,12 @@ def test_update_ids_removes_id_from_file_if_card_object_has_no_id(writer, cards)
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[0].anki_id}-->\n'
+        f'<!--ID:{notes[0].anki_id}-->\n'
         '1. Some question?\n'
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -207,7 +201,7 @@ def test_update_ids_removes_id_from_file_if_card_object_has_no_id(writer, cards)
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -222,14 +216,14 @@ def test_update_ids_removes_id_from_file_if_card_object_has_no_id(writer, cards)
         '\n'
         '---'
     )
-    cards[0].anki_id = None
+    notes[0].anki_id = None
 
-    writer.update_card_ids()
+    writer.update_note_ids()
 
     assert writer._file_content == expected
 
 
-def test_update_ids_writes_id_before_question(writer, cards):
+def test_update_ids_writes_id_before_question(writer, notes):
     expected = (
         '---\n'
         '\n'
@@ -237,12 +231,12 @@ def test_update_ids_writes_id_before_question(writer, cards):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[0].anki_id}-->\n'
+        f'<!--ID:{notes[0].anki_id}-->\n'
         '1. Some question?\n'
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -258,12 +252,12 @@ def test_update_ids_writes_id_before_question(writer, cards):
         '---'
     )
 
-    writer.update_card_ids()
+    writer.update_note_ids()
 
     assert writer._file_content == expected
 
 
-def test_updates_id_if_another_is_written(writer, cards):
+def test_updates_id_if_another_is_written(writer, notes):
     writer._file_content = (
         '---\n'
         '\n'
@@ -297,12 +291,12 @@ def test_updates_id_if_another_is_written(writer, cards):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[0].anki_id}-->\n'
+        f'<!--ID:{notes[0].anki_id}-->\n'
         '1. Some question?\n'
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -318,7 +312,7 @@ def test_updates_id_if_another_is_written(writer, cards):
         '---'
     )
 
-    writer.update_card_ids()
+    writer.update_note_ids()
 
     assert writer._file_content == expected
 
@@ -327,16 +321,16 @@ def test_update_card_fields_saves_to_file_system(writer, file):
     expected = 'Some string'
     writer._file_content = expected
 
-    writer.update_card_fields()
+    writer.update_note_fields()
 
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected
 
 
-def test_update_card_fields_skips_not_changed_cards(writer_with_ids, cards):
-    cards[0].changed = False
-    cards[0].front_md = 'Amazing new text'
-    cards[0].back_md = 'Amazing new answer'
+def test_update_card_fields_skips_not_changed_cards(writer_with_ids, notes):
+    notes[0].changed = False
+    notes[0].raw_front_md = 'Amazing new text'
+    notes[0].raw_back_md = 'Amazing new answer'
     expected = (
         '---\n'
         '\n'
@@ -344,12 +338,12 @@ def test_update_card_fields_skips_not_changed_cards(writer_with_ids, cards):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[0].anki_id}-->\n'
+        f'<!--ID:{notes[0].anki_id}-->\n'
         '1. Some question?\n'
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -365,14 +359,14 @@ def test_update_card_fields_skips_not_changed_cards(writer_with_ids, cards):
         '---'
     )
 
-    writer_with_ids.update_card_fields()
+    writer_with_ids.update_note_fields()
 
     assert writer_with_ids._file_content == expected
 
 
-def test_updates_question_field(writer_with_ids, cards):
-    cards[0].changed = True
-    cards[0].front_md = 'Amazing new text'
+def test_updates_question_field(writer_with_ids, notes):
+    notes[0].changed = True
+    notes[0].raw_front_md = 'Amazing new text'
     expected = (
         '---\n'
         '\n'
@@ -380,12 +374,12 @@ def test_updates_question_field(writer_with_ids, cards):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[0].anki_id}-->\n'
-        f'1. {cards[0].front_md}\n'
+        f'<!--ID:{notes[0].anki_id}-->\n'
+        f'1. {notes[0].raw_front_md}\n'
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -401,14 +395,14 @@ def test_updates_question_field(writer_with_ids, cards):
         '---'
     )
 
-    writer_with_ids.update_card_fields()
+    writer_with_ids.update_note_fields()
 
     assert writer_with_ids._file_content == expected
 
 
-def test_updates_multiline_question_field(writer_with_ids, cards):
-    cards[1].changed = True
-    cards[1].front_md = 'Something new\n\nhere'
+def test_updates_multiline_question_field(writer_with_ids, notes):
+    notes[1].changed = True
+    notes[1].raw_front_md = 'Something new\n\nhere'
     expected = (
         '---\n'
         '\n'
@@ -416,13 +410,13 @@ def test_updates_multiline_question_field(writer_with_ids, cards):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[0].anki_id}-->\n'
+        f'<!--ID:{notes[0].anki_id}-->\n'
         '1. Some question?\n'
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
-        f'2. {cards[1].front_md}\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
+        f'2. {notes[1].raw_front_md}\n'
         '\n'
         '> Second answer\n'
         '> \n'
@@ -433,14 +427,14 @@ def test_updates_multiline_question_field(writer_with_ids, cards):
         '---'
     )
 
-    writer_with_ids.update_card_fields()
+    writer_with_ids.update_note_fields()
 
     assert writer_with_ids._file_content == expected
 
 
-def test_updates_answer_field(writer_with_ids, cards):
-    cards[0].changed = True
-    cards[0].back_md = 'New answer'
+def test_updates_answer_field(writer_with_ids, notes):
+    notes[0].changed = True
+    notes[0].raw_back_md = 'New answer'
     expected = (
         '---\n'
         '\n'
@@ -448,12 +442,12 @@ def test_updates_answer_field(writer_with_ids, cards):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[0].anki_id}-->\n'
+        f'<!--ID:{notes[0].anki_id}-->\n'
         '1. Some question?\n'
         '\n'
-        f'> {cards[0].back_md}\n'
+        f'> {notes[0].raw_back_md}\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -469,14 +463,14 @@ def test_updates_answer_field(writer_with_ids, cards):
         '---'
     )
 
-    writer_with_ids.update_card_fields()
+    writer_with_ids.update_note_fields()
 
     assert writer_with_ids._file_content == expected
 
 
-def test_updates_multiline_answer_field(writer_with_ids, cards):
-    cards[1].changed = True
-    cards[1].back_md = 'New\n\nmultiline\n\nanswer'
+def test_updates_multiline_answer_field(writer_with_ids, notes):
+    notes[1].changed = True
+    notes[1].raw_back_md = 'New\n\nmultiline\n\nanswer'
     expected = (
         '---\n'
         '\n'
@@ -484,12 +478,12 @@ def test_updates_multiline_answer_field(writer_with_ids, cards):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        f'<!--ID:{cards[0].anki_id}-->\n'
+        f'<!--ID:{notes[0].anki_id}-->\n'
         '1. Some question?\n'
         '\n'
         '> First answer\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -503,33 +497,33 @@ def test_updates_multiline_answer_field(writer_with_ids, cards):
         '---'
     )
 
-    writer_with_ids.update_card_fields()
+    writer_with_ids.update_note_fields()
 
     assert writer_with_ids._file_content == expected
 
 
-def test_delete_saves_changes_to_file_system(writer, cards, file):
+def test_delete_saves_changes_to_file_system(writer, notes, file):
     expected = 'Some string'
     writer._file_content = expected
 
-    writer.delete_cards()
+    writer.delete_notes()
 
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected
 
 
-def test_delete_skips_cards_that_are_not_marked_for_deletion(writer_with_ids, cards):
-    cards[0].to_delete = False
-    cards[1].to_delete = False
+def test_delete_skips_cards_that_are_not_marked_for_deletion(writer_with_ids, notes):
+    notes[0].to_delete = False
+    notes[1].to_delete = False
     expected = writer_with_ids._file_content
 
-    writer_with_ids.delete_cards()
+    writer_with_ids.delete_notes()
 
     assert writer_with_ids._file_content == expected
 
 
-def test_deletes_card_marked_for_deletion(writer_with_ids, cards):
-    cards[0].to_delete = True
+def test_deletes_card_marked_for_deletion(writer_with_ids, notes):
+    notes[0].to_delete = True
     expected = (
         '---\n'
         '\n'
@@ -538,7 +532,7 @@ def test_deletes_card_marked_for_deletion(writer_with_ids, cards):
         'Tags: one two-three\n'
         '\n'
         '\n'
-        f'<!--ID:{cards[1].anki_id}-->\n'
+        f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
         'More info on question.\n'
@@ -554,14 +548,14 @@ def test_deletes_card_marked_for_deletion(writer_with_ids, cards):
         '---'
     )
 
-    writer_with_ids.delete_cards()
+    writer_with_ids.delete_notes()
 
     assert writer_with_ids._file_content == expected
 
 
-def test_deletes_multiple_cards_marked_for_deletion(writer_with_ids, cards):
-    cards[0].to_delete = True
-    cards[1].to_delete = True
+def test_deletes_multiple_cards_marked_for_deletion(writer_with_ids, notes):
+    notes[0].to_delete = True
+    notes[1].to_delete = True
     expected = (
         '---\n'
         '\n'
@@ -574,6 +568,6 @@ def test_deletes_multiple_cards_marked_for_deletion(writer_with_ids, cards):
         '---'
     )
 
-    writer_with_ids.delete_cards()
+    writer_with_ids.delete_notes()
 
     assert writer_with_ids._file_content == expected

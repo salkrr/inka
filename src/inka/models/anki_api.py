@@ -4,7 +4,7 @@ import click
 import requests
 from requests import RequestException
 
-from .card import Card
+from .notes.basic_note import BasicNote
 from ..util import create_anki_search_query
 
 
@@ -43,90 +43,90 @@ class AnkiApi:
         params = {'name': profile}
         self._send_request('loadProfile', **params)
 
-    def add_cards(self, cards: List[Card]) -> None:
-        """Add new cards to Anki"""
+    def add_notes(self, notes: List[BasicNote]) -> None:
+        """Add new notes to Anki"""
         # Create decks that doesn't exist
-        decks = {card.deck_name for card in cards}
+        decks = {note.deck_name for note in notes}
         for deck in decks:
             self._create_deck(deck)
 
-        # Send cards to Anki
-        for card in cards:
-            note_params = self._create_note_params(card)
+        # Send notes to Anki
+        for note in notes:
+            note_params = self._create_note_params(note)
             try:
-                card.anki_id = self._send_request('addNote', note=note_params)
+                note.anki_id = self._send_request('addNote', note=note_params)
             except RequestException as error:
-                self._print_error_message(card, error)
+                self._print_error_message(note, error)
 
-    def update_card_ids(self, cards: List[Card]) -> None:
-        """Update incorrect or absent IDs of cards"""
+    def update_note_ids(self, notes: List[BasicNote]) -> None:
+        """Update incorrect or absent IDs of notes"""
         # Handle None
-        card_ids = [card.anki_id if card.anki_id else -1
-                    for card in cards]
+        note_ids = [note.anki_id if note.anki_id else -1
+                    for note in notes]
 
-        cards_info = self._send_request('cardsInfo', cards=card_ids)
-        for i, card in enumerate(cards):
-            # Don't update ID if card with this ID exists
-            if cards_info[i]:
+        notes_info = self._send_request('notesInfo', notes=note_ids)
+        for i, note in enumerate(notes):
+            # Don't update ID if note with this ID exists
+            if notes_info[i]:
                 continue
 
-            query = create_anki_search_query(card.front_html)
+            query = create_anki_search_query(note.front_html)
             found_notes = self._send_request('findNotes', query=query)
-            card.anki_id = found_notes[0] if found_notes else None
+            note.anki_id = found_notes[0] if found_notes else None
 
-    def update_cards(self, cards: List[Card]) -> None:
-        """Synchronize changes in cards with Anki"""
-        # Get info about cards from Anki
-        cards_info = self._send_request('notesInfo', notes=[card.anki_id for card in cards])
+    def update_notes(self, notes: List[BasicNote]) -> None:
+        """Synchronize changes in notes with Anki"""
+        # Get info about notes from Anki
+        notes_info = self._send_request('notesInfo', notes=[note.anki_id for note in notes])
 
-        for i, card in enumerate(cards):
-            # If card wasn't found
-            if not cards_info[i]:
-                self._print_error_message(card, Exception(f'Card with ID {card.anki_id} was not found.'))
+        for i, note in enumerate(notes):
+            # If note wasn't found
+            if not notes_info[i]:
+                self._print_error_message(note, Exception(f'Card with ID {note.anki_id} was not found.'))
                 continue
 
-            # If card is staged for deletion
-            if self._delete_tag in cards_info[i]['tags']:
-                card.to_delete = True
+            # If note is staged for deletion
+            if self._delete_tag in notes_info[i]['tags']:
+                note.to_delete = True
                 continue
 
-            # If card is marked as changed
-            if self._change_tag in cards_info[i]['tags']:
-                # Convert updated card fields to markdown
-                card.front_html = cards_info[i]['fields'][self._front_field_name]['value']
-                card.back_html = cards_info[i]['fields'][self._back_field_name]['value']
-                # converter.convert_card_to_md(card)
+            # If note is marked as changed
+            if self._change_tag in notes_info[i]['tags']:
+                # Convert updated note fields to markdown
+                note.front_html = notes_info[i]['fields'][self._front_field_name]['value']
+                note.back_html = notes_info[i]['fields'][self._back_field_name]['value']
+                # converter.convert_note_to_md(note)
 
-                # Mark card as changed
-                card.changed = True
+                # Mark note as changed
+                note.changed = True
                 continue
 
             try:
                 # Push changes from file to Anki
-                note_params = self._create_note_params(card)
-                note_params['id'] = card.anki_id
+                note_params = self._create_note_params(note)
+                note_params['id'] = note.anki_id
                 self._send_request('updateNoteFields', note=note_params)
             except RequestException as e:
                 # TODO: print error message with hint to '-u' flag
-                self._print_error_message(card, e)
+                self._print_error_message(note, e)
 
-    def delete_cards(self, cards: List[Card]) -> None:
-        """Delete cards from Anki"""
+    def delete_notes(self, notes: List[BasicNote]) -> None:
+        """Delete notes from Anki"""
         self._send_request('deleteNotes',
-                           notes=[card.anki_id for card in cards])
+                           notes=[note.anki_id for note in notes])
 
-    def remove_change_tag_from_cards(self, cards: List[Card]) -> None:
-        """Remove the tag which marks card as changed from cards in Anki"""
+    def remove_change_tag_from_notes(self, notes: List[BasicNote]) -> None:
+        """Remove the tag which marks note as changed from notes in Anki"""
         self._send_request('removeTags',
-                           notes=[card.anki_id for card in cards],
+                           notes=[note.anki_id for note in notes],
                            tags=self._change_tag)
 
     def fetch_note_type_styling(self) -> str:
-        """Get styling of note type that used to add cards"""
+        """Get styling of note type that is used to add notes"""
         return self._send_request('modelStyling', modelName=self._note_type)['css']
 
     def update_note_type_styling(self, new_styles: str) -> None:
-        """Update styling of note type that used to add cards"""
+        """Update styling of note type that is used to add notes"""
         params = {
             'model': {
                 'name': self._note_type,
@@ -136,11 +136,11 @@ class AnkiApi:
         self._send_request('updateModelStyling', **params)
 
     def fetch_note_type_templates(self) -> Dict[str, Dict[str, str]]:
-        """Get fields of note type for card type specified in config"""
+        """Get fields of note type"""
         return self._send_request('modelTemplates', modelName=self._note_type)
 
     def update_note_type_templates(self, templates: Dict[str, Dict[str, str]]) -> None:
-        """Update note type fields for card type specified in config"""
+        """Update note type"""
         params = {
             'model': {
                 'name': self._note_type,
@@ -154,14 +154,14 @@ class AnkiApi:
         params = {'deck': deck}
         return self._send_request('createDeck', **params)
 
-    def _create_note_params(self, card: Card) -> dict:
+    def _create_note_params(self, note: BasicNote) -> dict:
         """Create dict with params required to add note to Anki"""
         return {
-            'deckName': card.deck_name,
+            'deckName': note.deck_name,
             'modelName': self._note_type,
             'fields': {
-                self._front_field_name: card.front_html,
-                self._back_field_name: card.back_html
+                self._front_field_name: note.front_html,
+                self._back_field_name: note.back_html
             },
             'options': {
                 'allowDuplicate': False,
@@ -170,7 +170,7 @@ class AnkiApi:
                     'checkChildren': False
                 }
             },
-            'tags': card.tags
+            'tags': note.tags
         }
 
     def _send_request(self, action: str, **params) -> Any:
@@ -195,11 +195,11 @@ class AnkiApi:
         return {'action': action, 'version': 6, 'params': params}
 
     @staticmethod
-    def _print_error_message(card: Card, error: Exception = None) -> None:
-        # Card information
+    def _print_error_message(note: BasicNote, error: Exception = None) -> None:
+        # Note information
         click.secho('------------------------------------', fg='red')
-        click.secho(f'Front: {card.front_md.strip()}', fg='red')
-        click.secho(f'Back: {card.back_md.strip()}', fg='red')
+        click.secho(f'Front: {note.raw_front_md.strip()}', fg='red')
+        click.secho(f'Back: {note.raw_back_md.strip()}', fg='red')
         click.secho('------------------------------------', fg='red')
 
         # Error message

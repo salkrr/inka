@@ -188,7 +188,7 @@ test_cases = {
 
 
 @pytest.mark.parametrize('section, expected', test_cases.items())
-def test_get_card_strings(fake_parser, section, expected):
-    card_substrings = fake_parser.get_card_strings(section)
+def test_get_note_strings(fake_parser, section, expected):
+    note_strings = fake_parser.get_note_strings(section)
 
-    assert card_substrings == expected
+    assert note_strings == expected

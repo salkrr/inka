@@ -3,12 +3,12 @@ import os
 import pytest
 
 from src.inka.models import img_handler
-from src.inka.models.card import Card
+from src.inka.models.notes.basic_note import BasicNote
 
 
 def test_fetch_image_links_if_cards_do_not_have_images():
-    card1 = Card(front_md="Some text", back_md="Another text", tags=[], deck_name="deck")
-    card2 = Card(front_md="More\n\nText", back_md="Answer text", tags=[], deck_name="deck")
+    card1 = BasicNote(front_md="Some text", back_md="Another text", tags=[], deck_name="deck")
+    card2 = BasicNote(front_md="More\n\nText", back_md="Answer text", tags=[], deck_name="deck")
 
     links = img_handler._fetch_image_links([card1, card2])
 
@@ -18,8 +18,8 @@ def test_fetch_image_links_if_cards_do_not_have_images():
 def test_fetch_image_links_if_cards_have_images():
     image1 = "![](path/to/img1.png)"
     image2 = "![](img2.png)"
-    card1 = Card(front_md="Some text", back_md=f"Another text\n\n{image1}", tags=[], deck_name="deck")
-    card2 = Card(front_md=f"More\n\n{image2}", back_md="Answer text", tags=[], deck_name="deck")
+    card1 = BasicNote(front_md="Some text", back_md=f"Another text\n\n{image1}", tags=[], deck_name="deck")
+    card2 = BasicNote(front_md=f"More\n\n{image2}", back_md="Answer text", tags=[], deck_name="deck")
     expected = {
         image1: [card1],
         image2: [card2]
@@ -32,8 +32,8 @@ def test_fetch_image_links_if_cards_have_images():
 
 def test_fetch_image_links_if_cards_have_same_image():
     image = "![](path/to/img1.png)"
-    card1 = Card(front_md="Some text", back_md=f"Another text\n\n{image}", tags=[], deck_name="deck")
-    card2 = Card(front_md=f"More\n\n{image}", back_md="Answer text", tags=[], deck_name="deck")
+    card1 = BasicNote(front_md="Some text", back_md=f"Another text\n\n{image}", tags=[], deck_name="deck")
+    card2 = BasicNote(front_md=f"More\n\n{image}", back_md="Answer text", tags=[], deck_name="deck")
     expected = {
         image: [card1, card2]
     }
@@ -44,27 +44,27 @@ def test_fetch_image_links_if_cards_have_same_image():
 
 
 def test_update_image_links_when_no_image_links():
-    card1 = Card(front_md="Some text", back_md="Another text", tags=[], deck_name="deck")
-    card2 = Card(front_md="More\n\nText", back_md="Answer text", tags=[], deck_name="deck")
+    card1 = BasicNote(front_md="Some text", back_md="Another text", tags=[], deck_name="deck")
+    card2 = BasicNote(front_md="More\n\nText", back_md="Answer text", tags=[], deck_name="deck")
     cards = [card1, card2]
 
-    img_handler._update_image_links_in_cards({})
+    img_handler._update_image_links_in_notes({})
 
     for card in cards:
-        assert card.front_md == card.updated_front_md
-        assert card.back_md == card.updated_back_md
+        assert card.raw_front_md == card.updated_front_md
+        assert card.raw_back_md == card.updated_back_md
 
 
 def test_update_image_links_when_card_has_image_link():
     image = "![](path/to/img1.png)"
-    card = Card(front_md=f"Some {image} text", back_md=f"Another text\n\n{image}", tags=[], deck_name="deck")
+    card = BasicNote(front_md=f"Some {image} text", back_md=f"Another text\n\n{image}", tags=[], deck_name="deck")
     image_links = {
         image: [card]
     }
     expected_front = "Some ![](img1.png) text"
     expected_back = "Another text\n\n![](img1.png)"
 
-    img_handler._update_image_links_in_cards(image_links)
+    img_handler._update_image_links_in_notes(image_links)
 
     assert expected_front == card.updated_front_md
     assert expected_back == card.updated_back_md
@@ -73,9 +73,9 @@ def test_update_image_links_when_card_has_image_link():
 def test_update_image_links_when_card_has_different_image_links():
     image1 = "![](path/to/img1.png)"
     image2 = "![](images/image2.png)"
-    card = Card(front_md=f"{image2}\n\nSome {image1} text",
-                back_md=f"Another text\n\n{image1}\n{image2}",
-                tags=[], deck_name="deck")
+    card = BasicNote(front_md=f"{image2}\n\nSome {image1} text",
+                     back_md=f"Another text\n\n{image1}\n{image2}",
+                     tags=[], deck_name="deck")
     image_links = {
         image1: [card],
         image2: [card]
@@ -83,7 +83,7 @@ def test_update_image_links_when_card_has_different_image_links():
     expected_front = "![](image2.png)\n\nSome ![](img1.png) text"
     expected_back = "Another text\n\n![](img1.png)\n![](image2.png)"
 
-    img_handler._update_image_links_in_cards(image_links)
+    img_handler._update_image_links_in_notes(image_links)
 
     assert expected_front == card.updated_front_md
     assert expected_back == card.updated_back_md
@@ -92,12 +92,12 @@ def test_update_image_links_when_card_has_different_image_links():
 def test_update_image_links_in_several_cards_with_same_images():
     image1 = "![](path/to/img1.png)"
     image2 = "![](images/image2.png)"
-    card1 = Card(front_md=f"{image2}\n\nSome {image1} text",
-                 back_md=f"Another text\n\n{image1}\n{image2}",
-                 tags=[], deck_name="deck")
-    card2 = Card(front_md=f"{image2}Some text {image1}",
-                 back_md=f"{image1} {image2}\n\nAnother text\n\n",
-                 tags=[], deck_name="deck")
+    card1 = BasicNote(front_md=f"{image2}\n\nSome {image1} text",
+                      back_md=f"Another text\n\n{image1}\n{image2}",
+                      tags=[], deck_name="deck")
+    card2 = BasicNote(front_md=f"{image2}Some text {image1}",
+                      back_md=f"{image1} {image2}\n\nAnother text\n\n",
+                      tags=[], deck_name="deck")
     image_links = {
         image1: [card1, card2],
         image2: [card2, card1]
@@ -107,7 +107,7 @@ def test_update_image_links_in_several_cards_with_same_images():
     expected_front2 = "![](image2.png)Some text ![](img1.png)"
     expected_back2 = "![](img1.png) ![](image2.png)\n\nAnother text\n\n"
 
-    img_handler._update_image_links_in_cards(image_links)
+    img_handler._update_image_links_in_notes(image_links)
 
     assert expected_front1 == card1.updated_front_md
     assert expected_back1 == card1.updated_back_md
@@ -144,18 +144,18 @@ def test_copy_images_to_when_exists_different_image_with_same_name_raises_error(
 
 
 def test_handle_images_if_no_images_then_fields_remain_same(anki_media):
-    card = Card("Some text", "Another text", tags=[], deck_name="deck")
+    card = BasicNote("Some text", "Another text", tags=[], deck_name="deck")
 
     img_handler.handle_images_in([card], anki_media)
 
-    assert card.updated_front_md == card.front_md
+    assert card.updated_front_md == card.raw_front_md
 
 
 def test_handle_images_when_cards_have_images(anki_media, image, another_image):
     image_link1 = f"![some image]({image})"
     image_link2 = f"![another img]({another_image})"
-    card1 = Card(f"Some text {image_link1}", f"{image_link2} Another text", tags=[], deck_name="deck")
-    card2 = Card("Question here", f"And answer here {image_link2}", tags=[], deck_name="deck")
+    card1 = BasicNote(f"Some text {image_link1}", f"{image_link2} Another text", tags=[], deck_name="deck")
+    card2 = BasicNote("Question here", f"And answer here {image_link2}", tags=[], deck_name="deck")
     expected_front1 = f"Some text ![some image]({os.path.basename(image)})"
     expected_front2 = "Question here"
     expected_back1 = f"![another img]({os.path.basename(another_image)}) Another text"
@@ -163,14 +163,14 @@ def test_handle_images_when_cards_have_images(anki_media, image, another_image):
 
     img_handler.handle_images_in([card1, card2], anki_media)
 
-    assert expected_front1 == card1.front_md
-    assert expected_front2 == card2.front_md
-    assert expected_back1 == card1.back_md
-    assert expected_back2 == card2.back_md
+    assert expected_front1 == card1.raw_front_md
+    assert expected_front2 == card2.raw_front_md
+    assert expected_back1 == card1.raw_back_md
+    assert expected_back2 == card2.raw_back_md
 
 
 def test_handle_images_copies_images_to_anki_media(anki_media, image, path_to_anki_image):
-    card = Card("Some text", f"Another text ![img]({image})", tags=[], deck_name="deck")
+    card = BasicNote("Some text", f"Another text ![img]({image})", tags=[], deck_name="deck")
 
     img_handler.handle_images_in([card], anki_media)
 

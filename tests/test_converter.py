@@ -1,13 +1,13 @@
 import pytest
 
 from src.inka.models import converter
-from src.inka.models.card import Card
+from src.inka.models.notes.basic_note import BasicNote
 
 
 @pytest.fixture
 def card():
     """Card object with dummy data"""
-    return Card(front_md='dummy', back_md='dummy', tags=[], deck_name='')
+    return BasicNote(front_md='dummy', back_md='dummy', tags=[], deck_name='')
 
 
 test_strings = {
@@ -68,7 +68,7 @@ test_strings = {
 def test_convert_cards_to_html_front_of_card(card, test_input, expected):
     card.updated_front_md = test_input
 
-    converter.convert_cards_to_html([card])
+    converter.convert_notes_to_html([card])
 
     assert card.front_html == expected
 
@@ -77,7 +77,7 @@ def test_convert_cards_to_html_front_of_card(card, test_input, expected):
 def test_convert_cards_to_html_back_of_card(card, test_input, expected):
     card.updated_back_md = test_input
 
-    converter.convert_cards_to_html([card])
+    converter.convert_notes_to_html([card])
 
     assert card.back_html == expected
 
@@ -87,9 +87,9 @@ def test_convert_cards_to_html_back_of_card(card, test_input, expected):
 def test_convert_card_to_md_front_of_card(card, test_input, expected):
     card.front_html = test_input
 
-    converter.convert_card_to_md(card)
+    converter.convert_note_to_md(card)
 
-    assert card.front_md == expected
+    assert card.raw_front_md == expected
 
 
 @pytest.mark.skip('WIP')
@@ -97,6 +97,6 @@ def test_convert_card_to_md_front_of_card(card, test_input, expected):
 def test_convert_card_to_md_back_of_card(card, test_input, expected):
     card.back_html = test_input
 
-    converter.convert_card_to_md(card)
+    converter.convert_note_to_md(card)
 
-    assert card.back_md == expected
+    assert card.raw_back_md == expected

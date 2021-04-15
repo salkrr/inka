@@ -3,66 +3,68 @@ import re
 from typing import List, Dict, Optional
 
 from .anki_media import AnkiMedia
-from .card import Card
+from .notes.basic_note import BasicNote
 
 
-def handle_images_in(cards: List[Card], anki_media: AnkiMedia) -> None:
+def handle_images_in(notes: List[BasicNote], anki_media: AnkiMedia) -> None:
     """
-    Copy images used in Cards fields to Anki Media folder and change source in their
+    Copy images used in Notes fields to Anki Media folder and change source in their
     links to be just filename (for Anki to find them).
 
     Args:
-        cards: Cards in which image links will be searched for and then updated
+        notes: Notes in which image links will be searched for and then updated
         anki_media: AnkiMedia object that will be used to copy images
     """
-    # Find all unique image links in the cards
-    image_links = _fetch_image_links(cards)
+    # Find all unique image links in the notes
+    image_links = _fetch_image_links(notes)
 
     # Copy images to Anki Media folder
     _copy_images_to(anki_media, list(image_links.keys()))
 
-    # Update image links in cards
-    _update_image_links_in_cards(image_links)
+    # Update image links in notes
+    _update_image_links_in_notes(image_links)
 
 
-def _fetch_image_links(cards: List[Card]) -> Dict[str, List[Card]]:
-    """Get dictionary of image links with cards in which they are used.
+def _fetch_image_links(notes: List[BasicNote]) -> Dict[str, List[BasicNote]]:
+    """Get dictionary of image links with Note objects in which they are used.
 
     Args:
-        cards: Cards in which image links will be searched
+        notes: Notes in which image links will be searched
     Returns:
-        Dictionary with image links as keys and a list of cards in which they are used as values
+        Dictionary with image links as keys and a list of Note objects in which they are used as values
     """
     image_links = dict()
     image_regex = re.compile(r'!\[.*?]\(.*?\)')
-    for card in cards:
-        found_links_front = set(re.findall(image_regex, card.front_md))
-        found_links_back = set(re.findall(image_regex, card.back_md))
-        all_found_links = found_links_front.union(found_links_back)
+    for note in notes:
+        all_found_links = set()
+        all_found_links |= set(re.findall(image_regex, note.raw_front_md))
+        all_found_links |= set(re.findall(image_regex, note.raw_back_md))
 
         for link in all_found_links:
             if not image_links.get(link):
-                image_links[link] = [card]
+                image_links[link] = [note]
                 continue
-            image_links[link].append(card)
+            image_links[link].append(note)
 
     return image_links
 
 
-def _update_image_links_in_cards(image_links: Dict[str, List[Card]]) -> None:
-    """Update image links in Cards. Updated text is stored in updated_front_md and updated_back_md of the Card.
+def _update_image_links_in_notes(image_links: Dict[str, List[BasicNote]]) -> None:
+    """Update image links in Notes. Updated text is stored in updated_front_md and updated_back_md of the Note.
 
     Args:
-        image_links: dictionary with image links as keys and a list of cards in which they are used as values
+        image_links: dictionary with image links as keys and a list of Note objects in which they are used as values
     """
     image_path_regex = re.compile(r'(?<=\().+?(?=\))')
-    for link, cards in image_links.items():
+    for link, notes in image_links.items():
         image_filename = _get_filename_from(link)
         new_link = re.sub(image_path_regex, image_filename, link)
 
-        for card in cards:
-            card.updated_front_md = card.updated_front_md.replace(link, new_link)
-            card.updated_back_md = card.updated_back_md.replace(link, new_link)
+        for note in notes:
+            # We use updated_front_md for replace func cause
+            # we need to preserve previous replacements if there are multiple
+            note.updated_front_md = note.updated_front_md.replace(link, new_link)
+            note.updated_back_md = note.updated_back_md.replace(link, new_link)
 
 
 def _copy_images_to(anki_media: AnkiMedia, image_links: List[str]) -> None:
