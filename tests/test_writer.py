@@ -1,10 +1,11 @@
 import random
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 import pytest
 
 from inka.models.notes.basic_note import BasicNote
+from inka.models.notes.cloze_note import ClozeNote
 from inka.models.parser import Parser
 from inka.models.writer import Writer
 
@@ -37,6 +38,11 @@ def file(tmp_path: Path) -> Path:
             '> \n'
             '> And more to it\n'
             '\n'
+            '3. Only one {line}\n'
+            '\n'
+            '4. Mul{1::tip}le\n\n'
+            '{lines}\n\n'
+            'here\n\n'
             '---'
         )
 
@@ -44,24 +50,24 @@ def file(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def notes(file: Path) -> List[BasicNote]:
+def notes(file: Path) -> List[Union[BasicNote, ClozeNote]]:
     """Notes from the temporary file with randomly generated ids"""
     parser = Parser(file, '')
     notes = parser.collect_notes()
-    for card in notes:
-        card.anki_id = random.randint(1000000000, 9999999999)
+    for note in notes:
+        note.anki_id = random.randint(1000000000, 9999999999)
 
     return notes
 
 
 @pytest.fixture
-def writer(file: Path, notes: List[BasicNote]) -> Writer:
+def writer(file: Path, notes: List[Union[BasicNote, ClozeNote]]) -> Writer:
     """Fake writer which uses temporary file"""
     return Writer(file, notes)
 
 
 @pytest.fixture
-def writer_with_ids(file: Path, notes: List[BasicNote]) -> Writer:
+def writer_with_ids(file: Path, notes: List[Union[BasicNote, ClozeNote]]) -> Writer:
     """Fake writer which uses temporary file and has IDs on cards"""
     writer = Writer(file, notes)
     writer.update_note_ids()
@@ -130,6 +136,8 @@ def test_update_ids_skips_card_if_it_was_not_found(writer, notes):
 
 def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, notes):
     notes[0].anki_id = None
+    notes[2].anki_id = None
+    notes[3].anki_id = None
     expected = (
         '---\n'
         '\n'
@@ -154,6 +162,11 @@ def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, notes):
         '> \n'
         '> And more to it\n'
         '\n'
+        '3. Only one {line}\n'
+        '\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
@@ -188,6 +201,13 @@ def test_update_ids_removes_id_from_file_if_card_object_has_no_id(writer, notes)
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
     expected = (
@@ -214,6 +234,13 @@ def test_update_ids_removes_id_from_file_if_card_object_has_no_id(writer, notes)
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
     notes[0].anki_id = None
@@ -249,6 +276,13 @@ def test_update_ids_writes_id_before_question(writer, notes):
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
@@ -321,7 +355,7 @@ def test_update_card_fields_saves_to_file_system(writer, file):
     expected = 'Some string'
     writer._file_content = expected
 
-    writer.update_note_fields()
+    writer.update_fields_of_basic_notes()
 
     with open(file, mode='rt', encoding='utf-8') as f:
         assert f.read() == expected
@@ -356,10 +390,17 @@ def test_update_card_fields_skips_not_changed_cards(writer_with_ids, notes):
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
-    writer_with_ids.update_note_fields()
+    writer_with_ids.update_fields_of_basic_notes()
 
     assert writer_with_ids._file_content == expected
 
@@ -392,10 +433,17 @@ def test_updates_question_field(writer_with_ids, notes):
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
-    writer_with_ids.update_note_fields()
+    writer_with_ids.update_fields_of_basic_notes()
 
     assert writer_with_ids._file_content == expected
 
@@ -424,10 +472,17 @@ def test_updates_multiline_question_field(writer_with_ids, notes):
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
-    writer_with_ids.update_note_fields()
+    writer_with_ids.update_fields_of_basic_notes()
 
     assert writer_with_ids._file_content == expected
 
@@ -460,10 +515,17 @@ def test_updates_answer_field(writer_with_ids, notes):
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
-    writer_with_ids.update_note_fields()
+    writer_with_ids.update_fields_of_basic_notes()
 
     assert writer_with_ids._file_content == expected
 
@@ -494,10 +556,17 @@ def test_updates_multiline_answer_field(writer_with_ids, notes):
         '> multiline\n'
         '> answer\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
-    writer_with_ids.update_note_fields()
+    writer_with_ids.update_fields_of_basic_notes()
 
     assert writer_with_ids._file_content == expected
 
@@ -544,6 +613,13 @@ def test_deletes_card_marked_for_deletion(writer_with_ids, notes):
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
@@ -562,9 +638,159 @@ def test_deletes_multiple_cards_marked_for_deletion(writer_with_ids, notes):
         '\n'
         'Tags: one two-three\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
+        '3. Only one {line}\n'
+        '\n'
+        f'<!--ID:{notes[3].anki_id}-->\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
         '---'
     )
 
     writer_with_ids.delete_notes()
 
     assert writer_with_ids._file_content == expected
+
+
+def test_update_cloze_notes_saves_to_file_system(writer, file):
+    expected = 'Some string'
+    writer._file_content = expected
+
+    writer.update_cloze_notes()
+
+    with open(file, mode='rt', encoding='utf-8') as f:
+        assert f.read() == expected
+
+
+def test_update_cloze_notes_when_note_has_only_one_line(writer, notes):
+    notes[2].updated_text_md = 'Only one {{c1::line}}'
+    expected = (
+        '---\n'
+        '\n'
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '1. Some question?\n'
+        '\n'
+        '> First answer\n'
+        '\n'
+        '2. Another question\n'
+        '\n'
+        'More info on question.\n'
+        '\n'
+        'And even more!\n'
+        '\n'
+        '> Second answer\n'
+        '> \n'
+        '> Additional info\n'
+        '> \n'
+        '> And more to it\n'
+        '\n'
+        '3. Only one {{c1::line}}\n'
+        '\n'
+        '4. Mul{1::tip}le\n\n'
+        '{lines}\n\n'
+        'here\n\n'
+        '---'
+    )
+
+    writer.update_cloze_notes()
+
+    assert writer._file_content == expected
+
+
+def test_update_cloze_notes_when_note_has_multiple_lines(writer, notes):
+    notes[3].updated_text_md = (
+        'Mul{{c1::tip}}le\n\n'
+        '{{c2::lines}}\n\n'
+        'here'
+    )
+    expected = (
+        '---\n'
+        '\n'
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '1. Some question?\n'
+        '\n'
+        '> First answer\n'
+        '\n'
+        '2. Another question\n'
+        '\n'
+        'More info on question.\n'
+        '\n'
+        'And even more!\n'
+        '\n'
+        '> Second answer\n'
+        '> \n'
+        '> Additional info\n'
+        '> \n'
+        '> And more to it\n'
+        '\n'
+        '3. Only one {line}\n'
+        '\n'
+        '4. Mul{{c1::tip}}le\n\n'
+        '{{c2::lines}}\n\n'
+        'here\n\n'
+        '---'
+    )
+
+    writer.update_cloze_notes()
+
+    assert writer._file_content == expected
+
+
+# updates multiple cards
+def test_update_cloze_notes_when_multiple_notes_has_changes(writer, notes):
+    notes[2].updated_text_md = 'Only one {{c1::line}}'
+    notes[3].updated_text_md = (
+        'Mul{{c1::tip}}le\n\n'
+        '{{c2::lines}}\n\n'
+        'here'
+    )
+    expected = (
+        '---\n'
+        '\n'
+        'Deck: Abraham\n'
+        '\n'
+        'Tags: one two-three\n'
+        '\n'
+        '1. Some question?\n'
+        '\n'
+        '> First answer\n'
+        '\n'
+        '2. Another question\n'
+        '\n'
+        'More info on question.\n'
+        '\n'
+        'And even more!\n'
+        '\n'
+        '> Second answer\n'
+        '> \n'
+        '> Additional info\n'
+        '> \n'
+        '> And more to it\n'
+        '\n'
+        '3. Only one {{c1::line}}\n'
+        '\n'
+        '4. Mul{{c1::tip}}le\n\n'
+        '{{c2::lines}}\n\n'
+        'here\n\n'
+        '---'
+    )
+
+    writer.update_cloze_notes()
+
+    assert writer._file_content == expected
+
+
+def test_update_cloze_notes_basic_notes_ignored(writer, notes):
+    notes[0].updated_text_md = 'Amazing new question'
+    expected = writer._file_content
+
+    writer.update_cloze_notes()
+
+    assert writer._file_content == expected

@@ -2,13 +2,14 @@ from pathlib import Path
 from typing import Union, List, Optional
 
 from .notes.basic_note import BasicNote
+from .notes.cloze_note import ClozeNote
 from .parser import Parser
 
 
 class Writer:
     """Class for editing file with notes"""
 
-    def __init__(self, file_path: Union[str, Path], notes: List[BasicNote]):
+    def __init__(self, file_path: Union[str, Path], notes: List[Union[BasicNote, ClozeNote]]):
         self._file_path = file_path
         self._notes = notes
 
@@ -20,7 +21,9 @@ class Writer:
         """Update lines with IDs of the notes from the file"""
         for note in self._notes:
             # Find note's question in file string
-            question_start = self._file_content.find(note.raw_front_md)
+            note_front = note.raw_front_md if isinstance(note, BasicNote) else note.raw_text_md
+            question_start = self._file_content.find(note_front)
+
             # Note may not be found cause it was deleted
             if question_start == -1:
                 continue
@@ -52,7 +55,7 @@ class Writer:
 
         self._save()
 
-    def update_note_fields(self):
+    def update_fields_of_basic_notes(self):
         """Update question and answer fields in notes in file"""
         for note in self._notes:
             if not note.changed:
@@ -87,6 +90,14 @@ class Writer:
             # Delete note text from file
             self._file_content = self._file_content.replace(note_string, '')
 
+        self._save()
+
+    def update_cloze_notes(self):
+        """Updates all cloze notes with the values from updated_text_md field"""
+        for note in self._notes:
+            if not isinstance(note, ClozeNote):
+                continue
+            self._file_content = self._file_content.replace(note.raw_text_md, note.updated_text_md, 1)
         self._save()
 
     def _save(self):
