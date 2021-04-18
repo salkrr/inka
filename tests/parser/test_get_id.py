@@ -36,10 +36,16 @@ test_cases = {
      '\n'
      'Tags: one two-three\n'
      '\n'
-     f'<!--ID:123a-->\n'
+     '<!--ID:123a-->\n'
      '1. Some question?\n'
      '\n'
-     '> Answer'): None
+     '> Answer'): None,
+
+    (
+        '<!--ID:1612579125074-->\n'
+        '32. Some {question?}\n'
+        '\n'
+    ): 1612579125074,
 }
 
 

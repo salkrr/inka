@@ -47,11 +47,11 @@ def file(tmp_path: Path) -> Path:
 def notes(file: Path) -> List[BasicNote]:
     """Notes from the temporary file with randomly generated ids"""
     parser = Parser(file, '')
-    cards = parser.collect_notes()
-    for card in cards:
+    notes = parser.collect_notes()
+    for card in notes:
         card.anki_id = random.randint(1000000000, 9999999999)
 
-    return cards
+    return notes
 
 
 @pytest.fixture
@@ -531,7 +531,6 @@ def test_deletes_card_marked_for_deletion(writer_with_ids, notes):
         '\n'
         'Tags: one two-three\n'
         '\n'
-        '\n'
         f'<!--ID:{notes[1].anki_id}-->\n'
         '2. Another question\n'
         '\n'
@@ -562,8 +561,6 @@ def test_deletes_multiple_cards_marked_for_deletion(writer_with_ids, notes):
         'Deck: Abraham\n'
         '\n'
         'Tags: one two-three\n'
-        '\n'
-        '\n'
         '\n'
         '---'
     )

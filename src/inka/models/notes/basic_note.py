@@ -23,3 +23,9 @@ class BasicNote(BaseNote):
 
         return (self.raw_front_md == other.raw_front_md and
                 self.raw_back_md == other.raw_back_md)
+
+    def __repr__(self):
+        return (
+            f'{self.__class__.__name__}(front_md={self.raw_front_md!r}, back_md={self.raw_back_md!r}, '
+            f'tags={self.tags!r}, deck_name={self.deck_name!r}, anki_id={self.anki_id!r})'
+        )

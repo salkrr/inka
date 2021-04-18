@@ -117,7 +117,40 @@ test_cases = {
                  '\n'
                  '```commandline\n'
                  'inka collect -u path/to/file.md\n'
-                 '```')
+                 '```'),
+    # cloze
+    (
+        '1. Some {question?}\n'
+        '\n'
+    ): 'Some {question?}',
+
+    # cloze anki format
+    (
+        '2. Some {{c1::question?}}\n'
+        '\n'
+    ): 'Some {{c1::question?}}',
+
+    # cloze with ID
+    (
+        '<!--ID:1612579125074-->\n'
+        '32. Some {question?}\n'
+        '\n'
+    ): 'Some {question?}',
+
+    # multiline cloze
+    (
+        '1. Some {question?}\n'
+        '\n'
+        'More {{c1::info on question}}.\n'
+        '\n'
+        '{1::And::hint} even more!'
+    ): (
+        'Some {question?}\n'
+        '\n'
+        'More {{c1::info on question}}.\n'
+        '\n'
+        '{1::And::hint} even more!'
+    ),
 }
 
 
