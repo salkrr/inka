@@ -1,12 +1,13 @@
 import os
 import re
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 from .anki_media import AnkiMedia
 from .notes.basic_note import BasicNote
+from .notes.cloze_note import ClozeNote
 
 
-def handle_images_in(notes: List[BasicNote], anki_media: AnkiMedia) -> None:
+def handle_images_in(notes: List[Union[BasicNote, ClozeNote]], anki_media: AnkiMedia) -> None:
     """
     Copy images used in Notes fields to Anki Media folder and change source in their
     links to be just filename (for Anki to find them).
@@ -25,7 +26,7 @@ def handle_images_in(notes: List[BasicNote], anki_media: AnkiMedia) -> None:
     _update_image_links_in_notes(image_links)
 
 
-def _fetch_image_links(notes: List[BasicNote]) -> Dict[str, List[BasicNote]]:
+def _fetch_image_links(notes: List[Union[BasicNote, ClozeNote]]) -> Dict[str, List[BasicNote]]:
     """Get dictionary of image links with Note objects in which they are used.
 
     Args:
@@ -37,8 +38,11 @@ def _fetch_image_links(notes: List[BasicNote]) -> Dict[str, List[BasicNote]]:
     image_regex = re.compile(r'!\[.*?]\(.*?\)')
     for note in notes:
         all_found_links = set()
-        all_found_links |= set(re.findall(image_regex, note.raw_front_md))
-        all_found_links |= set(re.findall(image_regex, note.raw_back_md))
+        if isinstance(note, BasicNote):
+            all_found_links |= set(re.findall(image_regex, note.raw_front_md))
+            all_found_links |= set(re.findall(image_regex, note.raw_back_md))
+        else:
+            all_found_links |= set(re.findall(image_regex, note.raw_text_md))
 
         for link in all_found_links:
             if not image_links.get(link):
@@ -49,7 +53,7 @@ def _fetch_image_links(notes: List[BasicNote]) -> Dict[str, List[BasicNote]]:
     return image_links
 
 
-def _update_image_links_in_notes(image_links: Dict[str, List[BasicNote]]) -> None:
+def _update_image_links_in_notes(image_links: Dict[str, List[Union[BasicNote, ClozeNote]]]) -> None:
     """Update image links in Notes. Updated text is stored in updated_front_md and updated_back_md of the Note.
 
     Args:
@@ -63,8 +67,12 @@ def _update_image_links_in_notes(image_links: Dict[str, List[BasicNote]]) -> Non
         for note in notes:
             # We use updated_front_md for replace func cause
             # we need to preserve previous replacements if there are multiple
-            note.updated_front_md = note.updated_front_md.replace(link, new_link)
-            note.updated_back_md = note.updated_back_md.replace(link, new_link)
+            if isinstance(note, BasicNote):
+                note.updated_front_md = note.updated_front_md.replace(link, new_link)
+                note.updated_back_md = note.updated_back_md.replace(link, new_link)
+                continue
+
+            note.updated_text_md = note.updated_text_md.replace(link, new_link)
 
 
 def _copy_images_to(anki_media: AnkiMedia, image_links: List[str]) -> None:
