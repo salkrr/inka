@@ -329,21 +329,10 @@ def test_convert_cloze_deletions_to_anki_format_works_with_multiple_notes():
 
 
 @pytest.mark.parametrize('test_input, expected', md_to_html_test_cases.items())
-def test_convert_cards_to_html_front_of_card(basic_note, test_input, expected):
-    basic_note.updated_front_md = test_input
+def test_convert_md_to_html(basic_note, test_input, expected):
+    html = converter.convert_md_to_html(test_input)
 
-    converter.convert_notes_to_html([basic_note])
-
-    assert basic_note.front_html == expected
-
-
-@pytest.mark.parametrize('test_input, expected', md_to_html_test_cases.items())
-def test_convert_cards_to_html_back_of_card(basic_note, test_input, expected):
-    basic_note.updated_back_md = test_input
-
-    converter.convert_notes_to_html([basic_note])
-
-    assert basic_note.back_html == expected
+    assert html == expected
 
 
 def test_convert_cards_to_html_works_with_multiple_cards():
@@ -355,32 +344,15 @@ def test_convert_cards_to_html_works_with_multiple_cards():
     )
     basic_note1 = BasicNote(front_md=text1, back_md=text2, tags=[], deck_name='')
     basic_note2 = BasicNote(front_md=text2, back_md=text1, tags=[], deck_name='')
+    cloze_note = ClozeNote(text_md='Some question {{c1::42}}', tags=[], deck_name='')
     expected1 = r'<p>inside \[\sqrt{2}\] text</p>'
     expected2 = '<ol><li>Item1</li><li>Item2</li><li>Item3</li></ol>'
+    expected3 = '<p>Some question {{c1::42}}</p>'
 
-    converter.convert_notes_to_html([basic_note1, basic_note2])
+    converter.convert_notes_to_html([basic_note1, basic_note2, cloze_note])
 
     assert basic_note1.front_html == expected1
     assert basic_note1.back_html == expected2
     assert basic_note2.front_html == expected2
     assert basic_note2.back_html == expected1
-
-
-@pytest.mark.skip('WIP')
-@pytest.mark.parametrize('expected, test_input', md_to_html_test_cases.items())
-def test_convert_card_to_md_front_of_card(basic_note, test_input, expected):
-    basic_note.front_html = test_input
-
-    converter.convert_note_to_md(basic_note)
-
-    assert basic_note.raw_front_md == expected
-
-
-@pytest.mark.skip('WIP')
-@pytest.mark.parametrize('expected, test_input', md_to_html_test_cases.items())
-def test_convert_card_to_md_back_of_card(basic_note, test_input, expected):
-    basic_note.back_html = test_input
-
-    converter.convert_note_to_md(basic_note)
-
-    assert basic_note.raw_back_md == expected
+    assert cloze_note.text_html == expected3

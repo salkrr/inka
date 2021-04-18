@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Union
 
 import mistune
 
@@ -31,8 +31,8 @@ def convert_cloze_deletions_to_anki_format(cloze_notes: List[ClozeNote]):
 
     for note in cloze_notes:
         # We remove code and math blocks from string before searching cloze deletions
-        # Possible issue: if we have inside block string '{ 123 }' and have the same string outside block
-        # then it may be replaced by anki cloze syntax
+        # Possible issue: if we have short syntax cloze inside block (e.g. '{ 123 }') and have
+        # the same string outside block then string inside block may be replaced by anki cloze syntax
         redacted_text = re.sub(code_block_regex, '', note.raw_text_md)  # block code should be removed before inline
         redacted_text = re.sub(code_inline_regex, '', redacted_text)
         redacted_text = re.sub(BLOCK_MATHJAX, '', redacted_text)  # block math should be removed before inline math
@@ -57,11 +57,15 @@ def convert_cloze_deletions_to_anki_format(cloze_notes: List[ClozeNote]):
             note.updated_text_md = note.updated_text_md.replace(cloze, new_cloze, 1)
 
 
-def convert_notes_to_html(notes: List[BasicNote]):
+def convert_notes_to_html(notes: List[Union[BasicNote, ClozeNote]]):
     """Convert note fields to html"""
     for note in notes:
-        note.front_html = convert_md_to_html(note.updated_front_md)
-        note.back_html = convert_md_to_html(note.updated_back_md)
+        if isinstance(note, BasicNote):
+            note.front_html = convert_md_to_html(note.updated_front_md)
+            note.back_html = convert_md_to_html(note.updated_back_md)
+            continue
+
+        note.text_html = convert_md_to_html(note.updated_text_md)
 
 
 def convert_md_to_html(text: str) -> str:
@@ -69,10 +73,3 @@ def convert_md_to_html(text: str) -> str:
     return re.sub(r'\n?(<.+?>)\n?',
                   lambda tag_match: tag_match.group(1),
                   MD(text))
-
-# def convert_note_to_md(note: BasicNote):
-#     """Convert front_html and back_html fields to markdown and write result into raw_front_md and raw_back_md fields"""
-#     # We needed to remove '\n\n' at the end of strings because
-#     # this line brakes aren't needed for updating notes in file
-#     note.raw_front_md = markdownify(note.front_html, heading_style='ATX', bullets='-').rstrip()
-#     note.raw_back_md = markdownify(note.back_html, heading_style='ATX', bullets='-').rstrip()
