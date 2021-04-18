@@ -2,8 +2,8 @@ import pytest
 import requests
 from requests import HTTPError
 
-from src.inka.models import highlighter
-from src.inka.models.highlighter import BASE_URL
+from inka.models import highlighter
+from inka.models.highlighter import BASE_URL
 
 
 @pytest.fixture

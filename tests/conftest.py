@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 import pytest
 from PIL import Image as Img
 
-from src.inka.models.anki_api import AnkiApi
-from src.inka.models.anki_media import AnkiMedia
-from src.inka.models.parser import Parser
+from inka.models.anki_api import AnkiApi
+from inka.models.anki_media import AnkiMedia
+from inka.models.parser import Parser
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from src.inka import util
+from inka import util
 
 
 def test_escapes_backward_slashes():

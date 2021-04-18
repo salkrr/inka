@@ -1,7 +1,7 @@
 import pytest
 
-from src.inka.models import converter
-from src.inka.models.notes.basic_note import BasicNote
+from inka.models import converter
+from inka.models.notes.basic_note import BasicNote
 
 
 @pytest.fixture

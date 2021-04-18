@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from src.inka.models import img_handler
-from src.inka.models.notes.basic_note import BasicNote
+from inka.models import img_handler
+from inka.models.notes.basic_note import BasicNote
 
 
 def test_fetch_image_links_if_cards_do_not_have_images():

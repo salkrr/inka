@@ -4,9 +4,9 @@ from typing import List
 
 import pytest
 
-from src.inka.models.notes.basic_note import BasicNote
-from src.inka.models.parser import Parser
-from src.inka.models.writer import Writer
+from inka.models.notes.basic_note import BasicNote
+from inka.models.parser import Parser
+from inka.models.writer import Writer
 
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 import pytest
 
-from src.inka.models.notes.basic_note import BasicNote
-from src.inka.models.notes.cloze_note import ClozeNote
+from inka.models.notes.basic_note import BasicNote
+from inka.models.notes.cloze_note import ClozeNote
 
 test_cases = {
     'Deck: Abraham\n': [],

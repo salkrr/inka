@@ -5,3 +5,4 @@ Pillow==8.1.1
 pytest==6.2.2
 pytest-cov==2.11.1
 pytest-mock==3.5.1
+tox==3.23.0
