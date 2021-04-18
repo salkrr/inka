@@ -1,4 +1,4 @@
-name: Run tests
+name: Run Tests
 
 on:
   push:
@@ -34,29 +34,14 @@ jobs:
 
       - name: Test with pytest
         run: |
+          pip install .
           mkdir -p ~/.local/share/Anki2/test/collection.media/
-          python -m pytest --cov=src/inka --cov-report=xml:coverage-${{ matrix.python }}.xml
-
-      - name: Upload pytest coverage artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage-${{ matrix.python }}.xml
-          path: ./coverage-${{ matrix.python }}.xml
-          retention-days: 1
-
-  coverage:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download pytest coverage artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: coverage-3.9.xml
+          pytest --cov=inka --cov-report=xml
 
       - name: Upload coverage to Codecov
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: |
-          pip install codecov
-          codecov --file coverage-3.9.xml
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: unittests
+          name: GitHub
