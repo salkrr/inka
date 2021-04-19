@@ -11,6 +11,7 @@ from .models.anki_api import AnkiApi
 from .models.anki_media import AnkiMedia
 from .models.config import Config
 from .models.notes.basic_note import BasicNote
+from .models.notes.cloze_note import ClozeNote
 from .models.parser import Parser
 from .models.writer import Writer
 
@@ -18,13 +19,9 @@ FILE_EXTENSIONS = ['.md', '.markdown']
 CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
 
 cfg = Config(CONFIG_PATH)
-anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
-                   cfg.get_option_value('anki', 'note_type'),
-                   cfg.get_option_value('anki', 'front_field'),
-                   cfg.get_option_value('anki', 'back_field'))
 
 
-def get_notes_from_file(file_path: str, anki_media: AnkiMedia) -> List[BasicNote]:
+def get_notes_from_file(file_path: str) -> List[BasicNote]:
     click.echo('Getting cards from the file...')
 
     # We need to change working directory because images in file can have relative path
@@ -34,23 +31,27 @@ def get_notes_from_file(file_path: str, anki_media: AnkiMedia) -> List[BasicNote
     parser = Parser(file_path, default_deck)
     notes = parser.collect_notes()
 
-    note_num = len(notes)
-    if note_num == 0:
-        click.echo(f"Cards weren't found!")
-    else:
-        click.echo(f'Found {note_num} cards!')
-        img_handler.handle_images_in(notes, anki_media)
-
     return notes
 
 
-def create_notes_from_file(file_path: str, anki_media: AnkiMedia) -> None:
+def create_notes_from_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia) -> None:
     """Get all notes from file and send them to Anki"""
     click.echo(f'Starting to collect cards from "{os.path.basename(file_path)}"!')
 
-    notes = get_notes_from_file(file_path, anki_media)
-    if not notes:
+    notes = get_notes_from_file(file_path)
+    notes_num = len(notes)
+    if notes_num == 0:
+        click.echo(f"Cards weren't found!")
         return
+    click.echo(f'Found {notes_num} cards!')
+
+    converter.convert_cloze_deletions_to_anki_format(
+        [note for note in notes if isinstance(note, ClozeNote)]
+    )
+    writer = Writer(file_path, notes)
+    writer.update_cloze_notes()
+
+    img_handler.handle_images_in(notes, anki_media)
 
     click.echo('Converting cards to the html...')
     converter.convert_notes_to_html(notes)
@@ -66,17 +67,27 @@ def create_notes_from_file(file_path: str, anki_media: AnkiMedia) -> None:
     anki_api.add_notes(notes_without_id)
 
     click.echo('Adding IDs to cards...')
-    writer = Writer(file_path, notes)
     writer.update_note_ids()
 
 
-def update_note_ids_in_file(file_path: str, anki_media: AnkiMedia):
+def update_note_ids_in_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia):
     """Update IDs of notes in file by getting their IDs from Anki"""
     click.echo(f'Starting to update IDs of cards from "{os.path.basename(file_path)}"!')
 
-    notes = get_notes_from_file(file_path, anki_media)
-    if not notes:
+    notes = get_notes_from_file(file_path)
+    notes_num = len(notes)
+    if notes_num == 0:
+        click.echo(f"Cards weren't found!")
         return
+
+    click.echo(f'Found {notes_num} cards!')
+    converter.convert_cloze_deletions_to_anki_format(
+        [note for note in notes if isinstance(note, ClozeNote)]
+    )
+    writer = Writer(file_path, notes)
+    writer.update_cloze_notes()
+
+    img_handler.handle_images_in(notes, anki_media)
 
     click.echo('Converting cards to the html...')
     converter.convert_notes_to_html(notes)
@@ -85,7 +96,7 @@ def update_note_ids_in_file(file_path: str, anki_media: AnkiMedia):
     anki_api.update_note_ids(notes)
 
     click.echo('Adding IDs to cards...')
-    Writer(file_path, notes).update_note_ids()
+    writer.update_note_ids()
 
 
 def get_file_paths_from_directory(dir_path: str, search_recursive: bool) -> Set[str]:
@@ -139,7 +150,7 @@ def get_profile_from_user(profiles: List[str], message: str = None) -> str:
     return profile
 
 
-def get_profile(prompt_user: bool) -> str:
+def get_profile(prompt_user: bool, anki_api: AnkiApi) -> str:
     click.echo('Getting list of profiles from Anki...')
     profiles = anki_api.get_profiles()
 
@@ -161,7 +172,7 @@ def get_profile(prompt_user: bool) -> str:
     return profile
 
 
-def check_anki_connection() -> None:
+def check_anki_connection(anki_api: AnkiApi) -> None:
     click.echo("Attempting to connect to Anki...")
     if not anki_api.check_connection():
         click.secho("Couldn't connect to Anki. "
@@ -282,11 +293,23 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
 
         paths.add(default_path)
 
+    try:
+        anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
+                           cfg.get_option_value('anki', 'basic_type'),
+                           cfg.get_option_value('anki', 'front_field'),
+                           cfg.get_option_value('anki', 'back_field'),
+                           cfg.get_option_value('anki', 'cloze_type'),
+                           cfg.get_option_value('anki', 'cloze_field'))
+    except KeyError:
+        # Handle backward compatibility issues
+        click.secho("Your config file is corrupted. Please reset it state with 'inka config --reset' command", fg='red')
+        sys.exit(1)
+
     # Check connection with Anki
-    check_anki_connection()
+    check_anki_connection(anki_api)
 
     # Get name of profile and select it in Anki
-    profile = get_profile(prompt)
+    profile = get_profile(prompt, anki_api)
     anki_api.select_profile(profile)
 
     anki_media = AnkiMedia(profile)
@@ -308,9 +331,9 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
     for file in files:
         try:
             if update_ids:
-                update_note_ids_in_file(file, anki_media)
+                update_note_ids_in_file(file, anki_api, anki_media)
             else:
-                create_notes_from_file(file, anki_media)
+                create_notes_from_file(file, anki_api, anki_media)
 
             os.chdir(initial_directory)
         except (OSError, ValueError, FileNotFoundError, FileExistsError) as e:

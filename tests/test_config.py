@@ -28,9 +28,11 @@ def default_config_string():
         'folder = \n'
         '\n'
         '[anki]\n'
-        'note_type = Basic\n'
+        'basic_type = Basic\n'
         'front_field = Front\n'
         'back_field = Back\n'
+        'cloze_type = Cloze\n'
+        'cloze_field = Text\n'
         '\n'
         '[anki_connect]\n'
         'port = 8765\n'
@@ -153,9 +155,11 @@ def test_get_formatted_list_of_config_entries(config):
         f'defaults.profile = {config._default_profile}',
         f'defaults.deck = {config._default_deck}',
         f'defaults.folder = {config._default_folder}',
-        f'anki.note_type = {config._default_note_type}',
+        f'anki.basic_type = {config._default_basic_type}',
         f'anki.front_field = {config._default_front_field}',
         f'anki.back_field = {config._default_back_field}',
+        f'anki.cloze_type = {config._default_cloze_type}',
+        f'anki.cloze_field = {config._default_cloze_field}',
         f'anki_connect.port = {config._default_port}',
         f'highlight.style = {config._default_highlight_style}',
     ]
@@ -190,7 +194,7 @@ def test_new_options_removed_by_reset(config, config_path, default_config_string
             'new_option': 123456
         },
         'anki': {
-            'note_type': config._default_note_type,
+            'note_type': config._default_basic_type,
             'front_field': config._default_front_field,
             'back_field': config._default_back_field
         },

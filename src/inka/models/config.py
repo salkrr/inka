@@ -10,9 +10,11 @@ class Config:
     _default_deck = 'Default'
     _default_folder = ''
     _default_profile = ''
-    _default_note_type = 'Basic'
+    _default_basic_type = 'Basic'
     _default_front_field = 'Front'
     _default_back_field = 'Back'
+    _default_cloze_type = 'Cloze'
+    _default_cloze_field = 'Text'
     _default_port = '8765'
     _default_highlight_style = 'monokai'
 
@@ -39,9 +41,11 @@ class Config:
                 'folder': self._default_folder,
             },
             'anki': {
-                'note_type': self._default_note_type,
+                'basic_type': self._default_basic_type,
                 'front_field': self._default_front_field,
-                'back_field': self._default_back_field
+                'back_field': self._default_back_field,
+                'cloze_type': self._default_cloze_type,
+                'cloze_field': self._default_cloze_field
             },
             'anki_connect': {
                 'port': self._default_port
