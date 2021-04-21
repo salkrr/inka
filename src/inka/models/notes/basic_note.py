@@ -1,9 +1,10 @@
-from typing import Iterable, Any, Callable
+from typing import Iterable, Any, Callable, Dict
 
-from .base_note import BaseNote
+from .note import Note
+from ..config import Config
 
 
-class BasicNote(BaseNote):
+class BasicNote(Note):
     """Front/Back note type"""
 
     def __init__(self, front_md: str, back_md: str, tags: Iterable[str], deck_name: str, anki_id: int = None):
@@ -19,6 +20,33 @@ class BasicNote(BaseNote):
         """Convert note fields from markdown to html using provided function"""
         self.front_html = convert_func(self.updated_front_md)
         self.back_html = convert_func(self.updated_back_md)
+
+    def get_search_field(self) -> str:
+        """Get field (with html) that will be used for search in Anki"""
+        return self.front_html
+
+    def get_html_fields(self, cfg: Config) -> Dict[str, str]:
+        """Return dictionary with Anki field names as keys and html strings as values"""
+        return {
+            cfg.get_option_value('anki', 'front_field'): self.front_html,
+            cfg.get_option_value('anki', 'back_field'): self.back_html
+        }
+
+    def get_note_info(self) -> str:
+        """String used to display info about note in case of error"""
+        front_shortened = self.shorten_text(self.raw_front_md)
+        back_shortened = self.shorten_text(self.raw_back_md)
+        info = 'Basic Note\n'
+        info += '--------------------------------------------------\n'
+        info += f'Front: {front_shortened}\n'
+        info += f'Back: {back_shortened}\n'
+        info += '--------------------------------------------------\n'
+        return info
+
+    @staticmethod
+    def get_anki_note_type(cfg: Config) -> str:
+        """Get name of Anki note type"""
+        return cfg.get_option_value('anki', 'basic_type')
 
     def __eq__(self, other: Any) -> bool:
         if not super().__eq__(other):

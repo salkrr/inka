@@ -18,7 +18,7 @@ from .models.writer import Writer
 FILE_EXTENSIONS = ['.md', '.markdown']
 CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
 
-cfg = Config(CONFIG_PATH)
+CONFIG = Config(CONFIG_PATH)
 
 
 def get_notes_from_file(file_path: str) -> List[BasicNote]:
@@ -27,7 +27,7 @@ def get_notes_from_file(file_path: str) -> List[BasicNote]:
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
 
-    default_deck = cfg.get_option_value('defaults', 'deck')
+    default_deck = CONFIG.get_option_value('defaults', 'deck')
     parser = Parser(file_path, default_deck)
     notes = parser.collect_notes()
 
@@ -145,7 +145,7 @@ def get_profile_from_user(profiles: List[str], message: str = None) -> str:
 
     # Ask user to save profile as default
     if click.confirm('Save profile as default?'):
-        cfg.update_option_value('defaults', 'profile', profile)
+        CONFIG.update_option_value('defaults', 'profile', profile)
 
     return profile
 
@@ -163,7 +163,7 @@ def get_profile(prompt_user: bool, anki_api: AnkiApi) -> str:
         return get_profile_from_user(profiles)
 
     click.echo('Getting profile from config...')
-    profile = cfg.get_option_value('defaults', 'profile')
+    profile = CONFIG.get_option_value('defaults', 'profile')
     if not profile:
         profile = get_profile_from_user(profiles, 'Default profile is not specified.')
     elif profile not in profiles:
@@ -186,7 +186,7 @@ def reset_config_file(ctx, param, value) -> None:
     if not value or ctx.resilient_parsing:
         return
 
-    cfg.reset()
+    CONFIG.reset()
     ctx.exit()
 
 
@@ -194,7 +194,7 @@ def list_config_options(ctx, param, value) -> None:
     if not value or ctx.resilient_parsing:
         return
 
-    for entry in cfg.get_formatted_options():
+    for entry in CONFIG.get_formatted_options():
         click.echo(entry)
     ctx.exit()
 
@@ -243,10 +243,10 @@ def config(list_options: bool, reset: bool, name: str, value: str) -> None:
         section, key = name.split('.')
 
         if not value:
-            click.echo(cfg.get_option_value(section, key))
+            click.echo(CONFIG.get_option_value(section, key))
             sys.exit()
 
-        cfg.update_option_value(section, key, value)
+        CONFIG.update_option_value(section, key, value)
     except (KeyError, ValueError):
         click.secho('Incorrect name of a config entry!', fg='red')
         click.echo('To get list of all entries use "--list" flag.')
@@ -285,7 +285,7 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
     # If no path specified as an argument, search for default path in config
     paths = set(paths)
     if not paths:
-        default_path = os.path.expanduser(cfg.get_option_value('defaults', 'folder'))
+        default_path = os.path.expanduser(CONFIG.get_option_value('defaults', 'folder'))
         if not default_path:
             click.secho('Default folder is not specified in the config!\n'
                         'You must pass the path to a file or folder as an argument.', fg='red')
@@ -293,17 +293,7 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
 
         paths.add(default_path)
 
-    try:
-        anki_api = AnkiApi(cfg.get_option_value('anki_connect', 'port'),
-                           cfg.get_option_value('anki', 'basic_type'),
-                           cfg.get_option_value('anki', 'front_field'),
-                           cfg.get_option_value('anki', 'back_field'),
-                           cfg.get_option_value('anki', 'cloze_type'),
-                           cfg.get_option_value('anki', 'cloze_field'))
-    except KeyError:
-        # Handle backward compatibility issues
-        click.secho("Your config file is corrupted. Please reset it state with 'inka config --reset' command", fg='red')
-        sys.exit(1)
+    anki_api = AnkiApi(CONFIG)
 
     # Check connection with Anki
     check_anki_connection(anki_api)
@@ -314,14 +304,27 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
 
     anki_media = AnkiMedia(profile)
     try:
-        highlighter.add_code_highlight_to_note_type(
-            cfg.get_option_value('highlight', 'style'), anki_api, anki_media
+        highlighter.add_code_highlight_to(
+            BasicNote,
+            CONFIG.get_option_value('highlight', 'style'),
+            anki_api,
+            anki_media
         )
-    except ConnectionError as e:
-        click.secho(str(e), fg='yellow')
+        highlighter.add_code_highlight_to(
+            ClozeNote,
+            CONFIG.get_option_value('highlight', 'style'),
+            anki_api,
+            anki_media
+        )
+    except KeyError:
+        # Handle backward compatibility issues (config options were changed)
+        click.secho("Your config file is corrupted. Please reset it state with 'inka config --reset' command", fg='red')
+        sys.exit(1)
     except requests.exceptions.RequestException as e:
         click.secho(f'Error while adding code highlight: "{e}"', fg='red')
         sys.exit(1)
+    except ConnectionError as e:
+        click.secho(str(e), fg='yellow')
 
     # Get paths to all files
     files = get_paths_to_files(paths, recursive)

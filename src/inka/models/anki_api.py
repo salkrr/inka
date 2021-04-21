@@ -1,32 +1,22 @@
-from typing import Union, List, Any, Dict
+from typing import Union, List, Any, Dict, Type
 
 import click
 import requests
 from requests import RequestException
 
+from .config import Config
 from .notes.basic_note import BasicNote
 from .notes.cloze_note import ClozeNote
+from .notes.note import Note
 from ..util import create_anki_search_query
 
 
 class AnkiApi:
     """Class for working with server created by Anki Connect"""
 
-    def __init__(
-            self,
-            port: Union[str, int],
-            basic_note_type: str,
-            front_field_name: str,
-            back_field_name: str,
-            cloze_note_type: str,
-            cloze_field_name: str
-    ):
-        self._api_url = f'http://localhost:{port}'
-        self._basic_note_type = basic_note_type
-        self._front_field_name = front_field_name
-        self._back_field_name = back_field_name
-        self._cloze_note_type = cloze_note_type
-        self._cloze_field_name = cloze_field_name
+    def __init__(self, cfg: Config):
+        self._cfg = cfg
+        self._api_url = f'http://localhost:{cfg.get_option_value("anki_connect", "port")}'
         self._change_tag = 'changed'
         self._delete_tag = 'delete'
 
@@ -75,12 +65,8 @@ class AnkiApi:
             if notes_info[i]:
                 continue
 
-            if isinstance(note, BasicNote):
-                front_field = note.front_html
-            else:
-                front_field = note.text_html
-
-            query = create_anki_search_query(front_field)
+            search_field = note.get_search_field()
+            query = create_anki_search_query(search_field)
             found_notes = self._send_request('findNotes', query=query)
             note.anki_id = found_notes[0] if found_notes else None
 
@@ -117,7 +103,6 @@ class AnkiApi:
                 note_params['id'] = note.anki_id
                 self._send_request('updateNoteFields', note=note_params)
             except RequestException as e:
-                # TODO: print error message with hint to '-u' flag
                 self._print_error_message(note, e)
 
     def delete_notes(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:
@@ -131,29 +116,29 @@ class AnkiApi:
                            notes=[note.anki_id for note in notes],
                            tags=self._change_tag)
 
-    def fetch_note_type_styling(self) -> str:
+    def fetch_note_type_styling(self, note_type: Type[Note]) -> str:
         """Get styling of note type that is used to add notes"""
-        return self._send_request('modelStyling', modelName=self._basic_note_type)['css']
+        return self._send_request('modelStyling', modelName=note_type.get_anki_note_type(self._cfg))['css']
 
-    def update_note_type_styling(self, new_styles: str) -> None:
+    def update_note_type_styling(self, note_type: Type[Note], new_styles: str) -> None:
         """Update styling of note type that is used to add notes"""
         params = {
             'model': {
-                'name': self._basic_note_type,
+                'name': note_type.get_anki_note_type(self._cfg),
                 'css': new_styles
             }
         }
         self._send_request('updateModelStyling', **params)
 
-    def fetch_note_type_templates(self) -> Dict[str, Dict[str, str]]:
-        """Get fields of note type"""
-        return self._send_request('modelTemplates', modelName=self._basic_note_type)
+    def fetch_note_type_templates(self, note_type: Type[Note]) -> Dict[str, Dict[str, str]]:
+        """Get templates of note type"""
+        return self._send_request('modelTemplates', modelName=note_type.get_anki_note_type(self._cfg))
 
-    def update_note_type_templates(self, templates: Dict[str, Dict[str, str]]) -> None:
-        """Update note type"""
+    def update_note_type_templates(self, note_type: Type[Note], templates: Dict[str, Dict[str, str]]) -> None:
+        """Update note type templates"""
         params = {
             'model': {
-                'name': self._basic_note_type,
+                'name': note_type.get_anki_note_type(self._cfg),
                 'templates': templates
             }
         }
@@ -166,8 +151,10 @@ class AnkiApi:
 
     def _create_note_params(self, note: Union[BasicNote, ClozeNote]) -> dict:
         """Create dict with params required to add note to Anki"""
-        params = {
+        return {
             'deckName': note.deck_name,
+            'modelName': note.get_anki_note_type(self._cfg),
+            'fields': note.get_html_fields(self._cfg),
             'options': {
                 'allowDuplicate': False,
                 'duplicateScope': None,
@@ -177,20 +164,6 @@ class AnkiApi:
             },
             'tags': note.tags,
         }
-
-        if isinstance(note, BasicNote):
-            params['modelName'] = self._basic_note_type
-            params['fields'] = {
-                self._front_field_name: note.front_html,
-                self._back_field_name: note.back_html,
-            }
-            return params
-
-        params['modelName'] = self._cloze_note_type
-        params['fields'] = {
-            self._cloze_field_name: note.text_html
-        }
-        return params
 
     def _send_request(self, action: str, **params) -> Any:
         """Send request to Anki Connect and return result"""
@@ -215,25 +188,11 @@ class AnkiApi:
 
     @staticmethod
     def _print_error_message(note: Union[BasicNote, ClozeNote], error: Exception = None) -> None:
-        # Note information
-        if isinstance(note, BasicNote):
-            click.echo()
-            click.secho('Basic Note')
-            click.secho('------------------------------------', fg='red')
-            click.secho(f'Front: {note.raw_front_md.strip()}', fg='red')
-            click.secho(f'Back: {note.raw_back_md.strip()}', fg='red')
-            click.secho('------------------------------------', fg='red')
-        else:
-            click.echo()
-            click.secho('Cloze Note')
-            click.secho('------------------------------------', fg='red')
-            click.secho(f'Text: {note.raw_text_md.strip()}', fg='red')
-            click.secho('------------------------------------', fg='red')
+        click.echo()
+        click.secho(note.get_note_info(), fg='red')
 
-
-        # Error message
         if error is not None:
-            click.secho(f'Error: "{error}"', fg='red')
+            click.secho(f'ERROR: "{error}"', fg='red')
         else:
-            click.secho("Error: Can't create the card!", fg='red')
+            click.secho("ERROR: Can't create the card!", fg='red')
         input('Press Enter to continue...\n')

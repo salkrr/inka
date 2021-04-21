@@ -1,9 +1,10 @@
-from typing import Iterable, Any, Callable
+from typing import Iterable, Any, Callable, Dict
 
-from .base_note import BaseNote
+from .note import Note
+from ..config import Config
 
 
-class ClozeNote(BaseNote):
+class ClozeNote(Note):
     """Cloze note type"""
 
     def __init__(self, text_md: str, tags: Iterable[str], deck_name: str, anki_id: int = None):
@@ -15,6 +16,30 @@ class ClozeNote(BaseNote):
     def convert_fields_to_html(self, convert_func: Callable) -> None:
         """Convert note fields from markdown to html using provided function"""
         self.text_html = convert_func(self.updated_text_md)
+
+    def get_search_field(self) -> str:
+        """Get field (with html) that will be used for search in Anki"""
+        return self.text_html
+
+    def get_html_fields(self, cfg: Config) -> Dict[str, str]:
+        """Return dictionary with Anki field names as keys and html strings as values"""
+        return {
+            cfg.get_option_value('anki', 'cloze_field'): self.text_html,
+        }
+
+    def get_note_info(self) -> str:
+        """String used to display info about note in case of error"""
+        text_shortened = self.shorten_text(self.raw_text_md)
+        info = 'Cloze Note\n'
+        info += '--------------------------------------------------\n'
+        info += f'Text: {text_shortened}\n'
+        info += '--------------------------------------------------\n'
+        return info
+
+    @staticmethod
+    def get_anki_note_type(cfg: Config) -> str:
+        """Get name of Anki note type"""
+        return cfg.get_option_value('anki', 'cloze_type')
 
     def __eq__(self, other: Any) -> bool:
         if not super().__eq__(other):
