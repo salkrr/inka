@@ -136,7 +136,6 @@ def test_update_ids_skips_card_if_it_was_not_found(writer, notes):
 
 def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, notes):
     notes[0].anki_id = None
-    notes[2].anki_id = None
     notes[3].anki_id = None
     expected = (
         '---\n'
@@ -162,6 +161,7 @@ def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, notes):
         '> \n'
         '> And more to it\n'
         '\n'
+        f'<!--ID:{notes[2].anki_id}-->\n'
         '3. Only one {line}\n'
         '\n'
         '4. Mul{1::tip}le\n\n'
@@ -788,9 +788,17 @@ def test_update_cloze_notes_when_multiple_notes_has_changes(writer, notes):
 
 
 def test_update_cloze_notes_basic_notes_ignored(writer, notes):
-    notes[0].updated_text_md = 'Amazing new question'
+    notes[0].updated_front_md = 'Amazing new question'
     expected = writer._file_content
 
     writer.update_cloze_notes()
 
     assert writer._file_content == expected
+
+
+def test_update_cloze_notes_updates_raw_text_value(writer, notes):
+    notes[2].updated_text_md = 'Too many {{c1::lines}}'
+
+    writer.update_cloze_notes()
+
+    assert notes[2].raw_text_md == notes[2].updated_text_md

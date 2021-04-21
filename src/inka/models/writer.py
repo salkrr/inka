@@ -97,7 +97,10 @@ class Writer:
         for note in self._notes:
             if not isinstance(note, ClozeNote):
                 continue
+
             self._file_content = self._file_content.replace(note.raw_text_md, note.updated_text_md, 1)
+            note.raw_text_md = note.updated_text_md  # update info about raw text
+
         self._save()
 
     def _save(self):
