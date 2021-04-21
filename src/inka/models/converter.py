@@ -36,12 +36,7 @@ BLOCK_MATH_PLACEHOLDER = 'BLOCK_MATH_PLACEHOLDER'
 def convert_notes_to_html(notes: Iterator[Union[BasicNote, ClozeNote]]):
     """Convert note fields to html"""
     for note in notes:
-        if isinstance(note, BasicNote):
-            note.front_html = _convert_md_to_html(note.updated_front_md)
-            note.back_html = _convert_md_to_html(note.updated_back_md)
-            continue
-
-        note.text_html = _convert_md_to_html(note.updated_text_md)
+        note.convert_fields_to_html(_convert_md_to_html)
 
 
 def convert_cloze_deletions_to_anki_format(cloze_notes: Iterator[ClozeNote]):
