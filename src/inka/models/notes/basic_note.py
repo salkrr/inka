@@ -25,6 +25,10 @@ class BasicNote(Note):
         """Get field (with html) that will be used for search in Anki"""
         return self.front_html
 
+    def get_raw_question_field(self) -> str:
+        """Get value of question field"""
+        return self.raw_front_md
+
     def get_html_fields(self, cfg: Config) -> Dict[str, str]:
         """Return dictionary with Anki field names as keys and html strings as values"""
         return {

@@ -21,6 +21,10 @@ class Note:
         """Get field (with html) that will be used for search in Anki"""
         pass
 
+    def get_raw_question_field(self) -> str:
+        """Get value of raw (as in file) question field"""
+        pass
+
     def get_html_fields(self, cfg: Config) -> Dict[str, str]:
         """Return dictionary with Anki field names as keys and html strings as values"""
         pass

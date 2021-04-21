@@ -21,8 +21,8 @@ class Writer:
         """Update lines with IDs of the notes from the file"""
         for note in self._notes:
             # Find note's question in file string
-            note_front = note.raw_front_md if isinstance(note, BasicNote) else note.raw_text_md
-            question_start = self._file_content.find(note_front)
+            note_question = note.get_raw_question_field()
+            question_start = self._file_content.find(note_question)
 
             # Note may not be found cause it was deleted
             if question_start == -1:
