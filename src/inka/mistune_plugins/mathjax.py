@@ -1,10 +1,10 @@
-BLOCK_MATHJAX = (
+BLOCK_MATH = (
     r'(?<!\\)\$\$'
     r'([\s\S]*?)'
     r'(?<!\\)\$\$'
 )
 
-INLINE_MATHJAX = (
+INLINE_MATH = (
     r'(?<![\\])\$'
     r'(.*?)'
     r'(?<![\\])\$'
@@ -30,8 +30,8 @@ def render_html_block_mathjax(content):
 
 
 def plugin_mathjax(md):
-    md.inline.register_rule('mathjax_block', BLOCK_MATHJAX, parse_block_mathjax)
-    md.inline.register_rule('mathjax_inline', INLINE_MATHJAX, parse_inline_mathjax)
+    md.inline.register_rule('mathjax_block', BLOCK_MATH, parse_block_mathjax)
+    md.inline.register_rule('mathjax_inline', INLINE_MATH, parse_inline_mathjax)
 
     md.inline.rules.append('mathjax_block')
     md.inline.rules.append('mathjax_inline')

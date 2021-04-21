@@ -22,6 +22,49 @@ convert_cloze_test_cases = {
     # two
     'Some {cloze question}\n\n{another} one': 'Some {{c1::cloze question}}\n\n{{c2::another}} one',
 
+    # around inline math
+    r'math: {$\sqrt{2}$}': r'math: {{c1::$\sqrt{2}$}}',
+
+    # around block math
+    r'math: {$$\frac{\sqrt{2}}{15}$$}': r'math: {{c1::$$\frac{\sqrt{2}}{15}$$}}',
+
+    # around inline code
+    r'inline code: {`func() int { return {12} }`}': r'inline code: {{c1::`func() int { return {12} }`}}',
+
+    # around block code
+    (
+        'Code:\n'
+        '{\n'
+        '```\n'
+        'func main() {\n'
+        '\tdefer func() { fmt.Println("exited") }\n'
+        '\tdatabase.DB, err := sql.Open("pgx", os.Getenv("POSTGRES_URL"))\n'
+        '\tif err != nil {\n'
+        '\t\tlog.Fatal(err)\n'
+        '\t}\n'
+        '}\n'
+        '```\n'
+        '}\n'
+    ): (
+        'Code:\n'
+        '{{c1::\n'
+        '```\n'
+        'func main() {\n'
+        '\tdefer func() { fmt.Println("exited") }\n'
+        '\tdatabase.DB, err := sql.Open("pgx", os.Getenv("POSTGRES_URL"))\n'
+        '\tif err != nil {\n'
+        '\t\tlog.Fatal(err)\n'
+        '\t}\n'
+        '}\n'
+        '```\n'
+        '}}\n'
+    ),
+
+    # check order correctness with multiple cloze deletions around math and code
+    r'some math {$\sqrt{2}$}, code {`func() int`}, more code {`defer resp.body.Close()`} and more math {$\frac{1}{5}$}':
+        r'some math {{c1::$\sqrt{2}$}}, code {{c2::`func() int`}},'
+        r' more code {{c3::`defer resp.body.Close()`}} and more math {{c4::$\frac{1}{5}$}}',
+
     # inside inline math -> ignored
     r'math: $\sqrt{2}$': r'math: $\sqrt{2}$',
 
@@ -68,6 +111,44 @@ convert_cloze_test_cases = {
 
     # two
     'Some {2::cloze question}\n\n{1::another} one': 'Some {{c2::cloze question}}\n\n{{c1::another}} one',
+
+    # around inline math
+    r'math: {1::$\sqrt{2}$}': r'math: {{c1::$\sqrt{2}$}}',
+
+    # around block math
+    r'math: {1::$$\frac{\sqrt{2}}{15}$$}': r'math: {{c1::$$\frac{\sqrt{2}}{15}$$}}',
+
+    # around inline code
+    r'inline code: {1::`func() int { return {12} }`}': r'inline code: {{c1::`func() int { return {12} }`}}',
+
+    # around block code
+    (
+        'Code:\n'
+        '{1::\n'
+        '```\n'
+        'func main() {\n'
+        '\tdefer func() { fmt.Println("exited") }\n'
+        '\tdatabase.DB, err := sql.Open("pgx", os.Getenv("POSTGRES_URL"))\n'
+        '\tif err != nil {\n'
+        '\t\tlog.Fatal(err)\n'
+        '\t}\n'
+        '}\n'
+        '```\n'
+        '}\n'
+    ): (
+        'Code:\n'
+        '{{c1::\n'
+        '```\n'
+        'func main() {\n'
+        '\tdefer func() { fmt.Println("exited") }\n'
+        '\tdatabase.DB, err := sql.Open("pgx", os.Getenv("POSTGRES_URL"))\n'
+        '\tif err != nil {\n'
+        '\t\tlog.Fatal(err)\n'
+        '\t}\n'
+        '}\n'
+        '```\n'
+        '}}\n'
+    ),
 
     # inside inline math -> ignored
     r'math: $\sqrt{2::15}$': r'math: $\sqrt{2::15}$',
@@ -330,7 +411,7 @@ def test_convert_cloze_deletions_to_anki_format_works_with_multiple_notes():
 
 @pytest.mark.parametrize('test_input, expected', md_to_html_test_cases.items())
 def test_convert_md_to_html(basic_note, test_input, expected):
-    html = converter.convert_md_to_html(test_input)
+    html = converter._convert_md_to_html(test_input)
 
     assert html == expected
 
