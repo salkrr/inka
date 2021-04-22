@@ -35,8 +35,8 @@ can see now.
 ## Features
 
 - Cards are automatically added to your Anki deck
-- [Basic and Cloze note types support](https://github.com/lazy-void/inka/wiki/Creating-cards#frontback-cards)
-- [Images support](https://github.com/lazy-void/inka/wiki/Creating-cards#images-in-cards)
+- [Basic and Cloze note types support](https://github.com/lazy-void/inka/wiki/Creating-cards#frontback-notes)
+- [Images support](https://github.com/lazy-void/inka/wiki/Creating-cards#images)
 - [Synchronization of changes with Anki](https://github.com/lazy-void/inka/wiki/Synchronization-with-Anki)
 - [Configuration via config file](https://github.com/lazy-void/inka/wiki/Config)
 - [Code highlight](https://github.com/lazy-void/inka/wiki/Code-highlight)
