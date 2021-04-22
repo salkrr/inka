@@ -202,7 +202,7 @@ def list_config_options(ctx, param, value) -> None:
 @click.group()
 @click.version_option(version=__version__)
 def cli() -> None:
-    """Inka - command-line tool for adding Markdown cards to Anki
+    """Inka - command-line tool for adding flashcards from Markdown files to Anki.
 
         Documentation:\n
             https://github.com/lazy-void/inka/wiki
@@ -273,7 +273,8 @@ def config(list_options: bool, reset: bool, name: str, value: str) -> None:
                 type=click.Path(exists=True),
                 required=False)
 def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) -> None:
-    """Get cards from files and send them to Anki.
+    """Get flashcards from files and add them to Anki. If flashcard already exists in Anki, the changes will be synced.
+
      If no PATH argument is passed, the program will use the path from config option 'defaults.folder'.
 
         [PATH]... - paths to files and/or directories
@@ -318,7 +319,8 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
         )
     except KeyError:
         # Handle backward compatibility issues (config options were changed)
-        click.secho("Your config file is corrupted. Please reset it state with 'inka config --reset' command", fg='red')
+        click.secho('Your config file is corrupted. Please reset its state with the command "inka config --reset".',
+                    fg='red')
         sys.exit(1)
     except requests.exceptions.RequestException as e:
         click.secho(f'Error while adding code highlight: "{e}"', fg='red')
