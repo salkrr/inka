@@ -1,41 +1,40 @@
+# inka
+
+[![Downloads](https://pepy.tech/badge/inka)](https://pepy.tech/project/inka)
+
 Automatically add your Markdown flashcards to [Anki](https://apps.ankiweb.net/).
+
+- [Installation](#installation)
+    - [Requirements](#requirements)
+- [Why](#why)
+- [Features](#features)
+- [Usage](#usage)
+    - [Creating Cards](#creating-cards)
+    - [Adding Cards to Anki](#adding-cards-to-anki)
 
 ## Installation
 
-- Install [AnkiConnect](https://github.com/FooSoft/anki-connect) plugin
-- Install **inka**: `python3 -m pip install inka --upgrade`
+`python3 -m pip install inka --upgrade`
 
-## What is this?
+### Requirements
 
-**inka** automatically adds cards from your *markdown* notes to [Anki](https://apps.ankiweb.net/). This allows you to
-write cards in the same file with your notes, or write your notes as cards.
+- [Python](https://www.python.org/) >= 3.7
+- [AnkiConnect](https://github.com/FooSoft/anki-connect) plugin
 
-Cards are created using plain *markdown* syntax:
+## Why
 
-```markdown
-1. Question?
+I've been using Anki for a long time, and at some point my notes turned into just lists of question/answer pairs, from
+which I then created Anki cards. The process of creating flashcards in Anki took a long time, so I decided to write a
+Python script to automate it. With more and more features added, the script has evolved into the command-line tool you
+can see now.
 
-> Answer
-
-2. Another question?
-
-Second line of question.
-
-> Answer
-> With Image
->
-> ![](path/to/another/image.png)
-```
-
-Every question starts with number followed by period (e.g. `1.`, `2.`) and every line of the answer starts with `>`.
-
-> Only basic (front/back) cards are supported.
+**inka** allows you to use full power of Markdown when creating flashcards. The program is also extensively tested.
 
 ## Features
 
 - Cards are automatically added to your Anki deck
-- Specify a deck and tags for cards
-- Add images to cards
+- [Basic and Cloze note types support](https://github.com/lazy-void/inka/wiki/Creating-cards#frontback-cards)
+- [Images support](https://github.com/lazy-void/inka/wiki/Creating-cards#images-in-cards)
 - [Synchronization of changes with Anki](https://github.com/lazy-void/inka/wiki/Synchronization-with-Anki)
 - [Configuration via config file](https://github.com/lazy-void/inka/wiki/Config)
 - [Code highlight](https://github.com/lazy-void/inka/wiki/Code-highlight)
@@ -43,7 +42,7 @@ Every question starts with number followed by period (e.g. `1.`, `2.`) and every
 
 ## Usage
 
-### Creating cards
+### Creating Cards
 
 In order for the program to be able to separate cards from all the rest of the text in the file, you need to enclose
 them between two `---`:
@@ -51,7 +50,7 @@ them between two `---`:
 ```markdown
 ---
 
-Deck: Default
+Deck: Life Questions
 
 Tags: learning life-questions
 
@@ -59,24 +58,35 @@ Tags: learning life-questions
 
 > 42
 
-2. If it looks like a duck, swims like a duck, and quacks like a duck, then what is it?
-
-> It is a duck!
-> ![duck](duck_image.png)
+2. If it {looks like a duck, swims like a duck, and quacks like a duck}, then it is a {duck}.
 
 ---
 ```
 
-> :warning: This means that you can't use the `---` syntax anywhere else in the file for **inka** to work properly.
-
 You can create any number of such sections in the file.
+
+> :warning: This means that you should avoid using the `---` syntax anywhere else in the file for **inka** to work correctly.
+> There are exceptions, and you can read about them in [documentation](https://github.com/lazy-void/inka/wiki/Creating-cards#i-want-to-use-----for-other-purposes).
 
 Inside the section, you can specify the name of the deck to which the cards will be added, and tags for the cards. If
 deck name isn't specified, then the one from the [config](https://github.com/lazy-void/inka/wiki/Config) is
 used (`Default` by default). The deck name is written after `Deck:`, and tags for all cards after `Tags:` with spaces
 between each tag.
 
-### Adding cards to Anki
+Two types of notes are supported:
+
+- **Front/Back**: every question starts with number followed by period (e.g. 1., 2. - Markdown ordered list syntax) and
+  every line of the answer starts with > (Markdown quote syntax). Question and answer can span multiple lines.
+- **Cloze**: same as Front/Back notes, Cloze notes start with number followed by period (Markdown ordered list syntax).
+  **inka** supports three versions of syntax for cloze deletions:
+    - Anki syntax: {{c1::hidden text}}
+    - Short explicit syntax: {1::hidden text} or {c1::hidden text}
+    - Short implicit syntax: {hidden text}
+
+More info and examples on the [creating cards](https://github.com/lazy-void/inka/wiki/Creating-cards) documentation
+page.
+
+### Adding Cards to Anki
 
 Add cards from the file:
 
@@ -84,7 +94,7 @@ Add cards from the file:
 inka collect path/to/cards.md
 ```
 
-Or from all *markdown* files in a directory:
+Or from all *Markdown* files in a directory:
 
 ```commandline
 inka collect path/to/directory
@@ -96,4 +106,4 @@ You can also pass multiple paths at once:
 inka collect path/to/cards.md path/to/folder
 ```
 
-More info on the [documentation page](https://github.com/lazy-void/inka/wiki/Adding-cards-to-Anki)
+You can find more information on the [documentation page](https://github.com/lazy-void/inka/wiki/Adding-cards-to-Anki).
