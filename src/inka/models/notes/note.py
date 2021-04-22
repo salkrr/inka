@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, Any, Dict
+from typing import Callable, Iterable, Any, Dict, List
 
 from inka.models.config import Config
 
@@ -13,12 +13,20 @@ class Note:
         self.changed = False  # Card was marked as changed in Anki
         self.to_delete = False  # Card was marked to be deleted in Anki
 
-    def convert_fields_to_html(self, convert_func: Callable) -> None:
+    def convert_fields_to_html(self, convert_func: Callable[[str], str]) -> None:
         """Convert note fields from markdown to html using provided function"""
+        pass
+
+    def update_fields_with(self, update_func: Callable[[str], str]) -> None:
+        """Updates values of *updated* fields using provided function"""
         pass
 
     def get_search_field(self) -> str:
         """Get field (with html) that will be used for search in Anki"""
+        pass
+
+    def get_raw_fields(self) -> List[str]:
+        """Get list of all raw (as in file) fields of this note"""
         pass
 
     def get_raw_question_field(self) -> str:

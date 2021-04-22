@@ -1,4 +1,4 @@
-from typing import Iterable, Any, Callable, Dict
+from typing import Iterable, Any, Callable, Dict, List
 
 from .note import Note
 from ..config import Config
@@ -13,16 +13,24 @@ class ClozeNote(Note):
         self.updated_text_md = text_md  # With updated image links and cloze deletions
         self.text_html = None
 
-    def convert_fields_to_html(self, convert_func: Callable) -> None:
+    def convert_fields_to_html(self, convert_func: Callable[[str], str]) -> None:
         """Convert note fields from markdown to html using provided function"""
         self.text_html = convert_func(self.updated_text_md)
+
+    def update_fields_with(self, update_func: Callable[[str], str]) -> None:
+        """Updates values of *updated* fields using provided function"""
+        self.updated_text_md = update_func(self.updated_text_md)
 
     def get_search_field(self) -> str:
         """Get field (with html) that will be used for search in Anki"""
         return self.text_html
 
+    def get_raw_fields(self) -> List[str]:
+        """Get list of all raw (as in file) fields of this note"""
+        return [self.raw_text_md]
+
     def get_raw_question_field(self) -> str:
-        """Get value of question field"""
+        """Get value of raw (as in file) question field"""
         return self.raw_text_md
 
     def get_html_fields(self, cfg: Config) -> Dict[str, str]:

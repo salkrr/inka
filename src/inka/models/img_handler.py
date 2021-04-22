@@ -38,11 +38,8 @@ def _fetch_image_links(notes: List[Union[BasicNote, ClozeNote]]) -> Dict[str, Li
     image_regex = re.compile(r'!\[.*?]\(.*?\)')
     for note in notes:
         all_found_links = set()
-        if isinstance(note, BasicNote):
-            all_found_links |= set(re.findall(image_regex, note.raw_front_md))
-            all_found_links |= set(re.findall(image_regex, note.raw_back_md))
-        else:
-            all_found_links |= set(re.findall(image_regex, note.raw_text_md))
+        for field in note.get_raw_fields():
+            all_found_links |= set(re.findall(image_regex, field))
 
         for link in all_found_links:
             if not image_links.get(link):
@@ -65,14 +62,9 @@ def _update_image_links_in_notes(image_links: Dict[str, List[Union[BasicNote, Cl
         new_link = re.sub(image_path_regex, image_filename, link)
 
         for note in notes:
-            # We use updated_front_md for replace func cause
-            # we need to preserve previous replacements if there are multiple
-            if isinstance(note, BasicNote):
-                note.updated_front_md = note.updated_front_md.replace(link, new_link)
-                note.updated_back_md = note.updated_back_md.replace(link, new_link)
-                continue
-
-            note.updated_text_md = note.updated_text_md.replace(link, new_link)
+            # We use *updated* fields for replace func cause
+            # we need to preserve previous replacements if there are multiple of them
+            note.update_fields_with(lambda field: str.replace(field, link, new_link))
 
 
 def _copy_images_to(anki_media: AnkiMedia, image_links: List[str]) -> None:
