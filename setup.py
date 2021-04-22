@@ -10,12 +10,12 @@ setup(
     version=__version__,
     author='Kirill Salnikov',
     author_email='salnikov.k54@gmail.com',
-    description='Command-line tool for adding Markdown cards to Anki',
+    description='Command-line tool for adding flashcards from Markdown files to Anki',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/lazy-void/Inka',
+    url='https://github.com/lazy-void/inka',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Operating System :: OS Independent',
         'Intended Audience :: Education',
         'Topic :: Education :: Computer Aided Instruction (CAI)',
@@ -25,7 +25,6 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3 :: Only'
     ],
     license='GPLv3',
