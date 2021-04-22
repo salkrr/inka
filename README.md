@@ -1,6 +1,8 @@
 # inka
 
 [![Downloads](https://pepy.tech/badge/inka)](https://pepy.tech/project/inka)
+[![Tests CI](https://img.shields.io/github/workflow/status/lazy-void/inka/Run%20Tests/main)](https://github.com/lazy-void/inka/actions/workflows/ci-test.yml)
+[![Codecov](https://codecov.io/gh/lazy-void/inka/branch/main/graph/badge.svg?token=9wW5SJ9uLL)](https://codecov.io/gh/lazy-void/inka)
 
 Automatically add your Markdown flashcards to [Anki](https://apps.ankiweb.net/).
 
