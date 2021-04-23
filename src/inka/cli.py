@@ -1,5 +1,6 @@
 import os
 import sys
+from subprocess import call
 from typing import Tuple, Set, List
 
 import click
@@ -182,6 +183,20 @@ def check_anki_connection(anki_api: AnkiApi) -> None:
     click.echo("Connected")
 
 
+def edit_config_file(ctx, param, value) -> None:
+    if not value or ctx.resilient_parsing:
+        return
+
+    editor = os.getenv('EDITOR')
+    if not editor:
+        editor = 'nano'
+
+    with open(CONFIG_PATH, mode='at', encoding='utf-8') as f:
+        call([editor, f.name])
+
+    ctx.exit()
+
+
 def reset_config_file(ctx, param, value) -> None:
     if not value or ctx.resilient_parsing:
         return
@@ -220,18 +235,24 @@ def cli() -> None:
               is_flag=True,
               callback=list_config_options,
               is_eager=True,
-              help='List all options set in config file, along with their values.')
+              help='List all options set in the config file, along with their values.')
 @click.option('-r',
               '--reset',
               is_flag=True,
               callback=reset_config_file,
               is_eager=True,
-              help='Reset config file to default state.')
+              help='Reset config file to the default state.')
+@click.option('-e',
+              '--edit',
+              is_flag=True,
+              callback=edit_config_file,
+              is_eager=True,
+              help='Open the config file using editor specified in EDITOR environment variable.')
 @click.argument('name',
                 required=True)
 @click.argument('value',
                 required=False)
-def config(list_options: bool, reset: bool, name: str, value: str) -> None:
+def config(list_options: bool, reset: bool, edit: bool, name: str, value: str) -> None:
     """Get and set inka's configuration options.
 
         NAME - config option name. VALUE - new value for config option.
