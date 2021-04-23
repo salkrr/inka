@@ -326,18 +326,13 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
 
     anki_media = AnkiMedia(profile)
     try:
-        highlighter.add_code_highlight_to(
-            BasicNote,
-            CONFIG.get_option_value('highlight', 'style'),
-            anki_api,
-            anki_media
-        )
-        highlighter.add_code_highlight_to(
-            ClozeNote,
-            CONFIG.get_option_value('highlight', 'style'),
-            anki_api,
-            anki_media
-        )
+        for note_type in (BasicNote, ClozeNote):
+            highlighter.add_code_highlight_to(
+                note_type,
+                CONFIG.get_option_value('highlight', 'style'),
+                anki_api,
+                anki_media
+            )
     except KeyError:
         # Handle backward compatibility issues (config options were changed)
         click.secho('Your config file is corrupted. Please reset its state with the command "inka config --reset".',
