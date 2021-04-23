@@ -16,6 +16,11 @@ class BasicNote(Note):
         self.front_html = None
         self.back_html = None
 
+    @property
+    def search_query(self) -> str:
+        """Query to search for note in Anki"""
+        return self.create_anki_search_query(self.front_html)
+
     def convert_fields_to_html(self, convert_func: Callable[[str], str]) -> None:
         """Convert note fields from markdown to html using provided function"""
         self.front_html = convert_func(self.updated_front_md)
@@ -25,10 +30,6 @@ class BasicNote(Note):
         """Updates values of *updated* fields using provided function"""
         self.updated_front_md = update_func(self.updated_front_md)
         self.updated_back_md = update_func(self.updated_back_md)
-
-    def get_search_field(self) -> str:
-        """Get field (with html) that will be used for search in Anki"""
-        return self.front_html
 
     def get_raw_fields(self) -> List[str]:
         """Get list of all raw (as in file) fields of this note"""

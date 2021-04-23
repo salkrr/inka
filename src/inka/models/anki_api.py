@@ -8,7 +8,6 @@ from .config import Config
 from .notes.basic_note import BasicNote
 from .notes.cloze_note import ClozeNote
 from .notes.note import Note
-from ..util import create_anki_search_query
 
 
 class AnkiApi:
@@ -65,9 +64,7 @@ class AnkiApi:
             if notes_info[i]:
                 continue
 
-            search_field = note.get_search_field()
-            query = create_anki_search_query(search_field)
-            found_notes = self._send_request('findNotes', query=query)
+            found_notes = self._send_request('findNotes', query=note.search_query)
             note.anki_id = found_notes[0] if found_notes else None
 
     def update_notes(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:

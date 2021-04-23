@@ -6,6 +6,7 @@ from PIL import Image as Img
 
 from inka.models.anki_api import AnkiApi
 from inka.models.anki_media import AnkiMedia
+from inka.models.config import Config
 from inka.models.parser import Parser
 
 
@@ -90,3 +91,15 @@ def image_anki(anki_media, path_to_anki_image) -> str:
     """
     Img.new('RGBA', size=(20, 150), color=(100, 13, 35)).save(path_to_anki_image, format='png')
     return path_to_anki_image
+
+
+@pytest.fixture
+def config_path(tmp_path):
+    """Temporary path to config file"""
+    return tmp_path / 'test_config.ini'
+
+
+@pytest.fixture
+def config(config_path):
+    """Instance of Config class. Path to config specified by 'config_path' fixture"""
+    return Config(config_path)

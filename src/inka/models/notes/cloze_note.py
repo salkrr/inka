@@ -13,6 +13,11 @@ class ClozeNote(Note):
         self.updated_text_md = text_md  # With updated image links and cloze deletions
         self.text_html = None
 
+    @property
+    def search_query(self) -> str:
+        """Query to search for note in Anki"""
+        return self.create_anki_search_query(self.text_html)
+
     def convert_fields_to_html(self, convert_func: Callable[[str], str]) -> None:
         """Convert note fields from markdown to html using provided function"""
         self.text_html = convert_func(self.updated_text_md)
@@ -20,10 +25,6 @@ class ClozeNote(Note):
     def update_fields_with(self, update_func: Callable[[str], str]) -> None:
         """Updates values of *updated* fields using provided function"""
         self.updated_text_md = update_func(self.updated_text_md)
-
-    def get_search_field(self) -> str:
-        """Get field (with html) that will be used for search in Anki"""
-        return self.text_html
 
     def get_raw_fields(self) -> List[str]:
         """Get list of all raw (as in file) fields of this note"""

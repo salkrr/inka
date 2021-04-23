@@ -7,18 +7,6 @@ from inka.models.config import Config
 
 
 @pytest.fixture
-def config_path(tmp_path):
-    """Temporary path to config file"""
-    return tmp_path / 'test_config.ini'
-
-
-@pytest.fixture
-def config(config_path):
-    """Instance of Config class. Path to config specified by 'config_path' fixture"""
-    return Config(config_path)
-
-
-@pytest.fixture
 def default_config_string():
     """Contents of the default config file"""
     return (
