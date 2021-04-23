@@ -90,6 +90,10 @@ page.
 
 ### Adding Cards to Anki
 
+By default, **inka** will try to add **Front/Back** notes to the `Basic` Anki note type with `Front` and `Back` fields
+and **Cloze** notes to the `Cloze` Anki note type with `Text` field. If you don't have these note types, or just want to
+use others, change them in [config](https://github.com/lazy-void/inka/wiki/Config).
+
 Add cards from the file:
 
 ```commandline
