@@ -1,5 +1,7 @@
 from typing import Iterable, Any, Callable, Dict, List
 
+from rich.table import Table, Column
+
 from .note import Note
 from ..config import Config
 
@@ -40,19 +42,22 @@ class ClozeNote(Note):
             cfg.get_option_value('anki', 'cloze_field'): self.text_html,
         }
 
-    def get_note_info(self) -> str:
-        """String used to display info about note in case of error"""
-        text_shortened = self.shorten_text(self.raw_text_md)
-        info = 'Cloze Note\n'
-        info += '--------------------------------------------------\n'
-        info += f'Text: {text_shortened}\n'
-        info += '--------------------------------------------------\n'
-        return info
-
     @staticmethod
     def get_anki_note_type(cfg: Config) -> str:
         """Get name of Anki note type"""
         return cfg.get_option_value('anki', 'cloze_type')
+
+    def __rich__(self) -> Table:
+        """Table that is used to display info about note in case of error"""
+        table = Table(
+            Column('Field', justify='left', style='magenta'),
+            Column('Value', justify='left', style='green'),
+            title='[bold]Basic Note[bold]',
+        )
+        table.add_row('Text', self.raw_text_md, end_section=True)
+        table.add_row('Tags', ', '.join(self.tags), end_section=True)
+        table.add_row('Deck', self.deck_name, end_section=True)
+        return table
 
     def __eq__(self, other: Any) -> bool:
         if not super().__eq__(other):

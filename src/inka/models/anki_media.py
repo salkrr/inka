@@ -45,7 +45,7 @@ class AnkiMedia:
                 return  # Skip if same file already exists
 
             raise FileExistsError(
-                f'Different file with the same name "{file_name}" already exists in Anki Media folder.'
+                f'different file with the same name "{file_name}" already exists in Anki Media folder.'
             )
 
         shutil.copyfile(file_path, anki_file_path)
@@ -61,7 +61,7 @@ class AnkiMedia:
         """
         anki_file_path = f'{self._anki_media_path}/{file_name}'
         if self.exists(file_name):
-            raise FileExistsError(f'File with the name "{file_name}" already exists in Anki Media folder.')
+            raise FileExistsError(f'file with the name "{file_name}" already exists in Anki Media folder.')
 
         with open(anki_file_path, 'wt', encoding='utf-8') as f:
             f.write(file_content)

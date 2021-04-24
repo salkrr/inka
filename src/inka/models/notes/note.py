@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Iterable, Any, Dict, List
 
+from rich.table import Table
+
 from inka.models.config import Config
 
 
@@ -45,21 +47,11 @@ class Note(ABC):
         """Return dictionary with Anki field names as keys and html strings as values"""
         pass
 
-    @abstractmethod
-    def get_note_info(self) -> str:
-        """String used to display info about note in case of error"""
-        pass
-
     @staticmethod
     @abstractmethod
     def get_anki_note_type(cfg: Config) -> str:
         """Get name of Anki note type"""
         pass
-
-    @staticmethod
-    def shorten_text(text: str) -> str:
-        """Shorten text to the first 100 symbols"""
-        return f'{text.strip()[:100]}...'
 
     @staticmethod
     def create_anki_search_query(text: str) -> str:
@@ -72,6 +64,11 @@ class Note(ABC):
             search_query = search_query.replace(char, escaped_char)
 
         return '"' + search_query + '"'
+
+    @abstractmethod
+    def __rich__(self) -> Table:
+        """Table that is used to display info about note in case of error"""
+        pass
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):

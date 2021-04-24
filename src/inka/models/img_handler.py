@@ -82,7 +82,7 @@ def _copy_images_to(anki_media: AnkiMedia, image_links: List[str]) -> None:
         try:
             anki_media.copy_file_from(abs_path)
         except FileNotFoundError:
-            raise FileNotFoundError(f'Cannot find image "{link}" on the path "{abs_path}"')
+            raise FileNotFoundError(f'cannot find image "{link}" on the path "{abs_path}"')
 
 
 def _get_path_from(image_link: str) -> Optional[str]:

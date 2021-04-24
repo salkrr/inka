@@ -138,25 +138,6 @@ def test_update_option_value_with_incorrect_key_raises_error(config):
         config.update_option_value('defaults', 'port', 'Profile Name')
 
 
-def test_get_formatted_list_of_config_entries(config):
-    expected = [
-        f'defaults.profile = {config._default_profile}',
-        f'defaults.deck = {config._default_deck}',
-        f'defaults.folder = {config._default_folder}',
-        f'anki.basic_type = {config._default_basic_type}',
-        f'anki.front_field = {config._default_front_field}',
-        f'anki.back_field = {config._default_back_field}',
-        f'anki.cloze_type = {config._default_cloze_type}',
-        f'anki.cloze_field = {config._default_cloze_field}',
-        f'anki_connect.port = {config._default_port}',
-        f'highlight.style = {config._default_highlight_style}',
-    ]
-
-    entries = config.get_formatted_options()
-
-    assert entries == expected
-
-
 def test_repr_method(config, config_path):
     expected = f'Config(config_path={repr(config_path)})'
 

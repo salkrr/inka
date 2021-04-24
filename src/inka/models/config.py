@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from typing import Union, List
 
+from rich.table import Table, Column
+
 
 class Config:
     """Class for working with the configuration file."""
@@ -68,11 +70,11 @@ class Config:
             self._config.write(file)
 
     def get_option_value(self, section: str, key: str) -> str:
-        """Get value of the config entry"""
+        """Get value of the config option"""
         return self._config[section][key]
 
     def update_option_value(self, section: str, key: str, new_value: str):
-        """Update value of the config entry"""
+        """Update value of the config option"""
         if key not in self._config[section]:
             raise KeyError
 
@@ -87,6 +89,17 @@ class Config:
                 formatted_entries.append(f'{section}.{key} = {value}')
 
         return formatted_entries
+
+    def __rich__(self) -> Table:
+        table = Table(
+            Column('Option', justify='left', style='magenta'),
+            Column('Value', justify='left', style='green'),
+        )
+        for section in self._config.sections():
+            for key, value in self._config[section].items():
+                table.add_row(f'{section}.{key}', value, end_section=True)
+
+        return table
 
     def __repr__(self):
         return f"{type(self).__name__}(config_path={repr(self._config_path)})"

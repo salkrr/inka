@@ -22,13 +22,3 @@ create_search_anki_query_test_cases = {
 @pytest.mark.parametrize('text, expected', create_search_anki_query_test_cases.items())
 def test_escapes_colon(text, expected):
     assert Note.create_anki_search_query(text) == expected
-
-
-def test_shorten_text():
-    text = (
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
-        'Suspendisse scelerisque est diam, sit amet sollicitudin sem iaculis nec.'
-    )
-    expected = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse scelerisque est diam, sit amet ...'
-
-    assert Note.shorten_text(text) == expected

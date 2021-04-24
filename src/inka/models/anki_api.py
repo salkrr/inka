@@ -1,6 +1,5 @@
 from typing import Union, List, Any, Dict, Type
 
-import click
 import requests
 from requests import RequestException
 
@@ -8,6 +7,7 @@ from .config import Config
 from .notes.basic_note import BasicNote
 from .notes.cloze_note import ClozeNote
 from .notes.note import Note
+from ..exceptions import AnkiApiError
 
 
 class AnkiApi:
@@ -49,8 +49,8 @@ class AnkiApi:
             note_params = self._create_note_params(note)
             try:
                 note.anki_id = self._send_request('addNote', note=note_params)
-            except RequestException as error:
-                self._print_error_message(note, error)
+            except RequestException as e:
+                raise AnkiApiError(str(e), note=note)
 
     def update_note_ids(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:
         """Update incorrect or absent IDs of notes"""
@@ -75,13 +75,15 @@ class AnkiApi:
         for i, note in enumerate(notes):
             # If note wasn't found
             if not notes_info[i]:
-                self._print_error_message(note, Exception(f'Card with ID {note.anki_id} was not found.'))
-                continue
+                raise AnkiApiError(
+                    f'note with ID {note.anki_id} was not found. '
+                    f'You can update IDs on notes with the command "inka collect --update-ids path/to/file.md".'
+                )
 
             # If note is staged for deletion
-            if self._delete_tag in notes_info[i]['tags']:
-                note.to_delete = True
-                continue
+            # if self._delete_tag in notes_info[i]['tags']:
+            #     note.to_delete = True
+            #     continue
 
             # If note is marked as changed
             # if self._change_tag in notes_info[i]['tags']:
@@ -100,7 +102,7 @@ class AnkiApi:
                 note_params['id'] = note.anki_id
                 self._send_request('updateNoteFields', note=note_params)
             except RequestException as e:
-                self._print_error_message(note, e)
+                raise AnkiApiError(str(e), note=note)
 
     def delete_notes(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:
         """Delete notes from Anki"""
@@ -182,14 +184,3 @@ class AnkiApi:
     def _create_request(action: str, **params) -> dict:
         """Create request dictionary"""
         return {'action': action, 'version': 6, 'params': params}
-
-    @staticmethod
-    def _print_error_message(note: Union[BasicNote, ClozeNote], error: Exception = None) -> None:
-        click.echo()
-        click.secho(note.get_note_info(), fg='red')
-
-        if error is not None:
-            click.secho(f'ERROR: "{error}"', fg='red')
-        else:
-            click.secho("ERROR: Can't create the card!", fg='red')
-        input('Press Enter to continue...\n')

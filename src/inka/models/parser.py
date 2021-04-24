@@ -117,16 +117,16 @@ class Parser:
         # If no deck name 
         if not matches:
             if not self._default_deck:
-                raise ValueError(f"Couldn't find deck name in section:\n{section}")
+                raise ValueError(f"couldn't find deck name in section:\n{section}")
 
             return self._default_deck
 
         if len(matches) > 1:
-            raise ValueError(f'More than one deck name field in section:\n{section}')
+            raise ValueError(f'more than one deck name field in section:\n{section}')
 
         deck_name = matches[0].strip()
         if not deck_name:
-            raise ValueError(f'Empty deck name field in section:\n{section}')
+            raise ValueError(f'empty deck name field in section:\n{section}')
 
         return deck_name
 
@@ -174,7 +174,7 @@ class Parser:
             return []
 
         if len(matches) > 1:
-            raise ValueError(f'More than one tag field in section:\n{section}')
+            raise ValueError(f'more than one tag field in section:\n{section}')
 
         tags = matches[0].strip().split()
         return tags

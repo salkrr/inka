@@ -1,5 +1,7 @@
 from typing import Iterable, Any, Callable, Dict, List
 
+from rich.table import Table, Column
+
 from .note import Note
 from ..config import Config
 
@@ -46,17 +48,6 @@ class BasicNote(Note):
             cfg.get_option_value('anki', 'back_field'): self.back_html
         }
 
-    def get_note_info(self) -> str:
-        """String used to display info about note in case of error"""
-        front_shortened = self.shorten_text(self.raw_front_md)
-        back_shortened = self.shorten_text(self.raw_back_md)
-        info = 'Basic Note\n'
-        info += '--------------------------------------------------\n'
-        info += f'Front: {front_shortened}\n'
-        info += f'Back: {back_shortened}\n'
-        info += '--------------------------------------------------\n'
-        return info
-
     @staticmethod
     def get_anki_note_type(cfg: Config) -> str:
         """Get name of Anki note type"""
@@ -68,6 +59,20 @@ class BasicNote(Note):
 
         return (self.raw_front_md == other.raw_front_md and
                 self.raw_back_md == other.raw_back_md)
+
+    def __rich__(self) -> Table:
+        """Table that is used to display info about note in case of error"""
+        table = Table(
+            Column('Field', justify='left', style='magenta'),
+            Column('Value', justify='left', style='green'),
+            title='Basic Note',
+        )
+        table.add_row('Front', self.raw_front_md, end_section=True)
+        table.add_row('Back', self.raw_back_md, end_section=True)
+        table.add_row('Tags', ', '.join(self.tags), end_section=True)
+        table.add_row('Deck', self.deck_name, end_section=True)
+
+        return table
 
     def __repr__(self) -> str:
         return (

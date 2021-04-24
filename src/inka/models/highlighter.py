@@ -7,6 +7,7 @@ from requests import HTTPError
 from .anki_api import AnkiApi
 from .anki_media import AnkiMedia
 from .notes.note import Note
+from ..exceptions import HighlighterError
 
 HLJS_VERSION = "10.7.1"
 BASE_URL = f"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/{HLJS_VERSION}"
@@ -48,17 +49,17 @@ def add_code_highlight_to(
     try:
         _update_style_in(note_type, style_name, anki_api)
     except HTTPError as e:
-        raise ConnectionError(f"Couldn't download styles for code highlighting. Reason: {e}")
+        raise HighlighterError(f"couldn't download styles for code highlighting. Reason: {e}")
     except requests.exceptions.ConnectionError:
-        raise ConnectionError(f"Couldn't download styles for code highlighting. Check your internet connection.")
+        raise HighlighterError(f"couldn't download styles for code highlighting. Check your internet connection.")
 
     try:
         _handle_highlighjs_files_for(note_type, anki_media, anki_api)
     except HTTPError as e:
-        raise ConnectionError(f"Couldn't download highlight.js script for code highlighting. Reason: {e}")
+        raise HighlighterError(f"couldn't download highlight.js script for code highlighting. Reason: {e}")
     except requests.exceptions.ConnectionError:
-        raise ConnectionError(
-            f"Couldn't download highlight.js script for code highlighting. Check your internet connection.")
+        raise HighlighterError(
+            f"couldn't download highlight.js script for code highlighting. Check your internet connection.")
 
 
 def _update_style_in(note_type: Type[Note], style_name: str, anki_api: AnkiApi) -> None:
