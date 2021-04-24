@@ -187,6 +187,31 @@ test_cases = {
                   back_md='Answer\n\n\n\nAdditional info\n\nAnd more to it',
                   tags=['one', 'two-three'], deck_name='Abraham'),
     ],
+
+    # should not collect empty basic note
+    ('Deck: Abraham\n'
+     '\n'
+     '1. \n'
+     '\n'
+     '> '): [],
+
+    ('Deck: Abraham\n'
+     '\n'
+     '1. not empty \n'
+     '\n'
+     '> '): [],
+
+    # should not collect empty basic note
+    ('Deck: Abraham\n'
+     '\n'
+     '1. \n'
+     '\n'
+     '> not empty'): [],
+
+    # should not collect empty question
+    ('Deck: Abraham\n'
+     '\n'
+     '1. \n'): [],
 }
 
 

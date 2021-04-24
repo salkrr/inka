@@ -93,6 +93,8 @@ class Parser:
             if self._is_basic_note_str(string):
                 question = self.get_question(string)
                 answer = self._get_cleaned_answer(string)
+                if not question or not answer:
+                    continue
 
                 notes.append(BasicNote(front_md=question,
                                        back_md=answer,
