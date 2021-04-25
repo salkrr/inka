@@ -1,9 +1,9 @@
 import re
-from typing import Union, Tuple, AnyStr, Iterator, Match, Pattern
+from typing import Union, Tuple, Iterator, Match, Pattern, Iterable
 
-import mistune
+import mistune  # type: ignore
 
-from .notes.basic_note import BasicNote
+from .notes.basic_note import Note
 from .notes.cloze_note import ClozeNote
 from ..mistune_plugins.mathjax import plugin_mathjax, BLOCK_MATH, INLINE_MATH
 
@@ -33,13 +33,13 @@ INLINE_MATH_PLACEHOLDER = 'INLINE_MATH_PLACEHOLDER'
 BLOCK_MATH_PLACEHOLDER = 'BLOCK_MATH_PLACEHOLDER'
 
 
-def convert_notes_to_html(notes: Iterator[Union[BasicNote, ClozeNote]]):
+def convert_notes_to_html(notes: Iterable[Note]):
     """Convert note fields to html"""
     for note in notes:
         note.convert_fields_to_html(_convert_md_to_html)
 
 
-def convert_cloze_deletions_to_anki_format(cloze_notes: Iterator[ClozeNote]):
+def convert_cloze_deletions_to_anki_format(cloze_notes: Iterable[ClozeNote]):
     """Convert short syntax for cloze deletions to anki syntax"""
     for note in cloze_notes:
         # We substitute code and math inline/blocks with placeholders before searching cloze deletions
@@ -75,14 +75,14 @@ def _convert_md_to_html(text: str) -> str:
 
 def _get_matches_and_updated_text(regex_pattern: Union[str, Pattern],
                                   placeholder: str,
-                                  text: str) -> Tuple[Iterator[Match[AnyStr]], str]:
+                                  text: str) -> Tuple[Iterator[Match[str]], str]:
     """Search for matches with regex pattern and then replace same matches in text with placeholder"""
     matches = re.finditer(regex_pattern, text)
     new_text = re.sub(regex_pattern, placeholder, text)
     return matches, new_text
 
 
-def _replace_placeholders_with_content(matches: Iterator[Match[AnyStr]], placeholder: str, text: str) -> str:
+def _replace_placeholders_with_content(matches: Iterable[Match[str]], placeholder: str, text: str) -> str:
     """Replace placeholder occurrences with text from regex matches"""
     new_text = text
     for match in matches:
@@ -90,7 +90,7 @@ def _replace_placeholders_with_content(matches: Iterator[Match[AnyStr]], placeho
     return new_text
 
 
-def _replace_short_cloze_syntax(text: str, cloze_strings: Iterator[str]) -> str:
+def _replace_short_cloze_syntax(text: str, cloze_strings: Iterable[str]) -> str:
     """Replace short implicit and explicit cloze syntax with Anki cloze syntax in text"""
     new_text = text
     for i, cloze in enumerate(cloze_strings, start=1):
@@ -106,8 +106,9 @@ def _replace_short_cloze_syntax(text: str, cloze_strings: Iterator[str]) -> str:
             continue
 
         implicit_match = re.match(IMPLICIT_SHORT_CLOZE_REGEX, cloze)
-        content = implicit_match.group(1)
-        new_cloze = '{{' + f'c{i}::{content}' + '}}'
-        new_text = new_text.replace(cloze, new_cloze, 1)
+        if implicit_match:
+            content = implicit_match.group(1)
+            new_cloze = '{{' + f'c{i}::{content}' + '}}'
+            new_text = new_text.replace(cloze, new_cloze, 1)
 
     return new_text

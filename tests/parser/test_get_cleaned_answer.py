@@ -97,7 +97,10 @@ test_cases = {
                   '\n\n'
                   '```commandline\n'
                   'inka collect -u path/to/file.md\n'
-                  '```')
+                  '```'),
+
+    # If no answer
+    'Some text': None,
 }
 
 
@@ -106,10 +109,3 @@ def test_get_answer(fake_parser, text, expected):
     answer = fake_parser._get_cleaned_answer(text)
 
     assert answer == expected
-
-
-def test_get_answer_when_no_answer_raises_error(fake_parser):
-    text = 'Some text'
-
-    with pytest.raises(AttributeError):
-        fake_parser._get_cleaned_answer(text)

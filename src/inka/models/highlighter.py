@@ -1,5 +1,5 @@
 import re
-from typing import Type
+from typing import Type, Dict
 
 import requests
 from requests import HTTPError
@@ -129,7 +129,7 @@ def _handle_highlighjs_files_for(note_type: Type[Note], anki_media: AnkiMedia, a
 
     # Add link to script and script for automatic execution at the end of all fields of templates
     script_elements = f'<script src="{script_name}"></script>\n{AUTOSTART_SCRIPT}'
-    new_templates = {}
+    new_templates: Dict[str, Dict[str, str]] = {}
     for template, fields in templates.items():
         new_templates[template] = {}
         for field, value in fields.items():

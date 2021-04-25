@@ -151,6 +151,9 @@ test_cases = {
         '\n'
         '{1::And::hint} even more!'
     ),
+
+    # no question
+    'Some text': None,
 }
 
 
@@ -159,10 +162,3 @@ def test_get_question(fake_parser, text, expected):
     question = fake_parser.get_question(text)
 
     assert question == expected
-
-
-def test_get_question_when_no_question_raises_error(fake_parser):
-    text = 'Some text'
-
-    with pytest.raises(AttributeError):
-        fake_parser.get_question(text)

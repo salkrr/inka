@@ -1,15 +1,16 @@
 from pathlib import Path
-from typing import Union, List, Optional
+from typing import Union, Optional, Iterable
 
 from .notes.basic_note import BasicNote
 from .notes.cloze_note import ClozeNote
+from .notes.note import Note
 from .parser import Parser
 
 
 class Writer:
     """Class for editing file with notes"""
 
-    def __init__(self, file_path: Union[str, Path], notes: List[Union[BasicNote, ClozeNote]]):
+    def __init__(self, file_path: Union[str, Path], notes: Iterable[Note]):
         self._file_path = file_path
         self._notes = notes
 
@@ -58,6 +59,9 @@ class Writer:
     def update_fields_of_basic_notes(self):
         """Update question and answer fields in notes in file"""
         for note in self._notes:
+            if not isinstance(note, BasicNote):
+                continue
+
             if not note.changed:
                 continue
 
@@ -114,6 +118,7 @@ class Writer:
         for string in self._note_strings:
             if string.find(str(note_id)) != -1:
                 return string
+        return None
 
     def __repr__(self):
         return f'{type(self).__name__}(file_path={self._file_path!r}, notes={self._notes!r})'

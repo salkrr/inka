@@ -15,8 +15,8 @@ class BasicNote(Note):
         self.raw_back_md = back_md
         self.updated_front_md = front_md  # With updated image links
         self.updated_back_md = back_md  # With updated image links
-        self.front_html = None
-        self.back_html = None
+        self.front_html = ''
+        self.back_html = ''
 
     @property
     def search_query(self) -> str:

@@ -13,7 +13,7 @@ class ClozeNote(Note):
         super().__init__(tags, deck_name, anki_id)
         self.raw_text_md = text_md
         self.updated_text_md = text_md  # With updated image links and cloze deletions
-        self.text_html = None
+        self.text_html = ''
 
     @property
     def search_query(self) -> str:

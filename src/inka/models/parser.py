@@ -4,6 +4,7 @@ from typing import List, Union, Optional
 
 from .notes.basic_note import BasicNote
 from .notes.cloze_note import ClozeNote
+from .notes.note import Note
 
 
 class Parser:
@@ -64,7 +65,7 @@ class Parser:
         self._file_path = file_path
         self._default_deck = default_deck
 
-    def collect_notes(self) -> List[Union[BasicNote, ClozeNote]]:
+    def collect_notes(self) -> List[Note]:
         """Get all notes from the file which path was passed to the Parser"""
         with open(self._file_path, mode='rt', encoding='utf-8') as f:
             file_string = f.read()
@@ -77,7 +78,7 @@ class Parser:
 
         return notes
 
-    def _get_notes_from_section(self, section: str) -> List[Union[BasicNote, ClozeNote]]:
+    def _get_notes_from_section(self, section: str) -> List[Note]:
         """Get all Notes from the section string"""
         tags = self._get_tags(section)
         deck_name = self._get_deck_name(section)
@@ -85,7 +86,7 @@ class Parser:
         note_strings = self.get_note_strings(section)
 
         # Create note objects
-        notes = []
+        notes: List[Note] = []
         for string in note_strings:
             anki_id = self.get_id(string)
 
@@ -103,6 +104,8 @@ class Parser:
                                        anki_id=anki_id))
             elif self._is_cloze_note_str(string):
                 text = self.get_question(string)
+                if not text:
+                    continue
 
                 notes.append(ClozeNote(text_md=text,
                                        tags=tags,
@@ -139,27 +142,31 @@ class Parser:
     def get_id(cls, text: str) -> Optional[int]:
         """Get note's ID from text. Returns None if id wasn't found or if it is incorrect."""
         id_match = re.search(cls._id_regex, text)
+        if id_match:
+            try:
+                return int(id_match.group(1))
+            except ValueError:
+                return None
 
-        try:
-            return int(id_match.group(1))
-        except (ValueError, AttributeError):
-            return None
+        return None
 
     @classmethod
-    def get_question(cls, text: str) -> str:
+    def get_question(cls, text: str) -> Optional[str]:
         """Get clean question string from text
          (without digit followed by period and trailing whitespace)"""
         question_match = re.search(cls._question_regex, text)
+        if question_match:
+            return question_match.group(1).strip()
 
-        question = question_match.group(1).strip()
-
-        return question
+        return None
 
     @classmethod
-    def get_answer(cls, text: str) -> str:
+    def get_answer(cls, text: str) -> Optional[str]:
         """Get answer string from text"""
         answer_match = re.search(cls._answer_regex, text)
-        return answer_match.group()
+        if answer_match:
+            return answer_match.group()
+        return None
 
     @classmethod
     def _get_sections(cls, file_contents: str) -> List[str]:
@@ -201,10 +208,14 @@ class Parser:
         return re.findall(cls._cloze_note_regex, section)
 
     @classmethod
-    def _get_cleaned_answer(cls, text: str) -> str:
+    def _get_cleaned_answer(cls, text: str) -> Optional[str]:
         """Get clean answer string from text (without '>' and trailing whitespace)"""
         # Remove '>' and first whitespace char after it (if there is any)
-        lines = cls.get_answer(text).splitlines()
+        answer = cls.get_answer(text)
+        if not answer:
+            return None
+
+        lines = answer.splitlines()
         cleaned_lines = []
         for line in lines:
             if len(line) > 1 and line[1].isspace():
@@ -213,7 +224,7 @@ class Parser:
                 cleaned_lines.append(line[1:].rstrip())
 
         # Join lines differently: if inside code block '\n' else '\n\n'
-        answer = ''
+        cleaned_answer = ''
         inside_code_block = False
         for i, line in enumerate(cleaned_lines):
             delimiter = '\n\n'
@@ -232,6 +243,6 @@ class Parser:
             if i == 0:
                 delimiter = ''
 
-            answer = answer + delimiter + line
+            cleaned_answer = cleaned_answer + delimiter + line
 
-        return answer
+        return cleaned_answer

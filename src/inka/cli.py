@@ -1,7 +1,7 @@
 import os
 import sys
 from subprocess import call
-from typing import Tuple, Set, List
+from typing import Set, List, Iterable
 
 import click
 import requests
@@ -27,13 +27,18 @@ CONFIG = Config(CONFIG_PATH)
 CONSOLE = Console()
 
 
-def get_notes_from_file(file_path: str) -> List[BasicNote]:
+def get_notes_from_file(file_path: str) -> List[Note]:
+    CONSOLE.print('  [cyan1]->[/cyan1] Getting cards from the file...')
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
 
     default_deck = CONFIG.get_option_value('defaults', 'deck')
-    parser = Parser(file_path, default_deck)
-    notes = parser.collect_notes()
+    notes = Parser(file_path, default_deck).collect_notes()
+    notes_num = len(notes)
+    if notes_num == 0:
+        CONSOLE.print(f"  [cyan1]->[/cyan1] Cards weren't found!")
+    else:
+        CONSOLE.print(f'  [cyan1]->[/cyan1] Found {notes_num} {"cards" if notes_num > 1 else "card"}!')
 
     return notes
 
@@ -42,17 +47,12 @@ def create_notes_from_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMe
     """Get all notes from file and send them to Anki"""
     CONSOLE.print(f'[green]==>[/green] Collecting cards from "{file_path}"!', style='bold')
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Getting cards from the file...')
     notes = get_notes_from_file(file_path)
-
-    notes_num = len(notes)
-    if notes_num == 0:
-        CONSOLE.print(f"  [cyan1]->[/cyan1] Cards weren't found!")
+    if not notes:
         return
-    CONSOLE.print(f'  [cyan1]->[/cyan1] Found {notes_num} {"cards" if notes_num > 0 else "card"}!')
 
     converter.convert_cloze_deletions_to_anki_format(
-        [note for note in notes if isinstance(note, ClozeNote)]
+        note for note in notes if isinstance(note, ClozeNote)
     )
     writer = Writer(file_path, notes)
     writer.update_cloze_notes()
@@ -64,14 +64,10 @@ def create_notes_from_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMe
     converter.convert_notes_to_html(notes)
 
     CONSOLE.print('  [cyan1]->[/cyan1] Synchronizing changes...')
-    notes_with_id = [note for note in notes
-                     if note.anki_id]
-    anki_api.update_notes(notes_with_id)
+    anki_api.update_notes(note for note in notes if note.anki_id)
 
     CONSOLE.print('  [cyan1]->[/cyan1] Sending new cards...')
-    notes_without_id = [note for note in notes
-                        if not note.anki_id]
-    anki_api.add_notes(notes_without_id)
+    anki_api.add_notes(note for note in notes if not note.anki_id)
 
     CONSOLE.print('  [cyan1]->[/cyan1] Adding IDs to cards...')
     writer.update_note_ids()
@@ -82,13 +78,9 @@ def update_note_ids_in_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiM
     """Update IDs of notes in file by getting their IDs from Anki"""
     CONSOLE.print(f'[green]==>[/green] Updating IDs of cards in "{file_path}"!', style='bold')
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Getting cards from the file...')
     notes = get_notes_from_file(file_path)
-    notes_num = len(notes)
-    if notes_num == 0:
-        CONSOLE.print(f"  [cyan1]->[/cyan1] Cards weren't found!")
+    if not notes:
         return
-    CONSOLE.print(f'  [cyan1]->[/cyan1] Found {notes_num} cards!')
 
     converter.convert_cloze_deletions_to_anki_format(
         [note for note in notes if isinstance(note, ClozeNote)]
@@ -303,7 +295,7 @@ def config(list_options: bool, reset: bool, edit: bool, name: str, value: str) -
                 nargs=-1,
                 type=click.Path(exists=True),
                 required=False)
-def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) -> None:
+def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Iterable[str]) -> None:
     """Get flashcards from files and add them to Anki. If flashcard already exists in Anki, the changes will be synced.
 
      If no PATH argument is passed, the program will use the path from config option 'defaults.folder'.
@@ -349,7 +341,7 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Tuple[str]) 
     try:
         for note_type in (BasicNote, ClozeNote):
             highlighter.add_code_highlight_to(
-                note_type,
+                note_type,  # type: ignore
                 CONFIG.get_option_value('highlight', 'style'),
                 anki_api,
                 anki_media

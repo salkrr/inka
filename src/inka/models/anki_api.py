@@ -1,11 +1,9 @@
-from typing import Union, List, Any, Dict, Type
+from typing import List, Any, Dict, Type, Iterable
 
 import requests
 from requests import RequestException
 
 from .config import Config
-from .notes.basic_note import BasicNote
-from .notes.cloze_note import ClozeNote
 from .notes.note import Note
 from ..exceptions import AnkiApiError
 
@@ -37,7 +35,7 @@ class AnkiApi:
         params = {'name': profile}
         self._send_request('loadProfile', **params)
 
-    def add_notes(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:
+    def add_notes(self, notes: Iterable[Note]) -> None:
         """Add new notes to Anki"""
         # Create decks that doesn't exist
         decks = {note.deck_name for note in notes}
@@ -52,7 +50,7 @@ class AnkiApi:
             except RequestException as e:
                 raise AnkiApiError(str(e), note=note)
 
-    def update_note_ids(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:
+    def update_note_ids(self, notes: Iterable[Note]) -> None:
         """Update incorrect or absent IDs of notes"""
         # Handle None
         note_ids = [note.anki_id if note.anki_id else -1
@@ -67,7 +65,7 @@ class AnkiApi:
             found_notes = self._send_request('findNotes', query=note.search_query)
             note.anki_id = found_notes[0] if found_notes else None
 
-    def update_notes(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:
+    def update_notes(self, notes: Iterable[Note]) -> None:
         """Synchronize changes in notes with Anki"""
         # Get info about notes from Anki
         notes_info = self._send_request('notesInfo', notes=[note.anki_id for note in notes])
@@ -104,12 +102,12 @@ class AnkiApi:
             except RequestException as e:
                 raise AnkiApiError(str(e), note=note)
 
-    def delete_notes(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:
+    def delete_notes(self, notes: Iterable[Note]) -> None:
         """Delete notes from Anki"""
         self._send_request('deleteNotes',
                            notes=[note.anki_id for note in notes])
 
-    def remove_change_tag_from_notes(self, notes: List[Union[BasicNote, ClozeNote]]) -> None:
+    def remove_change_tag_from_notes(self, notes: Iterable[Note]) -> None:
         """Remove the tag which marks note as changed from notes in Anki"""
         self._send_request('removeTags',
                            notes=[note.anki_id for note in notes],
@@ -148,7 +146,7 @@ class AnkiApi:
         params = {'deck': deck}
         return self._send_request('createDeck', **params)
 
-    def _create_note_params(self, note: Union[BasicNote, ClozeNote]) -> dict:
+    def _create_note_params(self, note: Note) -> dict:
         """Create dict with params required to add note to Anki"""
         return {
             'deckName': note.deck_name,
