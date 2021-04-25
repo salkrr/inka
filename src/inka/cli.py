@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from subprocess import call
 from typing import Set, List, Iterable
 
@@ -138,6 +139,16 @@ def get_paths_to_files(paths: Set[str], recursive: bool) -> Set[str]:
         paths_to_files.add(full_path)
 
     return paths_to_files
+
+
+def handle_code_highlight(anki_api: AnkiApi, anki_media: AnkiMedia) -> None:
+    for note_type in (BasicNote, ClozeNote):
+        highlighter.add_code_highlight_to(
+            note_type,  # type: ignore
+            CONFIG.get_option_value('highlight', 'style'),
+            anki_api,
+            anki_media
+        )
 
 
 def get_profile_from_user(profiles: List[str]) -> str:
@@ -341,16 +352,13 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, ignore_errors: bool
     CONSOLE.print('[cyan1]::[/cyan1] Getting profile...', style='bold')
     profile = get_profile(prompt, anki_api)
     anki_api.select_profile(profile)
+    # Sleep to wait till profile is loaded.
+    # Works only if sync is fast enough
+    time.sleep(1)
 
     anki_media = AnkiMedia(profile)
     try:
-        for note_type in (BasicNote, ClozeNote):
-            highlighter.add_code_highlight_to(
-                note_type,  # type: ignore
-                CONFIG.get_option_value('highlight', 'style'),
-                anki_api,
-                anki_media
-            )
+        handle_code_highlight(anki_api, anki_media)
     except KeyError:
         # Handle backward compatibility issues (config options were changed)
         print_error('your config file is corrupted. Please reset its state with the command "inka config --reset".')
