@@ -6,7 +6,7 @@ from .anki_media import AnkiMedia
 from .notes.note import Note
 
 
-def handle_images_in(notes: List[Note], anki_media: AnkiMedia) -> None:
+def handle_images_in(notes: List[Note], anki_media: AnkiMedia, copy_images: bool = True) -> None:
     """
     Copy images used in Notes fields to Anki Media folder and change source in their
     links to be just filename (for Anki to find them).
@@ -14,12 +14,14 @@ def handle_images_in(notes: List[Note], anki_media: AnkiMedia) -> None:
     Args:
         notes: Notes in which image links will be searched for and then updated
         anki_media: AnkiMedia object that will be used to copy images
+        copy_images: copy images to Anki media folder or not
     """
     # Find all unique image links in the notes
     image_links = _fetch_image_links(notes)
 
     # Copy images to Anki Media folder
-    _copy_images_to(anki_media, list(image_links.keys()))
+    if copy_images:
+        _copy_images_to(anki_media, list(image_links.keys()))
 
     # Update image links in notes
     _update_image_links_in_notes(image_links)

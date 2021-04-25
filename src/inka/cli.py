@@ -90,7 +90,7 @@ def update_note_ids_in_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiM
     writer.update_cloze_notes()
 
     CONSOLE.print('  [cyan1]->[/cyan1] Handling images...')
-    img_handler.handle_images_in(notes, anki_media)
+    img_handler.handle_images_in(notes, anki_media, copy_images=False)
 
     CONSOLE.print('  [cyan1]->[/cyan1] Converting cards to the html...')
     converter.convert_notes_to_html(notes)
