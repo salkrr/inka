@@ -290,12 +290,17 @@ def config(list_options: bool, reset: bool, edit: bool, name: str, value: str) -
               'update_ids',
               is_flag=True,
               help='Update incorrect or absent IDs of cards from file(s) by searching for these cards in Anki.')
+@click.option('-i',
+              '--ignore-errors',
+              'ignore_errors',
+              is_flag=True,
+              help="The program won't pause in case of an error.")
 @click.argument('paths',
                 metavar='[PATH]...',
                 nargs=-1,
                 type=click.Path(exists=True),
                 required=False)
-def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Iterable[str]) -> None:
+def collect(recursive: bool, prompt: bool, update_ids: bool, ignore_errors: bool, paths: Iterable[str]) -> None:
     """Get flashcards from files and add them to Anki. If flashcard already exists in Anki, the changes will be synced.
 
      If no PATH argument is passed, the program will use the path from config option 'defaults.folder'.
@@ -373,9 +378,9 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, paths: Iterable[str
 
             create_notes_from_file(file, anki_api, anki_media)
         except (OSError, ValueError, FileNotFoundError, FileExistsError,) as e:
-            print_error(f'{e}\nSkipping file!', pause=True)
+            print_error(f'{e}\nSkipping file!', pause=(not ignore_errors))
         except AnkiApiError as e:
-            print_error(f'{e}\nSkipping file!', pause=True, note=e.note)
+            print_error(f'{e}\nSkipping file!', pause=(not ignore_errors), note=e.note)
         except (requests.exceptions.RequestException, requests.exceptions.ConnectionError) as e:
             print_error(str(e))
             sys.exit(1)
