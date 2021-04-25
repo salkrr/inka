@@ -13,7 +13,14 @@ from inka.models.parser import Parser
 @pytest.fixture
 def anki_media() -> AnkiMedia:
     """Instance of AnkiMedia class with profile 'test'."""
-    return AnkiMedia(anki_profile='test')
+    anki_media = AnkiMedia(anki_profile='test_profile')
+
+    try:
+        os.makedirs(anki_media._anki_media_path)
+    except FileExistsError:
+        return anki_media
+
+    return anki_media
 
 
 @pytest.fixture
