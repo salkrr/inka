@@ -1,7 +1,11 @@
 # inka
 
+<a href="https://www.buymeacoffee.com/lazyvoid" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="170px" height="46px"></a>
+
 [![Downloads](https://pepy.tech/badge/inka)](https://pepy.tech/project/inka)
+[![PyPi](https://img.shields.io/pypi/v/inka)](https://pypi.org/project/inka)
 [![Tests CI](https://img.shields.io/github/workflow/status/lazy-void/inka/Run%20Tests/main)](https://github.com/lazy-void/inka/actions/workflows/ci-test.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Codecov](https://codecov.io/gh/lazy-void/inka/branch/main/graph/badge.svg?token=9wW5SJ9uLL)](https://codecov.io/gh/lazy-void/inka)
 
 Automatically add your Markdown flashcards to [Anki](https://apps.ankiweb.net/).
@@ -36,11 +40,11 @@ can see now.
 
 - Cards are automatically added to your Anki deck
 - [Basic and Cloze note types support](https://github.com/lazy-void/inka/wiki/Creating-cards#frontback-notes)
-- [Images support](https://github.com/lazy-void/inka/wiki/Creating-cards#images)
 - [Synchronization of changes with Anki](https://github.com/lazy-void/inka/wiki/Synchronization-with-Anki)
 - [Configuration via config file](https://github.com/lazy-void/inka/wiki/Config)
-- [Code highlight](https://github.com/lazy-void/inka/wiki/Code-highlight)
+- [Images support](https://github.com/lazy-void/inka/wiki/Creating-cards#images)
 - [MathJax support](https://github.com/lazy-void/inka/wiki/Mathjax)
+- [Code highlight](https://github.com/lazy-void/inka/wiki/Code-highlight)
 
 ## Usage
 
@@ -90,9 +94,8 @@ page.
 
 ### Adding Cards to Anki
 
-By default, **inka** will try to add **Front/Back** notes to the `Basic` Anki note type with `Front` and `Back` fields
-and **Cloze** notes to the `Cloze` Anki note type with `Text` field. If you don't have these note types, or just want to
-use others, change them in [config](https://github.com/lazy-void/inka/wiki/Config).
+**inka** will create custom note types for **Front/Back** and **Cloze** notes. If you want to use different ones, you
+can change note types in the [config](https://github.com/lazy-void/inka/wiki/Config).
 
 Add cards from the file:
 
