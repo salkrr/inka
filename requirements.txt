@@ -5,5 +5,5 @@ rich==10.1.0
 Pillow==8.2.0
 pytest==6.2.3
 pytest-cov==2.11.1
-pytest-mock==3.5.1
+pytest-mock==3.6.0
 tox==3.23.0
