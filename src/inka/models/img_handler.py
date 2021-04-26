@@ -6,7 +6,9 @@ from .anki_media import AnkiMedia
 from .notes.note import Note
 
 
-def handle_images_in(notes: List[Note], anki_media: AnkiMedia, copy_images: bool = True) -> None:
+def handle_images_in(
+    notes: List[Note], anki_media: AnkiMedia, copy_images: bool = True
+) -> None:
     """
     Copy images used in Notes fields to Anki Media folder and change source in their
     links to be just filename (for Anki to find them).
@@ -36,7 +38,7 @@ def _fetch_image_links(notes: List[Note]) -> Dict[str, List[Note]]:
         Dictionary with image links as keys and a list of Note objects in which they are used as values
     """
     image_links: Dict[str, List[Note]] = dict()
-    image_regex = re.compile(r'!\[.*?]\(.*?\)')
+    image_regex = re.compile(r"!\[.*?]\(.*?\)")
     for note in notes:
         all_found_links = set()
         for field in note.get_raw_fields():
@@ -57,7 +59,7 @@ def _update_image_links_in_notes(image_links: Dict[str, List[Note]]) -> None:
     Args:
         image_links: dictionary with image links as keys and a list of Note objects in which they are used as values
     """
-    image_path_regex = re.compile(r'(?<=\().+?(?=\))')
+    image_path_regex = re.compile(r"(?<=\().+?(?=\))")
     for link, notes in image_links.items():
         image_filename = _get_filename_from(link)
         if not image_filename:
@@ -89,7 +91,9 @@ def _copy_images_to(anki_media: AnkiMedia, image_links: Iterable[str]) -> None:
         try:
             anki_media.copy_file_from(abs_path)
         except FileNotFoundError:
-            raise FileNotFoundError(f'cannot find image "{link}" on the path "{abs_path}"')
+            raise FileNotFoundError(
+                f'cannot find image "{link}" on the path "{abs_path}"'
+            )
 
 
 def _get_path_from(image_link: str) -> Optional[str]:
@@ -100,7 +104,7 @@ def _get_path_from(image_link: str) -> Optional[str]:
     Returns:
         String with path used in markdown's image link
     """
-    match = re.search(r'(?<=\().+?(?=\))', image_link)
+    match = re.search(r"(?<=\().+?(?=\))", image_link)
     if not match:
         return None
 

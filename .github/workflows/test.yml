@@ -1,25 +1,24 @@
-name: Run Tests
+name: Tests
 
 on:
   push:
     paths:
-      - '.github/workflows/ci-test.yml'
+      - '.github/workflows/test.yml'
       - 'src/**'
       - 'tests/**'
   pull_request:
     paths:
-      - '.github/workflows/ci-test.yml'
+      - '.github/workflows/test.yml'
       - 'src/**'
       - 'tests/**'
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
         python: [ 3.7, 3.8, 3.9 ]
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     steps:
       - uses: actions/checkout@v2
@@ -33,11 +32,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Mypy
-        run: |
-          pip install mypy
-          mypy src/inka
-
       - name: Test with pytest
         run: |
           pip install .
@@ -50,3 +44,33 @@ jobs:
           file: ./coverage.xml
           flags: unittests
           name: GitHub
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: mypy
+        run: |
+          pip install mypy
+          mypy src/
+
+      - name: flake8
+        run: |
+          pip install flake8
+          flake8 src/ tests/
+
+      - name: black
+        uses: psf/black@stable
+        with:
+          args: ". --check"

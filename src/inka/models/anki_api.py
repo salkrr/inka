@@ -13,14 +13,16 @@ class AnkiApi:
 
     def __init__(self, cfg: Config):
         self._cfg = cfg
-        self._api_url = f'http://localhost:{cfg.get_option_value("anki_connect", "port")}'
-        self._change_tag = 'changed'
-        self._delete_tag = 'delete'
+        self._api_url = (
+            f'http://localhost:{cfg.get_option_value("anki_connect", "port")}'
+        )
+        self._change_tag = "changed"
+        self._delete_tag = "delete"
 
     def check_connection(self) -> bool:
         """Check connection with Anki Connect plugin"""
         try:
-            self._send_request('version')
+            self._send_request("version")
         except requests.exceptions.ConnectionError:
             return False
 
@@ -28,12 +30,12 @@ class AnkiApi:
 
     def get_profiles(self) -> List[str]:
         """Get list of user profiles from Anki"""
-        return self._send_request('getProfiles')
+        return self._send_request("getProfiles")
 
     def select_profile(self, profile: str) -> None:
         """Select profile in Anki"""
-        params = {'name': profile}
-        self._send_request('loadProfile', **params)
+        params = {"name": profile}
+        self._send_request("loadProfile", **params)
 
     def add_notes(self, notes: Iterable[Note]) -> None:
         """Add new notes to Anki"""
@@ -46,35 +48,36 @@ class AnkiApi:
         for note in notes:
             note_params = self._create_note_params(note)
             try:
-                note.anki_id = self._send_request('addNote', note=note_params)
+                note.anki_id = self._send_request("addNote", note=note_params)
             except RequestException as e:
                 raise AnkiApiError(str(e), note=note)
 
     def update_note_ids(self, notes: Iterable[Note]) -> None:
         """Update incorrect or absent IDs of notes"""
         # Handle None
-        note_ids = [note.anki_id if note.anki_id else -1
-                    for note in notes]
+        note_ids = [note.anki_id if note.anki_id else -1 for note in notes]
 
-        notes_info = self._send_request('notesInfo', notes=note_ids)
+        notes_info = self._send_request("notesInfo", notes=note_ids)
         for i, note in enumerate(notes):
             # Don't update ID if note with this ID exists
             if notes_info[i]:
                 continue
 
-            found_notes = self._send_request('findNotes', query=note.search_query)
+            found_notes = self._send_request("findNotes", query=note.search_query)
             note.anki_id = found_notes[0] if found_notes else None
 
     def update_notes(self, notes: Iterable[Note]) -> None:
         """Synchronize changes in notes with Anki"""
         # Get info about notes from Anki
-        notes_info = self._send_request('notesInfo', notes=[note.anki_id for note in notes])
+        notes_info = self._send_request(
+            "notesInfo", notes=[note.anki_id for note in notes]
+        )
 
         for i, note in enumerate(notes):
             # If note wasn't found
             if not notes_info[i]:
                 raise AnkiApiError(
-                    f'note with ID {note.anki_id} was not found. '
+                    f"note with ID {note.anki_id} was not found. "
                     f'You can update IDs on notes with the command "inka collect --update-ids path/to/file.md".'
                 )
 
@@ -97,91 +100,96 @@ class AnkiApi:
             try:
                 # Push changes from file to Anki
                 note_params = self._create_note_params(note)
-                note_params['id'] = note.anki_id
-                self._send_request('updateNoteFields', note=note_params)
+                note_params["id"] = note.anki_id
+                self._send_request("updateNoteFields", note=note_params)
             except RequestException as e:
                 raise AnkiApiError(str(e), note=note)
 
     def delete_notes(self, notes: Iterable[Note]) -> None:
         """Delete notes from Anki"""
-        self._send_request('deleteNotes',
-                           notes=[note.anki_id for note in notes])
+        self._send_request("deleteNotes", notes=[note.anki_id for note in notes])
 
     def remove_change_tag_from_notes(self, notes: Iterable[Note]) -> None:
         """Remove the tag which marks note as changed from notes in Anki"""
-        self._send_request('removeTags',
-                           notes=[note.anki_id for note in notes],
-                           tags=self._change_tag)
+        self._send_request(
+            "removeTags", notes=[note.anki_id for note in notes], tags=self._change_tag
+        )
 
     def fetch_note_types(self) -> List[str]:
         """Get list of names of the existing note types"""
-        return self._send_request('modelNames')
+        return self._send_request("modelNames")
 
     def create_note_type(
-            self,
-            name: str,
-            fields: List[str],
-            css: str,
-            card_templates: List[Dict[str, str]],
-            is_cloze: bool
+        self,
+        name: str,
+        fields: List[str],
+        css: str,
+        card_templates: List[Dict[str, str]],
+        is_cloze: bool,
     ) -> None:
         """Create new note type"""
         params = {
-            'modelName': name,
-            'inOrderFields': fields,
-            'css': css,
-            'isCloze': is_cloze,
-            'cardTemplates': card_templates,
+            "modelName": name,
+            "inOrderFields": fields,
+            "css": css,
+            "isCloze": is_cloze,
+            "cardTemplates": card_templates,
         }
-        return self._send_request('createModel', **params)
+        return self._send_request("createModel", **params)
 
     def fetch_note_type_styling(self, note_type: Type[Note]) -> str:
         """Get styling of note type that is used to add notes"""
-        return self._send_request('modelStyling', modelName=note_type.get_anki_note_type(self._cfg))['css']
+        return self._send_request(
+            "modelStyling", modelName=note_type.get_anki_note_type(self._cfg)
+        )["css"]
 
     def update_note_type_styling(self, note_type: Type[Note], new_styles: str) -> None:
         """Update styling of note type that is used to add notes"""
         params = {
-            'model': {
-                'name': note_type.get_anki_note_type(self._cfg),
-                'css': new_styles
+            "model": {
+                "name": note_type.get_anki_note_type(self._cfg),
+                "css": new_styles,
             }
         }
-        self._send_request('updateModelStyling', **params)
+        self._send_request("updateModelStyling", **params)
 
-    def fetch_note_type_templates(self, note_type: Type[Note]) -> Dict[str, Dict[str, str]]:
+    def fetch_note_type_templates(
+        self, note_type: Type[Note]
+    ) -> Dict[str, Dict[str, str]]:
         """Get templates of note type"""
-        return self._send_request('modelTemplates', modelName=note_type.get_anki_note_type(self._cfg))
+        return self._send_request(
+            "modelTemplates", modelName=note_type.get_anki_note_type(self._cfg)
+        )
 
-    def update_note_type_templates(self, note_type: Type[Note], templates: Dict[str, Dict[str, str]]) -> None:
+    def update_note_type_templates(
+        self, note_type: Type[Note], templates: Dict[str, Dict[str, str]]
+    ) -> None:
         """Update note type templates"""
         params = {
-            'model': {
-                'name': note_type.get_anki_note_type(self._cfg),
-                'templates': templates
+            "model": {
+                "name": note_type.get_anki_note_type(self._cfg),
+                "templates": templates,
             }
         }
-        self._send_request('updateModelTemplates', **params)
+        self._send_request("updateModelTemplates", **params)
 
     def _create_deck(self, deck: str) -> Any:
         """Create deck in Anki if it doesn't exist"""
-        params = {'deck': deck}
-        return self._send_request('createDeck', **params)
+        params = {"deck": deck}
+        return self._send_request("createDeck", **params)
 
     def _create_note_params(self, note: Note) -> dict:
         """Create dict with params required to add note to Anki"""
         return {
-            'deckName': note.deck_name,
-            'modelName': note.get_anki_note_type(self._cfg),
-            'fields': note.get_html_fields(self._cfg),
-            'options': {
-                'allowDuplicate': False,
-                'duplicateScope': None,
-                'duplicateScopeOptions': {
-                    'checkChildren': False
-                }
+            "deckName": note.deck_name,
+            "modelName": note.get_anki_note_type(self._cfg),
+            "fields": note.get_html_fields(self._cfg),
+            "options": {
+                "allowDuplicate": False,
+                "duplicateScope": None,
+                "duplicateScopeOptions": {"checkChildren": False},
             },
-            'tags': note.tags,
+            "tags": note.tags,
         }
 
     def _send_request(self, action: str, **params) -> Any:
@@ -190,17 +198,17 @@ class AnkiApi:
         response = requests.post(self._api_url, json=request_dict).json()
 
         if len(response) != 2:
-            raise RequestException('response has an unexpected number of fields')
-        if 'error' not in response:
-            raise RequestException('response is missing required error field')
-        if 'result' not in response:
-            raise RequestException('response is missing required result field')
-        if response['error'] is not None:
-            raise RequestException(response['error'])
+            raise RequestException("response has an unexpected number of fields")
+        if "error" not in response:
+            raise RequestException("response is missing required error field")
+        if "result" not in response:
+            raise RequestException("response is missing required result field")
+        if response["error"] is not None:
+            raise RequestException(response["error"])
 
-        return response['result']
+        return response["result"]
 
     @staticmethod
     def _create_request(action: str, **params) -> dict:
         """Create request dictionary"""
-        return {'action': action, 'version': 6, 'params': params}
+        return {"action": action, "version": 6, "params": params}

@@ -56,11 +56,11 @@ class Note(ABC):
     @staticmethod
     def create_anki_search_query(text: str) -> str:
         """Create Anki search query from the supplied text"""
-        special_chars = ['\\', '"', '*', '_', ':']
+        special_chars = ["\\", '"', "*", "_", ":"]
 
         search_query = text
         for char in special_chars:
-            escaped_char = '\\' + char
+            escaped_char = "\\" + char
             search_query = search_query.replace(char, escaped_char)
 
         return '"' + search_query + '"'
@@ -74,5 +74,4 @@ class Note(ABC):
         if not isinstance(other, self.__class__):
             return False
 
-        return (self.tags == other.tags and
-                self.deck_name == other.deck_name)
+        return self.tags == other.tags and self.deck_name == other.deck_name

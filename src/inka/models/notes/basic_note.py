@@ -9,14 +9,21 @@ from ..config import Config
 class BasicNote(Note):
     """Front/Back note type"""
 
-    def __init__(self, front_md: str, back_md: str, tags: Iterable[str], deck_name: str, anki_id: int = None):
+    def __init__(
+        self,
+        front_md: str,
+        back_md: str,
+        tags: Iterable[str],
+        deck_name: str,
+        anki_id: int = None,
+    ):
         super().__init__(tags, deck_name, anki_id)
         self.raw_front_md = front_md
         self.raw_back_md = back_md
         self.updated_front_md = front_md  # With updated image links
         self.updated_back_md = back_md  # With updated image links
-        self.front_html = ''
-        self.back_html = ''
+        self.front_html = ""
+        self.back_html = ""
 
     @property
     def search_query(self) -> str:
@@ -44,38 +51,40 @@ class BasicNote(Note):
     def get_html_fields(self, cfg: Config) -> Dict[str, str]:
         """Return dictionary with Anki field names as keys and html strings as values"""
         return {
-            cfg.get_option_value('anki', 'front_field'): self.front_html,
-            cfg.get_option_value('anki', 'back_field'): self.back_html
+            cfg.get_option_value("anki", "front_field"): self.front_html,
+            cfg.get_option_value("anki", "back_field"): self.back_html,
         }
 
     @staticmethod
     def get_anki_note_type(cfg: Config) -> str:
         """Get name of Anki note type"""
-        return cfg.get_option_value('anki', 'basic_type')
+        return cfg.get_option_value("anki", "basic_type")
 
     def __eq__(self, other: Any) -> bool:
         if not super().__eq__(other):
             return False
 
-        return (self.raw_front_md == other.raw_front_md and
-                self.raw_back_md == other.raw_back_md)
+        return (
+            self.raw_front_md == other.raw_front_md
+            and self.raw_back_md == other.raw_back_md
+        )
 
     def __rich__(self) -> Table:
         """Table that is used to display info about note in case of error"""
         table = Table(
-            Column('Field', justify='left', style='magenta'),
-            Column('Value', justify='left', style='green'),
-            title='Basic Note',
+            Column("Field", justify="left", style="magenta"),
+            Column("Value", justify="left", style="green"),
+            title="Basic Note",
         )
-        table.add_row('Front', self.raw_front_md, end_section=True)
-        table.add_row('Back', self.raw_back_md, end_section=True)
-        table.add_row('Tags', ', '.join(self.tags), end_section=True)
-        table.add_row('Deck', self.deck_name, end_section=True)
+        table.add_row("Front", self.raw_front_md, end_section=True)
+        table.add_row("Back", self.raw_back_md, end_section=True)
+        table.add_row("Tags", ", ".join(self.tags), end_section=True)
+        table.add_row("Deck", self.deck_name, end_section=True)
 
         return table
 
     def __repr__(self) -> str:
         return (
-            f'{self.__class__.__name__}(front_md={self.raw_front_md!r}, back_md={self.raw_back_md!r}, '
-            f'tags={self.tags!r}, deck_name={self.deck_name!r}, anki_id={self.anki_id!r})'
+            f"{self.__class__.__name__}(front_md={self.raw_front_md!r}, back_md={self.raw_back_md!r}, "
+            f"tags={self.tags!r}, deck_name={self.deck_name!r}, anki_id={self.anki_id!r})"
         )

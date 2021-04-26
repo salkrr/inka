@@ -21,32 +21,38 @@ from .models.notes.note import Note
 from .models.parser import Parser
 from .models.writer import Writer
 
-FILE_EXTENSIONS = ['.md', '.markdown']
-CONFIG_PATH = f'{os.path.dirname(__file__)}/config.ini'
+FILE_EXTENSIONS = [".md", ".markdown"]
+CONFIG_PATH = f"{os.path.dirname(__file__)}/config.ini"
 
 CONFIG = Config(CONFIG_PATH)
 CONSOLE = Console()
 
 
 def get_notes_from_file(file_path: str) -> List[Note]:
-    CONSOLE.print('  [cyan1]->[/cyan1] Getting cards from the file...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Getting cards from the file...")
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
 
-    default_deck = CONFIG.get_option_value('defaults', 'deck')
+    default_deck = CONFIG.get_option_value("defaults", "deck")
     notes = Parser(file_path, default_deck).collect_notes()
     notes_num = len(notes)
     if notes_num == 0:
-        CONSOLE.print(f"  [cyan1]->[/cyan1] Cards weren't found!")
+        CONSOLE.print("  [cyan1]->[/cyan1] Cards weren't found!")
     else:
-        CONSOLE.print(f'  [cyan1]->[/cyan1] Found {notes_num} {"cards" if notes_num > 1 else "card"}!')
+        CONSOLE.print(
+            f'  [cyan1]->[/cyan1] Found {notes_num} {"cards" if notes_num > 1 else "card"}!'
+        )
 
     return notes
 
 
-def create_notes_from_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia) -> None:
+def create_notes_from_file(
+    file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia
+) -> None:
     """Get all notes from file and send them to Anki"""
-    CONSOLE.print(f'[green]==>[/green] Collecting cards from "{file_path}"!', style='bold')
+    CONSOLE.print(
+        f'[green]==>[/green] Collecting cards from "{file_path}"!', style="bold"
+    )
 
     notes = get_notes_from_file(file_path)
     if not notes:
@@ -58,26 +64,28 @@ def create_notes_from_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMe
     writer = Writer(file_path, notes)
     writer.update_cloze_notes()
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Handling images...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Handling images...")
     img_handler.handle_images_in(notes, anki_media)
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Converting cards to the html...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Converting cards to the html...")
     converter.convert_notes_to_html(notes)
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Synchronizing changes...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Synchronizing changes...")
     anki_api.update_notes([note for note in notes if note.anki_id])
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Sending new cards...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Sending new cards...")
     anki_api.add_notes([note for note in notes if not note.anki_id])
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Adding IDs to cards...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards...")
     writer.update_note_ids()
-    CONSOLE.print('  [cyan1]->[/cyan1] Finished!')
+    CONSOLE.print("  [cyan1]->[/cyan1] Finished!")
 
 
 def update_note_ids_in_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia):
     """Update IDs of notes in file by getting their IDs from Anki"""
-    CONSOLE.print(f'[green]==>[/green] Updating IDs of cards in "{file_path}"!', style='bold')
+    CONSOLE.print(
+        f'[green]==>[/green] Updating IDs of cards in "{file_path}"!', style="bold"
+    )
 
     notes = get_notes_from_file(file_path)
     if not notes:
@@ -89,18 +97,18 @@ def update_note_ids_in_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiM
     writer = Writer(file_path, notes)
     writer.update_cloze_notes()
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Handling images...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Handling images...")
     img_handler.handle_images_in(notes, anki_media, copy_images=False)
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Converting cards to the html...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Converting cards to the html...")
     converter.convert_notes_to_html(notes)
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Getting card IDs from Anki...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Getting card IDs from Anki...")
     anki_api.update_note_ids(notes)
 
-    CONSOLE.print('  [cyan1]->[/cyan1] Adding IDs to cards...')
+    CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards...")
     writer.update_note_ids()
-    CONSOLE.print('  [cyan1]->[/cyan1] Finished!')
+    CONSOLE.print("  [cyan1]->[/cyan1] Finished!")
 
 
 def get_file_paths_from_directory(dir_path: str, search_recursive: bool) -> Set[str]:
@@ -145,19 +153,19 @@ def handle_code_highlight(anki_api: AnkiApi, anki_media: AnkiMedia) -> None:
     for note_type in (BasicNote, ClozeNote):
         highlighter.add_code_highlight_to(
             note_type,  # type: ignore
-            CONFIG.get_option_value('highlight', 'style'),
+            CONFIG.get_option_value("highlight", "style"),
             anki_api,
-            anki_media
+            anki_media,
         )
 
 
 def handle_note_types(anki_api: AnkiApi) -> None:
     note_types = anki_api.fetch_note_types()
-    curr_basic_type = CONFIG.get_option_value('anki', 'basic_type')
-    curr_front_field = CONFIG.get_option_value('anki', 'front_field')
-    curr_back_field = CONFIG.get_option_value('anki', 'back_field')
-    curr_cloze_type = CONFIG.get_option_value('anki', 'cloze_type')
-    curr_cloze_field = CONFIG.get_option_value('anki', 'cloze_field')
+    curr_basic_type = CONFIG.get_option_value("anki", "basic_type")
+    curr_front_field = CONFIG.get_option_value("anki", "front_field")
+    curr_back_field = CONFIG.get_option_value("anki", "back_field")
+    curr_cloze_type = CONFIG.get_option_value("anki", "cloze_type")
+    curr_cloze_field = CONFIG.get_option_value("anki", "cloze_field")
     css = """.card {
   font-family: arial;
   font-size: 20px;
@@ -188,27 +196,32 @@ code {
 
     # Basic Note
     if (
-            not (curr_basic_type and curr_front_field and curr_back_field)
-            or curr_basic_type not in note_types
+        not (curr_basic_type and curr_front_field and curr_back_field)
+        or curr_basic_type not in note_types
     ):
-        basic_name = 'Inka Basic'
-        front_field = 'Front'
-        back_field = 'Back'
+        basic_name = "Inka Basic"
+        front_field = "Front"
+        back_field = "Back"
         if basic_name not in note_types:
             anki_api.create_note_type(
                 name=basic_name,
                 fields=[front_field, back_field],
                 css=css,
-                card_templates=[{
-                    'Name': 'Card 1',
-                    'Front': '{{' + f'{front_field}' + '}}\n',
-                    'Back': '{{FrontSide}}\n<hr id=answer>\n' + '{{' + f'{back_field}' + '}}\n',
-                }],
-                is_cloze=False
+                card_templates=[
+                    {
+                        "Name": "Card 1",
+                        "Front": "{{" + f"{front_field}" + "}}\n",
+                        "Back": "{{FrontSide}}\n<hr id=answer>\n"
+                        + "{{"
+                        + f"{back_field}"
+                        + "}}\n",
+                    }
+                ],
+                is_cloze=False,
             )
-        CONFIG.update_option_value('anki', 'basic_type', basic_name)
-        CONFIG.update_option_value('anki', 'front_field', front_field)
-        CONFIG.update_option_value('anki', 'back_field', back_field)
+        CONFIG.update_option_value("anki", "basic_type", basic_name)
+        CONFIG.update_option_value("anki", "front_field", front_field)
+        CONFIG.update_option_value("anki", "back_field", back_field)
 
     # Cloze Note
     if not (curr_cloze_type and curr_cloze_field) or curr_cloze_type not in note_types:
@@ -219,22 +232,26 @@ code {
                 name=cloze_name,
                 fields=[text_field],
                 css=css,
-                card_templates=[{
-                    'Name': 'Cloze',
-                    'Front': '{{' + f'cloze:{text_field}' + '}}\n',
-                    'Back': '{{' + f'cloze:{text_field}' + '}}\n',
-                }],
-                is_cloze=True
+                card_templates=[
+                    {
+                        "Name": "Cloze",
+                        "Front": "{{" + f"cloze:{text_field}" + "}}\n",
+                        "Back": "{{" + f"cloze:{text_field}" + "}}\n",
+                    }
+                ],
+                is_cloze=True,
             )
-        CONFIG.update_option_value('anki', 'cloze_type', cloze_name)
-        CONFIG.update_option_value('anki', 'cloze_field', text_field)
+        CONFIG.update_option_value("anki", "cloze_type", cloze_name)
+        CONFIG.update_option_value("anki", "cloze_field", text_field)
 
 
 def get_profile_from_user(profiles: List[str]) -> str:
-    profile = Prompt.ask('   Enter the name of profile you want to use', choices=profiles)
+    profile = Prompt.ask(
+        "   Enter the name of profile you want to use", choices=profiles
+    )
 
-    if Confirm.ask('   Save profile as default?'):
-        CONFIG.update_option_value('defaults', 'profile', profile)
+    if Confirm.ask("   Save profile as default?"):
+        CONFIG.update_option_value("defaults", "profile", profile)
 
     return profile
 
@@ -248,12 +265,14 @@ def get_profile(prompt_user: bool, anki_api: AnkiApi) -> str:
     if prompt_user:
         return get_profile_from_user(profiles)
 
-    profile = CONFIG.get_option_value('defaults', 'profile')
+    profile = CONFIG.get_option_value("defaults", "profile")
     if not profile:
-        CONSOLE.print('   Default profile is not specified!', style='yellow')
+        CONSOLE.print("   Default profile is not specified!", style="yellow")
         profile = get_profile_from_user(profiles)
     elif profile not in profiles:
-        CONSOLE.print(f'   Incorrect profile name in the config: "{profile}"!', style='red')
+        CONSOLE.print(
+            f'   Incorrect profile name in the config: "{profile}"!', style="red"
+        )
         profile = get_profile_from_user(profiles)
 
     return profile
@@ -262,25 +281,25 @@ def get_profile(prompt_user: bool, anki_api: AnkiApi) -> str:
 def print_error(message: str, pause: bool = False, note: Note = None) -> None:
     if note:
         CONSOLE.print(note)
-    CONSOLE.print(f'ERROR: {message}', style='red bold')
+    CONSOLE.print(f"ERROR: {message}", style="red bold")
 
     if pause:
-        CONSOLE.input('Press [italic]Enter[/italic] to continue...\n')
+        CONSOLE.input("Press [italic]Enter[/italic] to continue...\n")
 
 
 def print_warning(message: str) -> None:
-    CONSOLE.print(f'WARNING: {message}', style='yellow bold')
+    CONSOLE.print(f"WARNING: {message}", style="yellow bold")
 
 
 def edit_config_file(ctx, param, value) -> None:
     if not value or ctx.resilient_parsing:
         return
 
-    editor = os.getenv('EDITOR')
+    editor = os.getenv("EDITOR")
     if not editor:
-        editor = 'nano'
+        editor = "nano"
 
-    with open(CONFIG_PATH, mode='at', encoding='utf-8') as f:
+    with open(CONFIG_PATH, mode="at", encoding="utf-8") as f:
         call([editor, f.name])
 
     ctx.exit()
@@ -307,110 +326,127 @@ def list_config_options(ctx, param, value) -> None:
 def cli() -> None:
     """Inka - command-line tool for adding flashcards from Markdown files to Anki.
 
-        Documentation:\n
-            https://github.com/lazy-void/inka/wiki
+    Documentation:\n
+        https://github.com/lazy-void/inka/wiki
 
-        Github:\n
-            https://github.com/lazy-void/inka
+    Github:\n
+        https://github.com/lazy-void/inka
     """
     pass
 
 
 @cli.command()
-@click.option('-l',
-              '--list',
-              'list_options',
-              is_flag=True,
-              callback=list_config_options,
-              is_eager=True,
-              help='List all options set in the config file, along with their values.')
-@click.option('-r',
-              '--reset',
-              is_flag=True,
-              callback=reset_config_file,
-              is_eager=True,
-              help='Reset config file to the default state.')
-@click.option('-e',
-              '--edit',
-              is_flag=True,
-              callback=edit_config_file,
-              is_eager=True,
-              help='Open the config file using editor specified in EDITOR environment variable.')
-@click.argument('name',
-                required=True)
-@click.argument('value',
-                required=False)
+@click.option(
+    "-l",
+    "--list",
+    "list_options",
+    is_flag=True,
+    callback=list_config_options,
+    is_eager=True,
+    help="List all options set in the config file, along with their values.",
+)
+@click.option(
+    "-r",
+    "--reset",
+    is_flag=True,
+    callback=reset_config_file,
+    is_eager=True,
+    help="Reset config file to the default state.",
+)
+@click.option(
+    "-e",
+    "--edit",
+    is_flag=True,
+    callback=edit_config_file,
+    is_eager=True,
+    help="Open the config file using editor specified in EDITOR environment variable.",
+)
+@click.argument("name", required=True)
+@click.argument("value", required=False)
 def config(list_options: bool, reset: bool, edit: bool, name: str, value: str) -> None:
     """Get and set inka's configuration options.
 
-        NAME - name of the config option. VALUE - new value for the config option.
+    NAME - name of the config option. VALUE - new value for the config option.
 
-        Examples:\n
-            Get the current value of "defaults.profile" option:\n
-                inka config defaults.profile
+    Examples:\n
+        Get the current value of "defaults.profile" option:\n
+            inka config defaults.profile
 
-            Set a new value to the "defaults.profile" option:\n
-                inka config defaults.profile "My Profile"
+        Set a new value to the "defaults.profile" option:\n
+            inka config defaults.profile "My Profile"
     """
     try:
-        section, key = name.split('.')
+        section, key = name.split(".")
 
         if not value:
-            CONSOLE.print(CONFIG.get_option_value(section, key), style='green')
+            CONSOLE.print(CONFIG.get_option_value(section, key), style="green")
             sys.exit(0)
 
         CONFIG.update_option_value(section, key, value)
     except (KeyError, ValueError):
-        print_error('incorrect name of a config option!\n'
-                    'To get list of all options use "--list" flag.')
+        print_error(
+            "incorrect name of a config option!\n"
+            'To get list of all options use "--list" flag.'
+        )
         sys.exit(1)
 
 
 @cli.command()
-@click.option('-r',
-              '--recursive',
-              is_flag=True,
-              help='Search for files in subdirectories.')
-@click.option('-p',
-              '--prompt',
-              is_flag=True,
-              help='Show prompt for profile name even if config contains default profile.')
-@click.option('-u',
-              '--update-ids',
-              'update_ids',
-              is_flag=True,
-              help='Update incorrect or absent IDs of cards from file(s) by searching for these cards in Anki.')
-@click.option('-i',
-              '--ignore-errors',
-              'ignore_errors',
-              is_flag=True,
-              help="The program won't pause in case of an error.")
-@click.argument('paths',
-                metavar='[PATH]...',
-                nargs=-1,
-                type=click.Path(exists=True),
-                required=False)
-def collect(recursive: bool, prompt: bool, update_ids: bool, ignore_errors: bool, paths: Iterable[str]) -> None:
+@click.option(
+    "-r", "--recursive", is_flag=True, help="Search for files in subdirectories."
+)
+@click.option(
+    "-p",
+    "--prompt",
+    is_flag=True,
+    help="Show prompt for profile name even if config contains default profile.",
+)
+@click.option(
+    "-u",
+    "--update-ids",
+    "update_ids",
+    is_flag=True,
+    help="Update incorrect or absent IDs of cards from file(s) by searching for these cards in Anki.",
+)
+@click.option(
+    "-i",
+    "--ignore-errors",
+    "ignore_errors",
+    is_flag=True,
+    help="The program won't pause in case of an error.",
+)
+@click.argument(
+    "paths", metavar="[PATH]...", nargs=-1, type=click.Path(exists=True), required=False
+)
+def collect(
+    recursive: bool,
+    prompt: bool,
+    update_ids: bool,
+    ignore_errors: bool,
+    paths: Iterable[str],
+) -> None:
     """Get flashcards from files and add them to Anki. If flashcard already exists in Anki, the changes will be synced.
 
-     If no PATH argument is passed, the program will use the path from config option 'defaults.folder'.
+    If no PATH argument is passed, the program will use the path from config option 'defaults.folder'.
 
-        [PATH]... - paths to files and/or directories
+       [PATH]... - paths to files and/or directories
 
-        Examples:\n
-            Get cards from file:\n
-                inka collect path/to/cards.md
+       Examples:\n
+           Get cards from file:\n
+               inka collect path/to/cards.md
 
-            Get cards from all Markdown files in the directory:\n
-                inka collect path/to/directory
+           Get cards from all Markdown files in the directory:\n
+               inka collect path/to/directory
     """
     # If no path specified as an argument, search for default path in config
     paths = set(paths)
     if not paths:
-        default_path = os.path.expanduser(CONFIG.get_option_value('defaults', 'folder'))
+        default_path = os.path.expanduser(CONFIG.get_option_value("defaults", "folder"))
         if not default_path:
-            print_error('default folder is not specified in the config!\n'
-                        'You must pass the path to a file or a folder as an argument.')
+            print_error(
+                "default folder is not specified in the config!\n"
+                "You must pass the path to a file or a folder as an argument."
+            )
             sys.exit(1)
 
         if not os.path.exists(default_path):
@@ -421,28 +457,32 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, ignore_errors: bool
 
     anki_api = AnkiApi(CONFIG)
 
-    CONSOLE.print('[cyan1]::[/cyan1] Attempting to connect to Anki...', style='bold')
+    CONSOLE.print("[cyan1]::[/cyan1] Attempting to connect to Anki...", style="bold")
     if not anki_api.check_connection():
-        print_error("couldn't connect to Anki. Please, check that Anki is running and AnkiConnect plugin is installed.")
+        print_error(
+            "couldn't connect to Anki. Please, check that Anki is running and AnkiConnect plugin is installed."
+        )
         sys.exit(1)
-    CONSOLE.print('[cyan1]::[/cyan1] Connected!', style='bold')
+    CONSOLE.print("[cyan1]::[/cyan1] Connected!", style="bold")
 
     # Get name of profile and select it in Anki
-    CONSOLE.print('[cyan1]::[/cyan1] Getting profile...', style='bold')
+    CONSOLE.print("[cyan1]::[/cyan1] Getting profile...", style="bold")
     profile = get_profile(prompt, anki_api)
     anki_api.select_profile(profile)
     # Sleep to wait till profile is loaded.
     # Works only if sync is fast enough
     time.sleep(1)
 
-    CONSOLE.print('[cyan1]::[/cyan1] Checking note types...', style='bold')
+    CONSOLE.print("[cyan1]::[/cyan1] Checking note types...", style="bold")
     anki_media = AnkiMedia(profile)
     try:
         handle_note_types(anki_api)
         handle_code_highlight(anki_api, anki_media)
     except KeyError:
         # Handle backward compatibility issues (config options were changed)
-        print_error('your config file is corrupted. Please reset its state with the command "inka config --reset".')
+        print_error(
+            'your config file is corrupted. Please reset its state with the command "inka config --reset".'
+        )
         sys.exit(1)
     except requests.exceptions.RequestException as e:
         print_error(f'something gone wrong while handling code highlight: "{e}"')
@@ -454,7 +494,9 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, ignore_errors: bool
     files = get_paths_to_files(paths, recursive)
 
     if not files:
-        CONSOLE.print('[cyan1]::[/cyan1] Markdown files not found!', style='yellow bold')
+        CONSOLE.print(
+            "[cyan1]::[/cyan1] Markdown files not found!", style="yellow bold"
+        )
         sys.exit(0)
 
     # Perform action on notes from each file
@@ -466,14 +508,22 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, ignore_errors: bool
                 continue
 
             create_notes_from_file(file, anki_api, anki_media)
-        except (OSError, ValueError, FileNotFoundError, FileExistsError,) as e:
-            print_error(f'{e}\nSkipping file!', pause=(not ignore_errors))
+        except (
+            OSError,
+            ValueError,
+            FileNotFoundError,
+            FileExistsError,
+        ) as e:
+            print_error(f"{e}\nSkipping file!", pause=(not ignore_errors))
         except AnkiApiError as e:
-            print_error(f'{e}\nSkipping file!', pause=(not ignore_errors), note=e.note)
-        except (requests.exceptions.RequestException, requests.exceptions.ConnectionError) as e:
+            print_error(f"{e}\nSkipping file!", pause=(not ignore_errors), note=e.note)
+        except (
+            requests.exceptions.RequestException,
+            requests.exceptions.ConnectionError,
+        ) as e:
             print_error(str(e))
             sys.exit(1)
         finally:
             os.chdir(initial_directory)
 
-    CONSOLE.print('[cyan1]::[/cyan1] Everything is done!', style='bold')
+    CONSOLE.print("[cyan1]::[/cyan1] Everything is done!", style="bold")
