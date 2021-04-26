@@ -65,10 +65,10 @@ def create_notes_from_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMe
     converter.convert_notes_to_html(notes)
 
     CONSOLE.print('  [cyan1]->[/cyan1] Synchronizing changes...')
-    anki_api.update_notes(note for note in notes if note.anki_id)
+    anki_api.update_notes([note for note in notes if note.anki_id])
 
     CONSOLE.print('  [cyan1]->[/cyan1] Sending new cards...')
-    anki_api.add_notes(note for note in notes if not note.anki_id)
+    anki_api.add_notes([note for note in notes if not note.anki_id])
 
     CONSOLE.print('  [cyan1]->[/cyan1] Adding IDs to cards...')
     writer.update_note_ids()
@@ -149,6 +149,85 @@ def handle_code_highlight(anki_api: AnkiApi, anki_media: AnkiMedia) -> None:
             anki_api,
             anki_media
         )
+
+
+def handle_note_types(anki_api: AnkiApi) -> None:
+    note_types = anki_api.fetch_note_types()
+    curr_basic_type = CONFIG.get_option_value('anki', 'basic_type')
+    curr_front_field = CONFIG.get_option_value('anki', 'front_field')
+    curr_back_field = CONFIG.get_option_value('anki', 'back_field')
+    curr_cloze_type = CONFIG.get_option_value('anki', 'cloze_type')
+    curr_cloze_field = CONFIG.get_option_value('anki', 'cloze_field')
+    css = """.card {
+  font-family: arial;
+  font-size: 20px;
+  text-align: left;
+  color: black;
+  background-color: white;
+}
+
+.cloze {
+  font-weight: bold;
+  color: blue;
+}
+.nightMode .cloze {
+  color: lightblue;
+}
+
+code {
+  background-color: #232831;
+  color: #fa4545;
+  border: 1px solid #030a1420;
+  box-shadow: 0 0.1em #00000010;
+  padding: 2px 4px;
+  line-height: 1.4em;
+  box-sizing: border-box;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+"""
+
+    # Basic Note
+    if (
+            not (curr_basic_type and curr_front_field and curr_back_field)
+            or curr_basic_type not in note_types
+    ):
+        basic_name = 'Inka Basic'
+        front_field = 'Front'
+        back_field = 'Back'
+        if basic_name not in note_types:
+            anki_api.create_note_type(
+                name=basic_name,
+                fields=[front_field, back_field],
+                css=css,
+                card_templates=[{
+                    'Name': 'Card 1',
+                    'Front': '{{' + f'{front_field}' + '}}\n',
+                    'Back': '{{FrontSide}}\n<hr id=answer>\n' + '{{' + f'{back_field}' + '}}\n',
+                }],
+                is_cloze=False
+            )
+        CONFIG.update_option_value('anki', 'basic_type', basic_name)
+        CONFIG.update_option_value('anki', 'front_field', front_field)
+        CONFIG.update_option_value('anki', 'back_field', back_field)
+
+    # Cloze Note
+    if not (curr_cloze_type and curr_cloze_field) or curr_cloze_type not in note_types:
+        cloze_name = 'Inka Cloze'
+        text_field = 'Text'
+        if cloze_name not in note_types:
+            anki_api.create_note_type(
+                name=cloze_name,
+                fields=[text_field],
+                css=css,
+                card_templates=[{
+                    'Name': 'Cloze',
+                    'Front': '{{' + f'cloze:{text_field}' + '}}\n',
+                    'Back': '{{' + f'cloze:{text_field}' + '}}\n',
+                }],
+                is_cloze=True
+            )
+        CONFIG.update_option_value('anki', 'cloze_type', cloze_name)
+        CONFIG.update_option_value('anki', 'cloze_field', text_field)
 
 
 def get_profile_from_user(profiles: List[str]) -> str:
@@ -356,8 +435,10 @@ def collect(recursive: bool, prompt: bool, update_ids: bool, ignore_errors: bool
     # Works only if sync is fast enough
     time.sleep(1)
 
+    CONSOLE.print('[cyan1]::[/cyan1] Checking note types...', style='bold')
     anki_media = AnkiMedia(profile)
     try:
+        handle_note_types(anki_api)
         handle_code_highlight(anki_api, anki_media)
     except KeyError:
         # Handle backward compatibility issues (config options were changed)

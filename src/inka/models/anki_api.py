@@ -113,6 +113,28 @@ class AnkiApi:
                            notes=[note.anki_id for note in notes],
                            tags=self._change_tag)
 
+    def fetch_note_types(self) -> List[str]:
+        """Get list of names of the existing note types"""
+        return self._send_request('modelNames')
+
+    def create_note_type(
+            self,
+            name: str,
+            fields: List[str],
+            css: str,
+            card_templates: List[Dict[str, str]],
+            is_cloze: bool
+    ) -> None:
+        """Create new note type"""
+        params = {
+            'modelName': name,
+            'inOrderFields': fields,
+            'css': css,
+            'isCloze': is_cloze,
+            'cardTemplates': card_templates,
+        }
+        return self._send_request('createModel', **params)
+
     def fetch_note_type_styling(self, note_type: Type[Note]) -> str:
         """Get styling of note type that is used to add notes"""
         return self._send_request('modelStyling', modelName=note_type.get_anki_note_type(self._cfg))['css']
