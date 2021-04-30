@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import Union, Optional, Iterable
 
@@ -23,18 +24,22 @@ class Writer:
         for note in self._notes:
             # Find note's question in file string
             note_question = note.get_raw_question_field()
-            question_start = self._file_content.find(note_question)
-
-            # Note may not be found cause it was deleted
-            if question_start == -1:
+            question_string_start = self._file_content.find(note_question)
+            if question_string_start == -1:
                 continue
 
-            # Find newline character that comes before question
-            newline_index = self._file_content[:question_start].rfind("\n")
+            matches = re.finditer(
+                r"(<!--ID:\S+-->)?(\n\d+\.\s*)",
+                self._file_content[:question_string_start],
+                re.MULTILINE,
+            )
+            if not matches:
+                # Note may not be found cause it was deleted
+                continue
 
             # Search for existing line with ID
-            line_before_question = self._file_content[:newline_index].splitlines()[-1]
-            existing_id = Parser.get_id(line_before_question)
+            question_match = list(matches)[-1]
+            existing_id = Parser.get_id(question_match.group(0))
 
             # Skip if ID hasn't changed
             if existing_id == note.anki_id:
@@ -44,6 +49,9 @@ class Writer:
             if not note.anki_id:
                 # Delete ID from note in file if note object has no ID
                 id_string = ""
+
+            # index of newline character that comes before question
+            newline_index = question_match.start(2)
 
             if existing_id is None:
                 # Add line with ID after newline

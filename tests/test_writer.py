@@ -6,6 +6,7 @@ import pytest
 
 from inka.models.notes.basic_note import BasicNote
 from inka.models.notes.cloze_note import ClozeNote
+from inka.models.notes.note import Note
 from inka.models.parser import Parser
 from inka.models.writer import Writer
 
@@ -42,7 +43,11 @@ def file(tmp_path: Path) -> Path:
             "\n"
             "4. Mul{1::tip}le\n\n"
             "{lines}\n\n"
-            "here\n\n"
+            "here\n"
+            "\n"
+            "5.\n"
+            "{{c1::Question}} starts lower\n\n"
+            "than you **might** expect??\n\n"
             "---"
         )
 
@@ -61,13 +66,13 @@ def notes(file: Path) -> List[Union[BasicNote, ClozeNote]]:
 
 
 @pytest.fixture
-def writer(file: Path, notes: List[Union[BasicNote, ClozeNote]]) -> Writer:
+def writer(file: Path, notes: List[Note]) -> Writer:
     """Fake writer which uses temporary file"""
     return Writer(file, notes)
 
 
 @pytest.fixture
-def writer_with_ids(file: Path, notes: List[Union[BasicNote, ClozeNote]]) -> Writer:
+def writer_with_ids(file: Path, notes: List[Note]) -> Writer:
     """Fake writer which uses temporary file and has IDs on cards"""
     writer = Writer(file, notes)
     writer.update_note_ids()
@@ -137,6 +142,7 @@ def test_update_ids_skips_card_if_it_was_not_found(writer, notes):
 def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, notes):
     notes[0].anki_id = None
     notes[3].anki_id = None
+    notes[4].anki_id = None
     expected = (
         "---\n"
         "\n"
@@ -166,7 +172,11 @@ def test_update_ids_does_not_add_id_if_it_no_id_in_card(writer, notes):
         "\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -282,7 +292,12 @@ def test_update_ids_writes_id_before_question(writer, notes):
         f"<!--ID:{notes[3].anki_id}-->\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        f"<!--ID:{notes[4].anki_id}-->\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -396,7 +411,12 @@ def test_update_card_fields_skips_not_changed_cards(writer_with_ids, notes):
         f"<!--ID:{notes[3].anki_id}-->\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        f"<!--ID:{notes[4].anki_id}-->\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -439,7 +459,12 @@ def test_updates_question_field(writer_with_ids, notes):
         f"<!--ID:{notes[3].anki_id}-->\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        f"<!--ID:{notes[4].anki_id}-->\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -478,7 +503,12 @@ def test_updates_multiline_question_field(writer_with_ids, notes):
         f"<!--ID:{notes[3].anki_id}-->\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        f"<!--ID:{notes[4].anki_id}-->\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -521,7 +551,12 @@ def test_updates_answer_field(writer_with_ids, notes):
         f"<!--ID:{notes[3].anki_id}-->\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        f"<!--ID:{notes[4].anki_id}-->\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -562,7 +597,12 @@ def test_updates_multiline_answer_field(writer_with_ids, notes):
         f"<!--ID:{notes[3].anki_id}-->\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        f"<!--ID:{notes[4].anki_id}-->\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -619,7 +659,12 @@ def test_deletes_card_marked_for_deletion(writer_with_ids, notes):
         f"<!--ID:{notes[3].anki_id}-->\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        f"<!--ID:{notes[4].anki_id}-->\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -644,7 +689,12 @@ def test_deletes_multiple_cards_marked_for_deletion(writer_with_ids, notes):
         f"<!--ID:{notes[3].anki_id}-->\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        f"<!--ID:{notes[4].anki_id}-->\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -692,7 +742,11 @@ def test_update_cloze_notes_when_note_has_only_one_line(writer, notes):
         "\n"
         "4. Mul{1::tip}le\n\n"
         "{lines}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -730,7 +784,11 @@ def test_update_cloze_notes_when_note_has_multiple_lines(writer, notes):
         "\n"
         "4. Mul{{c1::tip}}le\n\n"
         "{{c2::lines}}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
@@ -770,7 +828,11 @@ def test_update_cloze_notes_when_multiple_notes_has_changes(writer, notes):
         "\n"
         "4. Mul{{c1::tip}}le\n\n"
         "{{c2::lines}}\n\n"
-        "here\n\n"
+        "here\n"
+        "\n"
+        "5.\n"
+        "{{c1::Question}} starts lower\n\n"
+        "than you **might** expect??\n\n"
         "---"
     )
 
