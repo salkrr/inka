@@ -15,6 +15,7 @@ from .models import highlighter, converter, img_handler
 from .models.anki_api import AnkiApi
 from .models.anki_media import AnkiMedia
 from .models.config import Config
+from .models.hasher import Hasher
 from .models.notes.basic_note import BasicNote
 from .models.notes.cloze_note import ClozeNote
 from .models.notes.note import Note
@@ -23,6 +24,7 @@ from .models.writer import Writer
 
 FILE_EXTENSIONS = [".md", ".markdown"]
 CONFIG_PATH = f"{os.path.dirname(__file__)}/config.ini"
+HASHES_PATH = f"{os.path.dirname(__file__)}/hashes.json"
 
 CONFIG = Config(CONFIG_PATH)
 CONSOLE = Console()
@@ -47,15 +49,23 @@ def get_notes_from_file(file_path: str) -> List[Note]:
 
 
 def create_notes_from_file(
-    file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia
+    file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia, hasher: Hasher
 ) -> None:
     """Get all notes from file and send them to Anki"""
     CONSOLE.print(
         f'[green]==>[/green] Collecting cards from "{file_path}"!', style="bold"
     )
 
+    CONSOLE.print("  [cyan1]->[/cyan1] Calculating hash...")
+    curr_hash = hasher.calculate_hash(file_path)
+    if not hasher.has_changed(file_path, curr_hash):
+        CONSOLE.print("  [cyan1]->[/cyan1] The file hasn't changed since last sync!")
+        return
+
     notes = get_notes_from_file(file_path)
     if not notes:
+        CONSOLE.print("  [cyan1]->[/cyan1] Updating information on file hash...")
+        hasher.update_hash(file_path, curr_hash)
         return
 
     converter.convert_cloze_deletions_to_anki_format(
@@ -78,6 +88,9 @@ def create_notes_from_file(
 
     CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards...")
     writer.update_note_ids()
+
+    CONSOLE.print("  [cyan1]->[/cyan1] Updating information on file hash...")
+    hasher.update_hash(file_path, curr_hash)
     CONSOLE.print("  [cyan1]->[/cyan1] Finished!")
 
 
@@ -500,6 +513,7 @@ def collect(
         sys.exit(0)
 
     # Perform action on notes from each file
+    hasher = Hasher(HASHES_PATH)
     initial_directory = os.getcwd()
     for file in files:
         try:
@@ -507,7 +521,7 @@ def collect(
                 update_note_ids_in_file(file, anki_api, anki_media)
                 continue
 
-            create_notes_from_file(file, anki_api, anki_media)
+            create_notes_from_file(file, anki_api, anki_media, hasher)
         except (
             OSError,
             ValueError,

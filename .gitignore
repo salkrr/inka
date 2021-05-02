@@ -122,5 +122,6 @@ pip-selfcheck.json
 .vscode/
 
 ### inka ###
-# Ignore inka's config file
+# Ignore inka's config and hashes files
 src/inka/config.ini
+src/inka/hashes.json
