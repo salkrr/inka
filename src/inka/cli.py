@@ -49,7 +49,11 @@ def get_notes_from_file(file_path: str) -> List[Note]:
 
 
 def create_notes_from_file(
-    file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia, hasher: Hasher
+    file_path: str,
+    full_sync: bool,
+    anki_api: AnkiApi,
+    anki_media: AnkiMedia,
+    hasher: Hasher,
 ) -> None:
     """Get all notes from file and send them to Anki"""
     CONSOLE.print(
@@ -58,7 +62,7 @@ def create_notes_from_file(
 
     CONSOLE.print("  [cyan1]->[/cyan1] Calculating hash...")
     curr_hash = hasher.calculate_hash(file_path)
-    if not hasher.has_changed(file_path, curr_hash):
+    if not (full_sync or hasher.has_changed(file_path, curr_hash)):
         CONSOLE.print("  [cyan1]->[/cyan1] The file hasn't changed since last sync!")
         return
 
@@ -238,8 +242,8 @@ code {
 
     # Cloze Note
     if not (curr_cloze_type and curr_cloze_field) or curr_cloze_type not in note_types:
-        cloze_name = 'Inka Cloze'
-        text_field = 'Text'
+        cloze_name = "Inka Cloze"
+        text_field = "Text"
         if cloze_name not in note_types:
             anki_api.create_note_type(
                 name=cloze_name,
@@ -428,6 +432,13 @@ def config(list_options: bool, reset: bool, edit: bool, name: str, value: str) -
     is_flag=True,
     help="The program won't pause in case of an error.",
 )
+@click.option(
+    "-f",
+    "--full-sync",
+    "full_sync",
+    is_flag=True,
+    help="Collect cards from the file, even if the file hasn't changed since the last sync.",
+)
 @click.argument(
     "paths", metavar="[PATH]...", nargs=-1, type=click.Path(exists=True), required=False
 )
@@ -436,6 +447,7 @@ def collect(
     prompt: bool,
     update_ids: bool,
     ignore_errors: bool,
+    full_sync: bool,
     paths: Iterable[str],
 ) -> None:
     """Get flashcards from files and add them to Anki. If flashcard already exists in Anki, the changes will be synced.
@@ -521,7 +533,7 @@ def collect(
                 update_note_ids_in_file(file, anki_api, anki_media)
                 continue
 
-            create_notes_from_file(file, anki_api, anki_media, hasher)
+            create_notes_from_file(file, full_sync, anki_api, anki_media, hasher)
         except (
             OSError,
             ValueError,
