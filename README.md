@@ -45,6 +45,7 @@ can see now.
 - [Images support](https://github.com/lazy-void/inka/wiki/Creating-cards#images)
 - [MathJax support](https://github.com/lazy-void/inka/wiki/Mathjax)
 - [Code highlight](https://github.com/lazy-void/inka/wiki/Code-highlight)
+- [Hashing (for better performance)](https://github.com/lazy-void/inka/wiki/Hashing)
 
 ## Usage
 
@@ -81,13 +82,13 @@ between each tag.
 
 Two types of notes are supported:
 
-- **Front/Back**: every question starts with number followed by period (e.g. 1., 2. - Markdown ordered list syntax) and
-  every line of the answer starts with > (Markdown quote syntax). Question and answer can span multiple lines.
+- **Front/Back**: every question starts with number followed by period (e.g. `1.`, `2.` - Markdown ordered list syntax)
+  and every line of the answer starts with `>` (Markdown quote syntax). Question and answer can span multiple lines.
 - **Cloze**: same as Front/Back notes, Cloze notes start with number followed by period (Markdown ordered list syntax).
   **inka** supports three versions of syntax for cloze deletions:
-    - Anki syntax: {{c1::hidden text}}
-    - Short explicit syntax: {1::hidden text} or {c1::hidden text}
-    - Short implicit syntax: {hidden text}
+    - Anki syntax: `{{c1::hidden text}}`
+    - Short explicit syntax: `{1::hidden text}` or `{c1::hidden text}`
+    - Short implicit syntax: `{hidden text}`
 
 More info and examples on the [creating cards](https://github.com/lazy-void/inka/wiki/Creating-cards) documentation
 page.
