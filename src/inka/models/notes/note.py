@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Iterable, Any, Dict, List
 
+from rich.table import Table
+
 from inka.models.config import Config
 
 
@@ -14,6 +16,12 @@ class Note(ABC):
         self.changed = False  # Card was marked as changed in Anki
         self.to_delete = False  # Card was marked to be deleted in Anki
 
+    @property
+    @abstractmethod
+    def search_query(self) -> str:
+        """Query to search for note in Anki"""
+        pass
+
     @abstractmethod
     def convert_fields_to_html(self, convert_func: Callable[[str], str]) -> None:
         """Convert note fields from markdown to html using provided function"""
@@ -22,11 +30,6 @@ class Note(ABC):
     @abstractmethod
     def update_fields_with(self, update_func: Callable[[str], str]) -> None:
         """Updates values of *updated* fields using provided function"""
-        pass
-
-    @abstractmethod
-    def get_search_field(self) -> str:
-        """Get field (with html) that will be used for search in Anki"""
         pass
 
     @abstractmethod
@@ -44,11 +47,6 @@ class Note(ABC):
         """Return dictionary with Anki field names as keys and html strings as values"""
         pass
 
-    @abstractmethod
-    def get_note_info(self) -> str:
-        """String used to display info about note in case of error"""
-        pass
-
     @staticmethod
     @abstractmethod
     def get_anki_note_type(cfg: Config) -> str:
@@ -56,13 +54,24 @@ class Note(ABC):
         pass
 
     @staticmethod
-    def shorten_text(text: str) -> str:
-        """Shorten text to the first 100 symbols"""
-        return f'{text.strip()[:100]}...'
+    def create_anki_search_query(text: str) -> str:
+        """Create Anki search query from the supplied text"""
+        special_chars = ["\\", '"', "*", "_", ":"]
+
+        search_query = text
+        for char in special_chars:
+            escaped_char = "\\" + char
+            search_query = search_query.replace(char, escaped_char)
+
+        return '"' + search_query + '"'
+
+    @abstractmethod
+    def __rich__(self) -> Table:
+        """Table that is used to display info about note in case of error"""
+        pass
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             return False
 
-        return (self.tags == other.tags and
-                self.deck_name == other.deck_name)
+        return self.tags == other.tags and self.deck_name == other.deck_name

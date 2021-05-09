@@ -1,5 +1,5 @@
 import re
-from typing import Type
+from typing import Type, Dict
 
 import requests
 from requests import HTTPError
@@ -7,6 +7,7 @@ from requests import HTTPError
 from .anki_api import AnkiApi
 from .anki_media import AnkiMedia
 from .notes.note import Note
+from ..exceptions import HighlighterError
 
 HLJS_VERSION = "10.7.1"
 BASE_URL = f"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/{HLJS_VERSION}"
@@ -30,10 +31,7 @@ color()
 
 
 def add_code_highlight_to(
-        note_type: Type[Note],
-        style_name: str,
-        anki_api: AnkiApi,
-        anki_media: AnkiMedia
+    note_type: Type[Note], style_name: str, anki_api: AnkiApi, anki_media: AnkiMedia
 ) -> None:
     """Add highlighting of code blocks to the current note type
 
@@ -48,17 +46,24 @@ def add_code_highlight_to(
     try:
         _update_style_in(note_type, style_name, anki_api)
     except HTTPError as e:
-        raise ConnectionError(f"Couldn't download styles for code highlighting. Reason: {e}")
+        raise HighlighterError(
+            f"couldn't download styles for code highlighting. Reason: {e}"
+        )
     except requests.exceptions.ConnectionError:
-        raise ConnectionError(f"Couldn't download styles for code highlighting. Check your internet connection.")
+        raise HighlighterError(
+            "couldn't download styles for code highlighting. Check your internet connection."
+        )
 
     try:
         _handle_highlighjs_files_for(note_type, anki_media, anki_api)
     except HTTPError as e:
-        raise ConnectionError(f"Couldn't download highlight.js script for code highlighting. Reason: {e}")
+        raise HighlighterError(
+            f"couldn't download highlight.js script for code highlighting. Reason: {e}"
+        )
     except requests.exceptions.ConnectionError:
-        raise ConnectionError(
-            f"Couldn't download highlight.js script for code highlighting. Check your internet connection.")
+        raise HighlighterError(
+            "couldn't download highlight.js script for code highlighting. Check your internet connection."
+        )
 
 
 def _update_style_in(note_type: Type[Note], style_name: str, anki_api: AnkiApi) -> None:
@@ -104,7 +109,9 @@ def _update_style_in(note_type: Type[Note], style_name: str, anki_api: AnkiApi) 
     anki_api.update_note_type_styling(note_type, new_styles)
 
 
-def _handle_highlighjs_files_for(note_type: Type[Note], anki_media: AnkiMedia, anki_api: AnkiApi) -> None:
+def _handle_highlighjs_files_for(
+    note_type: Type[Note], anki_media: AnkiMedia, anki_api: AnkiApi
+) -> None:
     """Adds highlight.js library and script that executes it to note type fields
 
     Args:
@@ -128,7 +135,7 @@ def _handle_highlighjs_files_for(note_type: Type[Note], anki_media: AnkiMedia, a
 
     # Add link to script and script for automatic execution at the end of all fields of templates
     script_elements = f'<script src="{script_name}"></script>\n{AUTOSTART_SCRIPT}'
-    new_templates = {}
+    new_templates: Dict[str, Dict[str, str]] = {}
     for template, fields in templates.items():
         new_templates[template] = {}
         for field, value in fields.items():
