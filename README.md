@@ -4,7 +4,7 @@
 
 [![Downloads](https://pepy.tech/badge/inka)](https://pepy.tech/project/inka)
 [![PyPi](https://img.shields.io/pypi/v/inka)](https://pypi.org/project/inka)
-[![Tests CI](https://img.shields.io/github/workflow/status/lazy-void/inka/Run%20Tests/main)](https://github.com/lazy-void/inka/actions/workflows/ci-test.yml)
+[![Tests CI](https://img.shields.io/github/workflow/status/lazy-void/inka/Tests/main)](https://github.com/lazy-void/inka/actions/workflows/test.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Codecov](https://codecov.io/gh/lazy-void/inka/branch/main/graph/badge.svg?token=9wW5SJ9uLL)](https://codecov.io/gh/lazy-void/inka)
 
