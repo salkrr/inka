@@ -4,6 +4,6 @@ click==8.0.0
 rich==10.2.0
 Pillow==8.2.0
 pytest==6.2.4
-pytest-cov==2.11.1
+pytest-cov==2.12.0
 pytest-mock==3.6.1
 tox==3.23.1
