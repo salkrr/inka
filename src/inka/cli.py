@@ -189,6 +189,7 @@ def handle_note_types(anki_api: AnkiApi) -> None:
   text-align: left;
   color: black;
   background-color: white;
+  line-height: 1.5em;
 }
 
 .cloze {
@@ -204,7 +205,7 @@ code {
   color: #fa4545;
   border: 1px solid #030a1420;
   box-shadow: 0 0.1em #00000010;
-  padding: 2px 4px;
+  padding: 1px 2px;
   line-height: 1.4em;
   box-sizing: border-box;
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
