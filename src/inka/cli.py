@@ -94,7 +94,7 @@ def create_notes_from_file(
     writer.update_note_ids()
 
     CONSOLE.print("  [cyan1]->[/cyan1] Updating information on file hash...")
-    hasher.update_hash(file_path, curr_hash)
+    hasher.update_hash(file_path, hasher.calculate_hash(file_path))
     CONSOLE.print("  [cyan1]->[/cyan1] Finished!")
 
 
