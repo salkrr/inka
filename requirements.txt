@@ -1,7 +1,7 @@
 mistune==2.0.0rc1
 requests==2.25.1
 click==8.0.0
-rich==10.2.1
+rich==10.2.2
 Pillow==8.2.0
 pytest==6.2.4
 pytest-cov==2.12.0
