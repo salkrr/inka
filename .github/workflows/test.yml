@@ -62,8 +62,8 @@ jobs:
 
       - name: mypy
         run: |
-          pip install mypy
-          mypy src/
+          pip install mypy types-click types-requests
+          mypy --python-version=3.7 src/
 
       - name: flake8
         run: |
