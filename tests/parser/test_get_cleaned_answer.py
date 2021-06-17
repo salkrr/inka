@@ -20,7 +20,7 @@ test_cases = {
         "> \n"
         "> And more to it"
     ): "Answer\n\nAdditional info\n\n\n\nAnd more to it",
-    ("Deck: Abraham\n" "\n" "1. Some question?\n" "\n" "> > Answer\n"): "> Answer",
+    "Deck: Abraham\n\n1. Some question?\n\n> > Answer\n": "> Answer",
     (
         "Deck: Abraham\n"
         "\n"
@@ -103,6 +103,25 @@ test_cases = {
         "inka collect -u path/to/file.md\n"
         "```"
     ),
+    # inline mathjax
+    "> $\n> X^{2}\n> $": "$\n\nX^{2}\n\n$",
+    "> \\$\n> X^{2}\n> $": "\\$\n\nX^{2}\n\n$",
+    "> $\n> X^{2}\n> \\$": "$\n\nX^{2}\n\n\\$",
+    # mathjax blocks
+    "> $$\n> X^{2}\n> $$": "$$\nX^{2}\n$$",
+    "> \\$$\n> X^{2}\n> $$": "\\$$\n\nX^{2}\n\n$$",
+    "> $\\$\n> X^{2}\n> $$": "$\\$\n\nX^{2}\n\n$$",
+    "> $$\n> X^{2}\n> \\$$": "$$\n\nX^{2}\n\n\\$$",
+    "> $$\n> X^{2}\n> $\\$": "$$\n\nX^{2}\n\n$\\$",
+    "> \\$\\$\n> X^{2}\n> $$": "\\$\\$\n\nX^{2}\n\n$$",
+    "> \\$$\n> X^{2}\n> \\$$": "\\$$\n\nX^{2}\n\n\\$$",
+    "> \\$$\n> X^{2}\n> $\\$": "\\$$\n\nX^{2}\n\n$\\$",
+    "> $\\$\n> X^{2}\n> \\$$": "$\\$\n\nX^{2}\n\n\\$$",
+    "> $\\$\n> X^{2}\n> $\\$": "$\\$\n\nX^{2}\n\n$\\$",
+    "> \\$\\$\n> X^{2}\n> \\$$": "\\$\\$\n\nX^{2}\n\n\\$$",
+    "> \\$\\$\n> X^{2}\n> $\\$": "\\$\\$\n\nX^{2}\n\n$\\$",
+    "> $\\$\n> X^{2}\n> \\$\\$": "$\\$\n\nX^{2}\n\n\\$\\$",
+    "> \\$\\$\n> X^{2}\n> \\$\\$": "\\$\\$\n\nX^{2}\n\n\\$\\$",
     # If no answer
     "Some text": None,
 }

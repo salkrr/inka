@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 from typing import List, Union, Optional
 
+from ..mistune_plugins.mathjax import BLOCK_MATH
 from .notes.basic_note import BasicNote
 from .notes.cloze_note import ClozeNote
 from .notes.note import Note
@@ -208,6 +209,7 @@ class Parser:
 
         lines = answer.splitlines()
         cleaned_lines = []
+        # Remove '>' and whitespace after it
         for line in lines:
             if len(line) > 1 and line[1].isspace():
                 cleaned_lines.append(line[2:].rstrip())
@@ -215,25 +217,16 @@ class Parser:
                 cleaned_lines.append(line[1:].rstrip())
 
         # Join lines differently: if inside code block '\n' else '\n\n'
-        cleaned_answer = ""
-        inside_code_block = False
-        for i, line in enumerate(cleaned_lines):
-            delimiter = "\n\n"
-            # If start or end of code block
-            if line.find("```") != -1:
-                if inside_code_block:
-                    inside_code_block = False
-                    delimiter = "\n"
-                else:
-                    inside_code_block = True
-                    delimiter = "\n\n"
-            elif inside_code_block:
-                delimiter = "\n"
+        # TODO: add tests for math blocks
+        cleaned_answer = "\n\n".join(cleaned_lines)
 
-            # First line doesn't need delimiter
-            if i == 0:
-                delimiter = ""
+        def replace_newlines(s: re.Match) -> str:
+            return re.sub("\n\n", "\n", s.group(0))
 
-            cleaned_answer = cleaned_answer + delimiter + line
+        # change newlines in code blocks
+        cleaned_answer = re.sub(r"```[\s\S]*?```", replace_newlines, cleaned_answer)
+
+        # change newlines in math blocks
+        cleaned_answer = re.sub(BLOCK_MATH, replace_newlines, cleaned_answer)
 
         return cleaned_answer

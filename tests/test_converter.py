@@ -272,8 +272,8 @@ md_to_html_test_cases = {
         '<pre><code class="language-javascript">let a = 12;\nlet b = a;</code></pre>'
         '<p><a href="https://google.com">google</a></p>'
     ),
-    ("some text here\n" "and more text"): "<p>some text here\nand more text</p>",
-    ("some text here\n" "\n" "more text"): "<p>some text here</p><p>more text</p>",
+    "some text here\n" "and more text": "<p>some text here\nand more text</p>",
+    "some text here\n" "\n" "more text": "<p>some text here</p><p>more text</p>",
     # inline mathjax
     r"$\sqrt{5}$": r"<p>\(\sqrt{5}\)</p>",
     r"$\sqrt{5} $": r"<p>\(\sqrt{5} \)</p>",

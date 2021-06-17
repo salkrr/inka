@@ -1,6 +1,6 @@
-BLOCK_MATH = r"(?<!\\)\$\$" r"([\s\S]*?)" r"(?<!\\)\$\$"
+BLOCK_MATH = r"(?<!\\)\$\$([\s\S]*?)(?<!\\)\$\$"
 
-INLINE_MATH = r"(?<![\\])\$" r"(.*?)" r"(?<![\\])\$"
+INLINE_MATH = r"(?<![\\])\$(.*?)(?<![\\])\$"
 
 
 def parse_inline_mathjax(inline, m, state):
