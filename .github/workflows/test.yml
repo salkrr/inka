@@ -72,5 +72,3 @@ jobs:
 
       - name: black
         uses: psf/black@stable
-        with:
-          args: ". --check"
