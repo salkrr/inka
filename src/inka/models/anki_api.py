@@ -1,7 +1,12 @@
-from typing import List, Any, Dict, Type, Iterable
+import os
+from typing import List, Dict, Type, Iterable
 
-import requests
-from requests import RequestException
+import anki
+import anki.consts
+import anki.errors
+import anki.models
+import anki.notes
+import aqt
 
 from .config import Config
 from .notes.note import Note
@@ -9,115 +14,81 @@ from ..exceptions import AnkiApiError
 
 
 class AnkiApi:
-    """Class for working with server created by Anki Connect"""
+    """Class for working with Anki collection"""
 
     def __init__(self, cfg: Config):
         self._cfg = cfg
-        self._api_url = (
-            f'http://localhost:{cfg.get_option_value("anki_connect", "port")}'
-        )
-        self._change_tag = "changed"
-        self._delete_tag = "delete"
 
-    def check_connection(self) -> bool:
-        """Check connection with Anki Connect plugin"""
-        try:
-            self._send_request("version")
-        except requests.exceptions.ConnectionError:
-            return False
-
-        return True
+        # Initialize profile manager to get access to profile and database actions
+        self._profile_manager = aqt.ProfileManager(cfg.get_option_value("anki", "path"))
+        self._profile_manager.setupMeta()
 
     def get_profiles(self) -> List[str]:
         """Get list of user profiles from Anki"""
-        return self._send_request("getProfiles")
+        return self._profile_manager.profiles()
 
-    def select_profile(self, profile: str) -> None:
-        """Select profile in Anki"""
-        params = {"name": profile}
-        self._send_request("loadProfile", **params)
+    def load_collection(self, profile: str) -> None:
+        """Select profile in Anki and load collection"""
+        # opening collection changes current directory so
+        # we need to rollback it to initial
+        initial_dir = os.getcwd()
 
-    def add_notes(self, notes: Iterable[Note]) -> None:
-        """Add new notes to Anki"""
-        # Create decks that doesn't exist
-        decks = {note.deck_name for note in notes}
-        for deck in decks:
-            self._create_deck(deck)
+        try:
+            self._profile_manager.load(profile)
+            self._collection = anki.Collection(self._profile_manager.collectionPath())
+        except anki.errors.DBError:
+            raise AnkiApiError(
+                "The collection is open in Anki. "
+                "You need to either close Anki or switch to a different profile."
+            )
 
-        # Send notes to Anki
-        for note in notes:
-            note_params = self._create_note_params(note)
-            try:
-                note.anki_id = self._send_request("addNote", note=note_params)
-            except RequestException as e:
-                raise AnkiApiError(str(e), note=note)
+        os.chdir(initial_dir)
+
+    def add_note(self, note: Note) -> int:
+        model = self._collection.models.byName(note.get_anki_note_type(self._cfg))
+        anki_note = anki.notes.Note(self._collection, model)
+        anki_note.tags = list(note.tags)
+        anki_note.fields = list(note.get_html_fields(self._cfg).values())
+
+        if anki_note.dupeOrEmpty():
+            raise AnkiApiError("Duplicate! Note wasn't added.", note=note)
+
+        # gets id of the deck. if deck doesn't exist - it will be created.
+        deck_id = self._collection.decks.id(note.deck_name, create=True)
+        if not deck_id:
+            raise AnkiApiError(f"The deck {note.deck_name} couldn't be created.")
+
+        self._collection.add_note(anki_note, deck_id)
+        return anki_note.id
 
     def update_note_ids(self, notes: Iterable[Note]) -> None:
         """Update incorrect or absent IDs of notes"""
-        # Handle None
-        note_ids = [note.anki_id if note.anki_id else -1 for note in notes]
-
-        notes_info = self._send_request("notesInfo", notes=note_ids)
-        for i, note in enumerate(notes):
-            # Don't update ID if note with this ID exists
-            if notes_info[i]:
-                continue
-
-            found_notes = self._send_request("findNotes", query=note.search_query)
-            note.anki_id = found_notes[0] if found_notes else None
-
-    def update_notes(self, notes: Iterable[Note]) -> None:
-        """Synchronize changes in notes with Anki"""
-        # Get info about notes from Anki
-        notes_info = self._send_request(
-            "notesInfo", notes=[note.anki_id for note in notes]
-        )
-
-        for i, note in enumerate(notes):
-            # If note wasn't found
-            if not notes_info[i]:
-                raise AnkiApiError(
-                    f"note with ID {note.anki_id} was not found. "
-                    f'You can update IDs on notes with the command "inka collect --update-ids path/to/file.md".'
-                )
-
-            # If note is staged for deletion
-            # if self._delete_tag in notes_info[i]['tags']:
-            #     note.to_delete = True
-            #     continue
-
-            # If note is marked as changed
-            # if self._change_tag in notes_info[i]['tags']:
-            #     # Convert updated note fields to markdown
-            #     note.front_html = notes_info[i]['fields'][self._front_field_name]['value']
-            #     note.back_html = notes_info[i]['fields'][self._back_field_name]['value']
-            #     # converter.convert_note_to_md(note)
-            #
-            #     # Mark note as changed
-            #     note.changed = True
-            #     continue
-
+        for note in notes:
+            # Update id only if note with this id doesn't exist
             try:
-                # Push changes from file to Anki
-                note_params = self._create_note_params(note)
-                note_params["id"] = note.anki_id
-                self._send_request("updateNoteFields", note=note_params)
-            except RequestException as e:
-                raise AnkiApiError(str(e), note=note)
+                self._collection.getNote(note.anki_id if note.anki_id else -1)
+            except anki.errors.NotFoundError:
+                found_notes = self._collection.find_notes(note.search_query)
+                note.anki_id = found_notes[0] if found_notes else None
 
-    def delete_notes(self, notes: Iterable[Note]) -> None:
-        """Delete notes from Anki"""
-        self._send_request("deleteNotes", notes=[note.anki_id for note in notes])
+    def update_note(self, note: Note) -> None:
+        """Synchronize changes in notes with Anki"""
+        try:
+            anki_note = self._collection.getNote(note.anki_id if note.anki_id else -1)
+        except anki.errors.NotFoundError:
+            raise AnkiApiError(
+                f"note with ID {note.anki_id} was not found. "
+                f'You can update IDs on notes with the command "inka collect --update-ids path/to/file.md".'
+            )
 
-    def remove_change_tag_from_notes(self, notes: Iterable[Note]) -> None:
-        """Remove the tag which marks note as changed from notes in Anki"""
-        self._send_request(
-            "removeTags", notes=[note.anki_id for note in notes], tags=self._change_tag
-        )
+        for field, value in note.get_html_fields(self._cfg).items():
+            if field in anki_note:
+                anki_note[field] = value
+        anki_note.flush()
 
     def fetch_note_types(self) -> List[str]:
         """Get list of names of the existing note types"""
-        return self._send_request("modelNames")
+        return [n.name for n in self._collection.models.all_names_and_ids()]
 
     def create_note_type(
         self,
@@ -128,87 +99,86 @@ class AnkiApi:
         is_cloze: bool,
     ) -> None:
         """Create new note type"""
-        params = {
-            "modelName": name,
-            "inOrderFields": fields,
-            "css": css,
-            "isCloze": is_cloze,
-            "cardTemplates": card_templates,
-        }
-        return self._send_request("createModel", **params)
+        model = self._collection.models.new(name)
+        if is_cloze:
+            model["type"] = anki.consts.MODEL_CLOZE
+
+        # Create fields and add them to Note
+        for field in fields:
+            model_field = self._collection.models.new_field(field)
+            self._collection.models.add_field(model, model_field)
+
+        # Add shared css to model if exists. Use default otherwise
+        if css:
+            model["css"] = css
+
+        # Generate new card template(s)
+        counter = 1
+        for card in card_templates:
+            card_name = "Card " + str(counter)
+            if "Name" in card:
+                card_name = card["Name"]
+
+            tmpl = self._collection.models.new_template(card_name)
+            tmpl["qfmt"] = card["Front"]
+            tmpl["afmt"] = card["Back"]
+            self._collection.models.add_template(model, tmpl)
+            counter += 1
+
+        self._collection.models.add(model)
 
     def fetch_note_type_styling(self, note_type: Type[Note]) -> str:
         """Get styling of note type that is used to add notes"""
-        return self._send_request(
-            "modelStyling", modelName=note_type.get_anki_note_type(self._cfg)
-        )["css"]
+        return self._get_model(note_type)["css"]
 
     def update_note_type_styling(self, note_type: Type[Note], new_styles: str) -> None:
-        """Update styling of note type that is used to add notes"""
-        params = {
-            "model": {
-                "name": note_type.get_anki_note_type(self._cfg),
-                "css": new_styles,
-            }
-        }
-        self._send_request("updateModelStyling", **params)
+        """Update styling of the note type in Anki"""
+        anki_model = self._get_model(note_type)
+        anki_model["css"] = new_styles
+        self._collection.models.save(anki_model, True)
 
     def fetch_note_type_templates(
         self, note_type: Type[Note]
     ) -> Dict[str, Dict[str, str]]:
         """Get templates of note type"""
-        return self._send_request(
-            "modelTemplates", modelName=note_type.get_anki_note_type(self._cfg)
-        )
+        model = self._get_model(note_type)
+
+        templates = {}
+        for template in model["tmpls"]:
+            templates[template["name"]] = {
+                "Front": template["qfmt"],
+                "Back": template["afmt"],
+            }
+
+        return templates
 
     def update_note_type_templates(
         self, note_type: Type[Note], templates: Dict[str, Dict[str, str]]
     ) -> None:
         """Update note type templates"""
-        params = {
-            "model": {
-                "name": note_type.get_anki_note_type(self._cfg),
-                "templates": templates,
-            }
-        }
-        self._send_request("updateModelTemplates", **params)
+        anki_model = self._get_model(note_type)
 
-    def _create_deck(self, deck: str) -> Any:
-        """Create deck in Anki if it doesn't exist"""
-        params = {"deck": deck}
-        return self._send_request("createDeck", **params)
+        for anki_template in anki_model["tmpls"]:
+            template = templates.get(anki_template["name"])
+            if template:
+                qfmt = template.get("Front")
+                if qfmt:
+                    anki_template["qfmt"] = qfmt
 
-    def _create_note_params(self, note: Note) -> dict:
-        """Create dict with params required to add note to Anki"""
-        return {
-            "deckName": note.deck_name,
-            "modelName": note.get_anki_note_type(self._cfg),
-            "fields": note.get_html_fields(self._cfg),
-            "options": {
-                "allowDuplicate": False,
-                "duplicateScope": None,
-                "duplicateScopeOptions": {"checkChildren": False},
-            },
-            "tags": note.tags,
-        }
+                afmt = template.get("Back")
+                if afmt:
+                    anki_template["afmt"] = afmt
 
-    def _send_request(self, action: str, **params) -> Any:
-        """Send request to Anki Connect and return result"""
-        request_dict = self._create_request(action, **params)
-        response = requests.post(self._api_url, json=request_dict).json()
+        self._collection.models.save(anki_model, True)
 
-        if len(response) != 2:
-            raise RequestException("response has an unexpected number of fields")
-        if "error" not in response:
-            raise RequestException("response is missing required error field")
-        if "result" not in response:
-            raise RequestException("response is missing required result field")
-        if response["error"] is not None:
-            raise RequestException(response["error"])
+    def close(self):
+        """Save and close the collection."""
+        self._collection.close()
 
-        return response["result"]
+    def _get_model(self, note_type: Type[Note]) -> anki.models.NoteType:
+        model_name = note_type.get_anki_note_type(self._cfg)
+        anki_model = self._collection.models.byName(model_name)
+        if not anki_model:
+            raise AnkiApiError(f"Couldn't get note type {model_name} from Anki!")
 
-    @staticmethod
-    def _create_request(action: str, **params) -> dict:
-        """Create request dictionary"""
-        return {"action": action, "version": 6, "params": params}
+        return anki_model
