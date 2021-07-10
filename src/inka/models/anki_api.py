@@ -44,6 +44,24 @@ class AnkiApi:
 
         os.chdir(initial_dir)
 
+    def sync(self):
+        """Sync collection to AnkiWeb"""
+        # todo: handle case when to sync we need user decision (download or upload)
+        auth = self._profile_manager.sync_auth()
+        if auth is None:
+            raise AnkiApiError("Isn't authenticated with AnkiWeb")
+
+        self._collection.save(trx=False)
+
+        # Perform main sync
+        self._collection.sync_collection(auth)
+
+        # Perform media sync
+        initial_dir = os.getcwd()
+        os.chdir(self._collection.media.dir())
+        self._collection.sync_media(auth)
+        os.chdir(initial_dir)
+
     def add_note(self, note: Note) -> int:
         model = self._collection.models.byName(note.get_anki_note_type(self._cfg))
         anki_note = anki.notes.Note(self._collection, model)

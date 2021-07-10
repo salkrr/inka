@@ -216,8 +216,6 @@ class Parser:
             else:
                 cleaned_lines.append(line[1:].rstrip())
 
-        # Join lines differently: if inside code block '\n' else '\n\n'
-        # TODO: add tests for math blocks
         cleaned_answer = "\n\n".join(cleaned_lines)
 
         def replace_newlines(s: re.Match) -> str:

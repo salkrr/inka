@@ -5,6 +5,7 @@ from typing import Union, List
 
 from rich.table import Table, Column
 
+# todo: add path to anki folder into config
 
 class Config:
     """Class for working with the configuration file."""

@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 from subprocess import call
 from typing import Set, List, Iterable
 
@@ -8,6 +7,7 @@ import click
 import requests
 from rich.console import Console
 from rich.prompt import Prompt, Confirm
+from rich.traceback import install
 
 from . import __version__
 from .exceptions import HighlighterError, AnkiApiError
@@ -28,6 +28,9 @@ HASHES_PATH = f"{os.path.dirname(__file__)}/hashes.json"
 
 CONFIG = Config(CONFIG_PATH)
 CONSOLE = Console()
+
+# pretty traceback
+install(console=CONSOLE)
 
 
 def get_notes_from_file(file_path: str) -> List[Note]:
@@ -84,13 +87,18 @@ def create_notes_from_file(
     CONSOLE.print("  [cyan1]->[/cyan1] Converting cards to the html...")
     converter.convert_notes_to_html(notes)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Synchronizing changes...")
-    anki_api.update_notes([note for note in notes if note.anki_id])
+    CONSOLE.print("  [cyan1]->[/cyan1] Synchronizing changes and adding new cards...")
+    for note in notes:
+        try:
+            if note.anki_id:
+                anki_api.update_note(note)
+                continue
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Sending new cards...")
-    anki_api.add_notes([note for note in notes if not note.anki_id])
+            note.anki_id = anki_api.add_note(note)
+        except AnkiApiError as e:
+            print_error(str(e), note=e.note)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards...")
+    CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards in file...")
     writer.update_note_ids()
 
     CONSOLE.print("  [cyan1]->[/cyan1] Updating information on file hash...")
@@ -123,9 +131,16 @@ def update_note_ids_in_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiM
     CONSOLE.print("  [cyan1]->[/cyan1] Getting card IDs from Anki...")
     anki_api.update_note_ids(notes)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards...")
+    CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards in file...")
     writer.update_note_ids()
     CONSOLE.print("  [cyan1]->[/cyan1] Finished!")
+
+
+def sync(anki_api: AnkiApi) -> None:
+    try:
+        anki_api.sync()
+    except AnkiApiError as e:
+        CONSOLE.print(f"   {e}. Skipping...", style="yellow")
 
 
 def get_file_paths_from_directory(dir_path: str, search_recursive: bool) -> Set[str]:
@@ -483,21 +498,19 @@ def collect(
 
     anki_api = AnkiApi(CONFIG)
 
-    CONSOLE.print("[cyan1]::[/cyan1] Attempting to connect to Anki...", style="bold")
-    if not anki_api.check_connection():
-        print_error(
-            "couldn't connect to Anki. Please, check that Anki is running and AnkiConnect plugin is installed."
-        )
-        sys.exit(1)
-    CONSOLE.print("[cyan1]::[/cyan1] Connected!", style="bold")
-
     # Get name of profile and select it in Anki
     CONSOLE.print("[cyan1]::[/cyan1] Getting profile...", style="bold")
     profile = get_profile(prompt, anki_api)
-    anki_api.select_profile(profile)
-    # Sleep to wait till profile is loaded.
-    # Works only if sync is fast enough
-    time.sleep(1)
+
+    CONSOLE.print("[cyan1]::[/cyan1] Loading profile...", style="bold")
+    try:
+        anki_api.load_collection(profile)
+    except AnkiApiError as e:
+        print_error(str(e), pause=False)
+        sys.exit(1)
+
+    CONSOLE.print("[cyan1]::[/cyan1] Getting changes from AnkiWeb...", style="bold")
+    sync(anki_api)
 
     CONSOLE.print("[cyan1]::[/cyan1] Checking note types...", style="bold")
     anki_media = AnkiMedia(profile)
@@ -505,7 +518,6 @@ def collect(
         handle_note_types(anki_api)
         handle_code_highlight(anki_api, anki_media)
     except KeyError:
-        # Handle backward compatibility issues (config options were changed)
         print_error(
             'your config file is corrupted. Please reset its state with the command "inka config --reset".'
         )
@@ -517,6 +529,7 @@ def collect(
         print_warning(str(e))
 
     # Get paths to all files
+    # todo: add message
     files = get_paths_to_files(paths, recursive)
 
     if not files:
@@ -544,13 +557,11 @@ def collect(
             print_error(f"{e}\nSkipping file!", pause=(not ignore_errors))
         except AnkiApiError as e:
             print_error(f"{e}\nSkipping file!", pause=(not ignore_errors), note=e.note)
-        except (
-            requests.exceptions.RequestException,
-            requests.exceptions.ConnectionError,
-        ) as e:
-            print_error(str(e))
-            sys.exit(1)
         finally:
             os.chdir(initial_directory)
 
+    CONSOLE.print("[cyan1]::[/cyan1] Synchronizing changes to AnkiWeb...", style="bold")
+    sync(anki_api)
+
+    anki_api.close()
     CONSOLE.print("[cyan1]::[/cyan1] Everything is done!", style="bold")
