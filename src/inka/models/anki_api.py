@@ -1,3 +1,6 @@
+# Parts of code were impudently borrowed from AnkiConnect(https://github.com/FooSoft/anki-connect)
+# and apy (https://github.com/lervag/apy) projects. Thanks to all their developers.
+
 import os
 from typing import List, Dict, Type, Iterable
 
