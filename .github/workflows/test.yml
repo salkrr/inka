@@ -2,15 +2,19 @@ name: Tests
 
 on:
   push:
-    paths:
-      - '.github/workflows/test.yml'
-      - 'src/**'
-      - 'tests/**'
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.github/**'
+      - '!.github/workflows/test.yml'
   pull_request:
-    paths:
-      - '.github/workflows/test.yml'
-      - 'src/**'
-      - 'tests/**'
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.github/**'
+      - '!.github/workflows/test.yml'
 
 jobs:
   test:
@@ -18,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        python: [ 3.7, 3.8, 3.9 ]
+        python: [ 3.8, 3.9 ]
 
     steps:
       - uses: actions/checkout@v2.3.4

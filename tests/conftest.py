@@ -1,4 +1,5 @@
 import os
+import sys
 from unittest.mock import MagicMock
 
 import pytest
@@ -9,11 +10,19 @@ from inka.models.anki_media import AnkiMedia
 from inka.models.config import Config
 from inka.models.parser import Parser
 
+DEFAULT_ANKI_FOLDERS = {
+    "win32": r"~\AppData\Roaming\Anki2",
+    "linux": "~/.local/share/Anki2",
+    "darwin": "~/Library/Application Support/Anki2",
+}
+
 
 @pytest.fixture
 def anki_media() -> AnkiMedia:
     """Instance of AnkiMedia class with profile 'test'."""
-    anki_media = AnkiMedia(anki_profile="test_profile")
+    anki_media = AnkiMedia(
+        "test_profile", os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
+    )
 
     try:
         os.makedirs(anki_media._anki_media_path)

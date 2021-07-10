@@ -16,14 +16,12 @@ def default_config_string():
         "folder = \n"
         "\n"
         "[anki]\n"
-        "basic_type = Basic\n"
+        "path = \n"
+        "basic_type = Inka Basic\n"
         "front_field = Front\n"
         "back_field = Back\n"
-        "cloze_type = Cloze\n"
+        "cloze_type = Inka Cloze\n"
         "cloze_field = Text\n"
-        "\n"
-        "[anki_connect]\n"
-        "port = 8765\n"
         "\n"
         "[highlight]\n"
         "style = monokai\n"
@@ -156,7 +154,6 @@ def test_new_options_removed_by_reset(config, config_path, default_config_string
             "front_field": config._default_front_field,
             "back_field": config._default_back_field,
         },
-        "anki_connect": {"port": config._default_port},
     }
     config._config.read_dict(new_config)
     config._save()
