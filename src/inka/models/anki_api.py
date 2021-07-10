@@ -19,6 +19,11 @@ class AnkiApi:
     def __init__(self, cfg: Config, anki_path: str):
         self._cfg = cfg
 
+        # Check correctness of the anki path
+        meta_path = os.path.join(anki_path, "prefs21.db")
+        if not os.path.exists(meta_path):
+            raise AnkiApiError(f'incorrect path to Anki folder: "{anki_path}"')
+
         # Initialize profile manager to get access to profile and database actions
         self._profile_manager = aqt.ProfileManager(anki_path)
         self._profile_manager.setupMeta()
@@ -38,7 +43,7 @@ class AnkiApi:
             self._collection = anki.Collection(self._profile_manager.collectionPath())
         except anki.errors.DBError:
             raise AnkiApiError(
-                "The collection is open in Anki. "
+                "the collection is open in Anki. "
                 "You need to either close Anki or switch to a different profile."
             )
 
@@ -69,12 +74,12 @@ class AnkiApi:
         anki_note.fields = list(note.get_html_fields(self._cfg).values())
 
         if anki_note.dupeOrEmpty():
-            raise AnkiApiError("Duplicate! Note wasn't added.", note=note)
+            raise AnkiApiError("duplicate! Note wasn't added.", note=note)
 
         # gets id of the deck. if deck doesn't exist - it will be created.
         deck_id = self._collection.decks.id(note.deck_name, create=True)
         if not deck_id:
-            raise AnkiApiError(f"The deck {note.deck_name} couldn't be created.")
+            raise AnkiApiError(f"the deck {note.deck_name} couldn't be created.")
 
         self._collection.add_note(anki_note, deck_id)
         return anki_note.id
@@ -197,6 +202,6 @@ class AnkiApi:
         model_name = note_type.get_anki_note_type(self._cfg)
         anki_model = self._collection.models.byName(model_name)
         if not anki_model:
-            raise AnkiApiError(f"Couldn't get note type {model_name} from Anki!")
+            raise AnkiApiError(f"couldn't get note type {model_name} from Anki!")
 
         return anki_model

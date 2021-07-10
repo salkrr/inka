@@ -287,6 +287,23 @@ code {
         CONFIG.update_option_value("anki", "cloze_field", text_field)
 
 
+def check_note_types(anki_media: AnkiMedia, anki_api: AnkiApi) -> None:
+    print_action("Checking note types...")
+    try:
+        handle_note_types(anki_api)
+        handle_code_highlight(anki_api, anki_media)
+    except KeyError:
+        print_error(
+            'your config file is corrupted. Please reset its state with the command "inka config --reset".'
+        )
+        sys.exit(1)
+    except requests.exceptions.RequestException as e:
+        print_error(f'something gone wrong while handling code highlight: "{e}"')
+        sys.exit(1)
+    except HighlighterError as e:
+        print_warning(str(e))
+
+
 def get_profile_from_user(profiles: List[str]) -> str:
     profile = Prompt.ask(
         "   Enter the name of profile you want to use", choices=profiles
@@ -433,7 +450,7 @@ def config(list_options: bool, reset: bool, edit: bool, name: str, value: str) -
     "--update-ids",
     "update_ids",
     is_flag=True,
-    help="Update incorrect or absent IDs of cards from file(s) by searching for these cards in Anki.",
+    help="Update incorrect or absent IDs of cards from file(s) by looking for these cards in Anki.",
 )
 @click.option(
     "-i",
@@ -495,7 +512,12 @@ def collect(
     if not anki_path:
         anki_path = os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
 
-    anki_api = AnkiApi(CONFIG, anki_path)
+    # Create instance of AnkiApi. Throws an error if path to anki is incorrect
+    try:
+        anki_api = AnkiApi(CONFIG, anki_path)
+    except AnkiApiError as e:
+        print_error(str(e))
+        sys.exit(1)
 
     # Get name of profile and select it in Anki
     print_action("Getting profile...")
@@ -514,24 +536,11 @@ def collect(
     sync(anki_api)
 
     # Check correctness of note types
-    print_action("Checking note types...")
     anki_media = AnkiMedia(profile, anki_path)
-    try:
-        handle_note_types(anki_api)
-        handle_code_highlight(anki_api, anki_media)
-    except KeyError:
-        print_error(
-            'your config file is corrupted. Please reset its state with the command "inka config --reset".'
-        )
-        sys.exit(1)
-    except requests.exceptions.RequestException as e:
-        print_error(f'something gone wrong while handling code highlight: "{e}"')
-        sys.exit(1)
-    except HighlighterError as e:
-        print_warning(str(e))
+    check_note_types(anki_media, anki_api)
 
     # Get paths to all files
-    print_action("Searching for Markdown files...")
+    print_action("Searching Markdown files...")
     files = get_paths_to_files(paths, recursive)
     if not files:
         print_sub_warning("Markdown files not found!")
