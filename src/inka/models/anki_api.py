@@ -62,7 +62,10 @@ class AnkiApi:
         self._collection.save(trx=False)
 
         # Perform main sync
-        self._collection.sync_collection(auth)
+        try:
+            self._collection.sync_collection(auth)
+        except anki.errors.NetworkError:
+            raise AnkiApiError("Please check your internet connection")
 
         # Perform media sync
         initial_dir = os.getcwd()
