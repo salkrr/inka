@@ -5,12 +5,22 @@ from typing import Set, List, Iterable
 
 import click
 import requests
-from rich.console import Console
 from rich.prompt import Prompt, Confirm
 from rich.traceback import install
 
 from . import __version__
 from .exceptions import HighlighterError, AnkiApiError
+from .helpers import (
+    print_error,
+    print_warning,
+    print_sub_warning,
+    print_action,
+    print_step,
+    print_sub_step,
+    print_sub_error,
+    print_result,
+    CONSOLE,
+)
 from .models import highlighter, converter, img_handler
 from .models.anki_api import AnkiApi
 from .models.anki_media import AnkiMedia
@@ -33,14 +43,13 @@ CONFIG_PATH = f"{os.path.dirname(__file__)}/config.ini"
 HASHES_PATH = f"{os.path.dirname(__file__)}/hashes.json"
 
 CONFIG = Config(CONFIG_PATH)
-CONSOLE = Console()
 
 # pretty traceback
 install(console=CONSOLE)
 
 
 def get_notes_from_file(file_path: str) -> List[Note]:
-    CONSOLE.print("  [cyan1]->[/cyan1] Getting cards from the file...")
+    print_sub_step("Getting cards from the file...")
     # We need to change working directory because images in file can have relative path
     os.chdir(os.path.dirname(file_path))
 
@@ -48,11 +57,9 @@ def get_notes_from_file(file_path: str) -> List[Note]:
     notes = Parser(file_path, default_deck).collect_notes()
     notes_num = len(notes)
     if notes_num == 0:
-        CONSOLE.print("  [cyan1]->[/cyan1] Cards weren't found!")
+        print_sub_step("Cards weren't found!")
     else:
-        CONSOLE.print(
-            f'  [cyan1]->[/cyan1] Found {notes_num} {"cards" if notes_num > 1 else "card"}!'
-        )
+        print_sub_step(f'Found {notes_num} {"cards" if notes_num > 1 else "card"}!')
 
     return notes
 
@@ -65,19 +72,17 @@ def create_notes_from_file(
     hasher: Hasher,
 ) -> None:
     """Get all notes from file and send them to Anki"""
-    CONSOLE.print(
-        f'[green]==>[/green] Collecting cards from "{file_path}"!', style="bold"
-    )
+    print_step(f'Collecting cards from "{file_path}"!')
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Calculating hash...")
+    print_sub_step("Calculating hash...")
     curr_hash = hasher.calculate_hash(file_path)
     if not (full_sync or hasher.has_changed(file_path, curr_hash)):
-        CONSOLE.print("  [cyan1]->[/cyan1] The file hasn't changed since last sync!")
+        print_sub_step("The file hasn't changed since last sync!")
         return
 
     notes = get_notes_from_file(file_path)
     if not notes:
-        CONSOLE.print("  [cyan1]->[/cyan1] Updating information on file hash...")
+        print_sub_step("Updating information on file hash...")
         hasher.update_hash(file_path, curr_hash)
         return
 
@@ -87,13 +92,13 @@ def create_notes_from_file(
     writer = Writer(file_path, notes)
     writer.update_cloze_notes()
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Handling images...")
+    print_sub_step("Handling images...")
     img_handler.handle_images_in(notes, anki_media)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Converting cards to the html...")
+    print_sub_step("Converting cards to the html...")
     converter.convert_notes_to_html(notes)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Synchronizing changes and adding new cards...")
+    print_sub_step("Synchronizing changes and adding new cards...")
     for note in notes:
         try:
             if note.anki_id:
@@ -104,19 +109,17 @@ def create_notes_from_file(
         except AnkiApiError as e:
             print_error(str(e), note=e.note)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards in file...")
+    print_sub_step("Adding IDs to cards in file...")
     writer.update_note_ids()
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Updating information on file hash...")
+    print_sub_step("Updating information on file hash...")
     hasher.update_hash(file_path, hasher.calculate_hash(file_path))
-    CONSOLE.print("  [cyan1]->[/cyan1] Finished!")
+    print_sub_step("Finished!")
 
 
 def update_note_ids_in_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiMedia):
     """Update IDs of notes in file by getting their IDs from Anki"""
-    CONSOLE.print(
-        f'[green]==>[/green] Updating IDs of cards in "{file_path}"!', style="bold"
-    )
+    print_step(f'Updating IDs of cards in "{file_path}"!')
 
     notes = get_notes_from_file(file_path)
     if not notes:
@@ -128,25 +131,25 @@ def update_note_ids_in_file(file_path: str, anki_api: AnkiApi, anki_media: AnkiM
     writer = Writer(file_path, notes)
     writer.update_cloze_notes()
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Handling images...")
+    print_sub_step("Handling images...")
     img_handler.handle_images_in(notes, anki_media, copy_images=False)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Converting cards to the html...")
+    print_sub_step("Converting cards to the html...")
     converter.convert_notes_to_html(notes)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Getting card IDs from Anki...")
+    print_sub_step("Getting card IDs from Anki...")
     anki_api.update_note_ids(notes)
 
-    CONSOLE.print("  [cyan1]->[/cyan1] Adding IDs to cards in file...")
+    print_sub_step("Adding IDs to cards in file...")
     writer.update_note_ids()
-    CONSOLE.print("  [cyan1]->[/cyan1] Finished!")
+    print_sub_step("Finished!")
 
 
 def sync(anki_api: AnkiApi) -> None:
     try:
         anki_api.sync()
     except AnkiApiError as e:
-        CONSOLE.print(f"   {e}. Skipping...", style="yellow")
+        print_sub_warning(f"{e}. Skipping...")
 
 
 def get_file_paths_from_directory(dir_path: str, search_recursive: bool) -> Set[str]:
@@ -306,28 +309,13 @@ def get_profile(prompt_user: bool, anki_api: AnkiApi) -> str:
 
     profile = CONFIG.get_option_value("defaults", "profile")
     if not profile:
-        CONSOLE.print("   Default profile is not specified!", style="yellow")
+        print_sub_warning("Default profile is not specified!")
         profile = get_profile_from_user(profiles)
     elif profile not in profiles:
-        CONSOLE.print(
-            f'   Incorrect profile name in the config: "{profile}"!', style="red"
-        )
+        print_sub_error(f'Incorrect profile name in the config: "{profile}"!')
         profile = get_profile_from_user(profiles)
 
     return profile
-
-
-def print_error(message: str, pause: bool = False, note: Note = None) -> None:
-    if note:
-        CONSOLE.print(note)
-    CONSOLE.print(f"ERROR: {message}", style="red bold")
-
-    if pause:
-        CONSOLE.input("Press [italic]Enter[/italic] to continue...\n")
-
-
-def print_warning(message: str) -> None:
-    CONSOLE.print(f"WARNING: {message}", style="yellow bold")
 
 
 def edit_config_file(ctx, param, value) -> None:
@@ -418,7 +406,7 @@ def config(list_options: bool, reset: bool, edit: bool, name: str, value: str) -
         section, key = name.split(".")
 
         if not value:
-            CONSOLE.print(CONFIG.get_option_value(section, key), style="green")
+            print_result(CONFIG.get_option_value(section, key))
             sys.exit(0)
 
         CONFIG.update_option_value(section, key, value)
@@ -510,20 +498,23 @@ def collect(
     anki_api = AnkiApi(CONFIG, anki_path)
 
     # Get name of profile and select it in Anki
-    CONSOLE.print("[cyan1]::[/cyan1] Getting profile...", style="bold")
+    print_action("Getting profile...")
     profile = get_profile(prompt, anki_api)
 
-    CONSOLE.print("[cyan1]::[/cyan1] Loading profile...", style="bold")
+    # Load collection of a profile
+    print_action("Loading profile...")
     try:
         anki_api.load_collection(profile)
     except AnkiApiError as e:
         print_error(str(e), pause=False)
         sys.exit(1)
 
-    CONSOLE.print("[cyan1]::[/cyan1] Getting changes from AnkiWeb...", style="bold")
+    # Sync changes with AnkiWeb
+    print_action("Getting changes from AnkiWeb...")
     sync(anki_api)
 
-    CONSOLE.print("[cyan1]::[/cyan1] Checking note types...", style="bold")
+    # Check correctness of note types
+    print_action("Checking note types...")
     anki_media = AnkiMedia(profile, anki_path)
     try:
         handle_note_types(anki_api)
@@ -540,13 +531,10 @@ def collect(
         print_warning(str(e))
 
     # Get paths to all files
-    # todo: add message
+    print_action("Searching for Markdown files...")
     files = get_paths_to_files(paths, recursive)
-
     if not files:
-        CONSOLE.print(
-            "[cyan1]::[/cyan1] Markdown files not found!", style="yellow bold"
-        )
+        print_sub_warning("Markdown files not found!")
         sys.exit(0)
 
     # Perform action on notes from each file
@@ -571,8 +559,10 @@ def collect(
         finally:
             os.chdir(initial_directory)
 
-    CONSOLE.print("[cyan1]::[/cyan1] Synchronizing changes to AnkiWeb...", style="bold")
+    # Sync changes with AnkiWeb
+    print_action("Synchronizing changes with AnkiWeb...")
     sync(anki_api)
 
+    # Close collection to save changes
     anki_api.close()
-    CONSOLE.print("[cyan1]::[/cyan1] Everything is done!", style="bold")
+    print_action("Everything is done!")
