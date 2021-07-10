@@ -24,7 +24,7 @@ Automatically add your Markdown flashcards to [Anki](https://apps.ankiweb.net/).
 
 ### Requirements
 
-- [Python](https://www.python.org/) >= 3.7
+- [Python](https://www.python.org/) >= 3.8
 - [AnkiConnect](https://github.com/FooSoft/anki-connect) plugin
 
 ## Why
