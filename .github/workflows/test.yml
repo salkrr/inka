@@ -2,15 +2,19 @@ name: Tests
 
 on:
   push:
-    paths:
-      - '.github/workflows/test.yml'
-      - 'src/**'
-      - 'tests/**'
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.github/**'
+      - '!.github/workflows/test.yml'
   pull_request:
-    paths:
-      - '.github/workflows/test.yml'
-      - 'src/**'
-      - 'tests/**'
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.github/**'
+      - '!.github/workflows/test.yml'
 
 jobs:
   test:
