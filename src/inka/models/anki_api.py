@@ -16,11 +16,11 @@ from ..exceptions import AnkiApiError
 class AnkiApi:
     """Class for working with Anki collection"""
 
-    def __init__(self, cfg: Config):
+    def __init__(self, cfg: Config, anki_path: str):
         self._cfg = cfg
 
         # Initialize profile manager to get access to profile and database actions
-        self._profile_manager = aqt.ProfileManager(cfg.get_option_value("anki", "path"))
+        self._profile_manager = aqt.ProfileManager(anki_path)
         self._profile_manager.setupMeta()
 
     def get_profiles(self) -> List[str]:

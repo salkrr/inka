@@ -1,23 +1,15 @@
 import filecmp
 import os
 import shutil
-import sys
 from pathlib import Path
 from typing import Union
-
-DEFAULT_ANKI_FOLDERS = {
-    "win32": r"~\AppData\Roaming\Anki2",
-    "linux": "~/.local/share/Anki2",
-    "darwin": "~/Library/Application Support/Anki2",
-}
 
 
 class AnkiMedia:
     """Class for working with files in Anki Media folder"""
 
-    def __init__(self, anki_profile: str) -> None:
-        anki_folder_path = os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
-        self._anki_media_path = f"{anki_folder_path}/{anki_profile}/collection.media"
+    def __init__(self, anki_profile: str, anki_path: str) -> None:
+        self._anki_media_path = f"{anki_path}/{anki_profile}/collection.media"
 
     def exists(self, file_name: str) -> bool:
         """Check if file exists in Anki Media folder

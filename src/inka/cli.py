@@ -22,6 +22,12 @@ from .models.notes.note import Note
 from .models.parser import Parser
 from .models.writer import Writer
 
+DEFAULT_ANKI_FOLDERS = {
+    "win32": r"~\AppData\Roaming\Anki2",
+    "linux": "~/.local/share/Anki2",
+    "darwin": "~/Library/Application Support/Anki2",
+}
+
 FILE_EXTENSIONS = [".md", ".markdown"]
 CONFIG_PATH = f"{os.path.dirname(__file__)}/config.ini"
 HASHES_PATH = f"{os.path.dirname(__file__)}/hashes.json"
@@ -496,7 +502,12 @@ def collect(
 
         paths.add(default_path)
 
-    anki_api = AnkiApi(CONFIG)
+    # Get path to Anki folder
+    anki_path = CONFIG.get_option_value("anki", "path")
+    if not anki_path:
+        anki_path = os.path.expanduser(DEFAULT_ANKI_FOLDERS[sys.platform])
+
+    anki_api = AnkiApi(CONFIG, anki_path)
 
     # Get name of profile and select it in Anki
     CONSOLE.print("[cyan1]::[/cyan1] Getting profile...", style="bold")
@@ -513,7 +524,7 @@ def collect(
     sync(anki_api)
 
     CONSOLE.print("[cyan1]::[/cyan1] Checking note types...", style="bold")
-    anki_media = AnkiMedia(profile)
+    anki_media = AnkiMedia(profile, anki_path)
     try:
         handle_note_types(anki_api)
         handle_code_highlight(anki_api, anki_media)
