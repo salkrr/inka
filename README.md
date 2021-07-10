@@ -28,15 +28,15 @@ python3 -m pip install inka --upgrade
 
 You also need to install [aqt](https://pypi.org/project/aqt/) package if not already installed (on some systems it is
 installed as a part of Anki). You can check if you have it with the command `pip show aqt`. If you don't have it,
-install it using the command (replace `2.1.40` with your version of Anki):
+install it using the command (replace `2.1.44` with your version of Anki):
 
 ```shell
-python3 -m pip install aqt==2.1.40
+python3 -m pip install aqt==2.1.44
 ```
 
 ### Requirements
 
-- [Anki](https://apps.ankiweb.net/) >= 2.1.40
+- [Anki](https://apps.ankiweb.net/) >= 2.1.44
 - [Python](https://www.python.org/) >= 3.8
 
 ## Why
