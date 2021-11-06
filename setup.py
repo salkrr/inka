@@ -33,9 +33,9 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "mistune==2.0.0rc1",
-        "requests==2.27.0",
-        "click==8.1.0",
-        "rich==10.13",
+        "requests==2.26.0",
+        "click==8.0.3",
+        "rich==10.12.0",
     ],
     entry_points={"console_scripts": ["inka=inka.cli:cli"]},
 )
