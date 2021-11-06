@@ -371,10 +371,10 @@ def cli() -> None:
     """Inka - command-line tool for adding flashcards from Markdown files to Anki.
 
     Documentation:\n
-        https://github.com/lazy-void/inka/wiki
+        https://github.com/keiqu/inka/wiki
 
     Github:\n
-        https://github.com/lazy-void/inka
+        https://github.com/keiqu/inka
     """
     pass
 

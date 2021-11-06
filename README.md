@@ -1,12 +1,10 @@
 # inka
 
-<a href="https://www.buymeacoffee.com/lazyvoid" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="170px" height="46px"></a>
-
 [![Downloads](https://pepy.tech/badge/inka)](https://pepy.tech/project/inka)
 [![PyPi](https://img.shields.io/pypi/v/inka)](https://pypi.org/project/inka)
-[![Tests CI](https://img.shields.io/github/workflow/status/lazy-void/inka/Tests/main)](https://github.com/lazy-void/inka/actions/workflows/test.yml)
+[![Tests CI](https://img.shields.io/github/workflow/status/keiqu/inka/Tests/main)](https://github.com/keiqu/inka/actions/workflows/test.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Codecov](https://codecov.io/gh/lazy-void/inka/branch/main/graph/badge.svg?token=9wW5SJ9uLL)](https://codecov.io/gh/lazy-void/inka)
+[![Codecov](https://codecov.io/gh/keiqu/inka/branch/main/graph/badge.svg?token=9wW5SJ9uLL)](https://codecov.io/gh/keiqu/inka)
 
 Automatically add your Markdown flashcards to [Anki](https://apps.ankiweb.net/).
 
@@ -51,13 +49,13 @@ can see now.
 ## Features
 
 - Cards are automatically added to your Anki deck
-- [Basic and Cloze note types support](https://github.com/lazy-void/inka/wiki/Creating-cards#frontback-notes)
-- [Synchronization of changes with Anki](https://github.com/lazy-void/inka/wiki/Synchronization-with-Anki)
-- [Configuration via config file](https://github.com/lazy-void/inka/wiki/Config)
-- [Images support](https://github.com/lazy-void/inka/wiki/Creating-cards#images)
-- [MathJax support](https://github.com/lazy-void/inka/wiki/Mathjax)
-- [Code highlight](https://github.com/lazy-void/inka/wiki/Code-highlight)
-- [Hashing (for better performance)](https://github.com/lazy-void/inka/wiki/Hashing)
+- [Basic and Cloze note types support](https://github.com/keiqu/inka/wiki/Creating-cards#frontback-notes)
+- [Synchronization of changes with Anki](https://github.com/keiqu/inka/wiki/Synchronization-with-Anki)
+- [Configuration via config file](https://github.com/keiqu/inka/wiki/Config)
+- [Images support](https://github.com/keiqu/inka/wiki/Creating-cards#images)
+- [MathJax support](https://github.com/keiqu/inka/wiki/Mathjax)
+- [Code highlight](https://github.com/keiqu/inka/wiki/Code-highlight)
+- [Hashing (for better performance)](https://github.com/keiqu/inka/wiki/Hashing)
 
 ## Usage
 
@@ -85,10 +83,10 @@ Tags: learning life-questions
 You can create any number of such sections in the file.
 
 > :warning: This means that you should avoid using the `---` syntax anywhere else in the file for **inka** to work correctly.
-> There are exceptions, and you can read about them in [documentation](https://github.com/lazy-void/inka/wiki/Creating-cards#i-want-to-use-----for-other-purposes).
+> There are exceptions, and you can read about them in [documentation](https://github.com/keiqu/inka/wiki/Creating-cards#i-want-to-use-----for-other-purposes).
 
 Inside the section, you can specify the name of the deck to which the cards will be added, and tags for the cards. If
-deck name isn't specified, then the one from the [config](https://github.com/lazy-void/inka/wiki/Config) is
+deck name isn't specified, then the one from the [config](https://github.com/keiqu/inka/wiki/Config) is
 used (`Default` by default). The deck name is written after `Deck:`, and tags for all cards after `Tags:` with spaces
 between each tag.
 
@@ -102,13 +100,13 @@ Two types of notes are supported:
     - Short explicit syntax: `{1::hidden text}` or `{c1::hidden text}`
     - Short implicit syntax: `{hidden text}`
 
-More info and examples on the [creating cards](https://github.com/lazy-void/inka/wiki/Creating-cards) documentation
+More info and examples on the [creating cards](https://github.com/keiqu/inka/wiki/Creating-cards) documentation
 page.
 
 ### Adding Cards to Anki
 
 **inka** will create custom note types for **Front/Back** and **Cloze** notes. If you want to use different ones, you
-can change note types in the [config](https://github.com/lazy-void/inka/wiki/Config).
+can change note types in the [config](https://github.com/keiqu/inka/wiki/Config).
 
 Add cards from the file:
 
@@ -128,4 +126,4 @@ You can also pass multiple paths at once:
 inka collect path/to/cards.md path/to/folder
 ```
 
-You can find more information on the [documentation page](https://github.com/lazy-void/inka/wiki/Adding-cards-to-Anki).
+You can find more information on the [documentation page](https://github.com/keiqu/inka/wiki/Adding-cards-to-Anki).

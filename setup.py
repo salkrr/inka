@@ -13,7 +13,7 @@ setup(
     description="Command-line tool for adding flashcards from Markdown files to Anki",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/lazy-void/inka",
+    url="https://github.com/keiqu/inka",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Operating System :: OS Independent",
