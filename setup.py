@@ -32,7 +32,7 @@ setup(
     packages=find_packages(where="src"),
     python_requires=">=3.7",
     install_requires=[
-        "mistune==2.0.0rc1",
+        "mistune==2.0.0",
         "requests==2.26.0",
         "click==8.0.3",
         "rich==10.15.2",
