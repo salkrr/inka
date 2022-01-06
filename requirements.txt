@@ -1,5 +1,5 @@
 mistune==2.0.1
-requests==2.26.0
+requests==2.27.1
 click==8.0.3
 rich==10.16.1
 Pillow==8.4.0
