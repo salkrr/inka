@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 from ..mistune_plugins.mathjax import BLOCK_MATH
 from .notes.basic_note import BasicNote

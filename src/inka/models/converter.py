@@ -1,11 +1,11 @@
 import re
-from typing import Union, Tuple, Iterator, Match, Pattern, Iterable
+from typing import Iterable, Iterator, Match, Pattern, Tuple, Union
 
 import mistune  # type: ignore
 
+from ..mistune_plugins.mathjax import BLOCK_MATH, INLINE_MATH, plugin_mathjax
 from .notes.basic_note import Note
 from .notes.cloze_note import ClozeNote
-from ..mistune_plugins.mathjax import plugin_mathjax, BLOCK_MATH, INLINE_MATH
 
 MD = mistune.create_markdown(
     plugins=["strikethrough", "footnotes", "table", plugin_mathjax]

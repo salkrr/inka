@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List, Dict, Optional, Iterable
+from typing import Dict, Iterable, List, Optional
 
 from .anki_media import AnkiMedia
 from .notes.note import Note

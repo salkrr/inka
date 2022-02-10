@@ -2,19 +2,19 @@
 # and apy (https://github.com/lervag/apy) projects. Thanks to all their developers.
 
 import os
-from typing import List, Dict, Type, Iterable
+from typing import Dict, Iterable, List, Type
 
 import anki
+import anki.collection
 import anki.consts
 import anki.errors
 import anki.models
 import anki.notes
-import anki.collection
 import aqt
 
+from ..exceptions import AnkiApiError
 from .config import Config
 from .notes.note import Note
-from ..exceptions import AnkiApiError
 
 
 class AnkiApi:

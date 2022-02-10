@@ -1,27 +1,19 @@
 import os
 import sys
 from subprocess import call
-from typing import Set, List, Iterable
+from typing import Iterable, List, Set
 
 import click
 import requests
-from rich.prompt import Prompt, Confirm
+from rich.prompt import Confirm, Prompt
 from rich.traceback import install
 
 from . import __version__
-from .exceptions import HighlighterError, AnkiApiError
-from .helpers import (
-    print_error,
-    print_warning,
-    print_sub_warning,
-    print_action,
-    print_step,
-    print_sub_step,
-    print_sub_error,
-    print_result,
-    CONSOLE,
-)
-from .models import highlighter, converter, img_handler
+from .exceptions import AnkiApiError, HighlighterError
+from .helpers import (CONSOLE, print_action, print_error, print_result,
+                      print_step, print_sub_error, print_sub_step,
+                      print_sub_warning, print_warning)
+from .models import converter, highlighter, img_handler
 from .models.anki_api import AnkiApi
 from .models.anki_media import AnkiMedia
 from .models.config import Config
