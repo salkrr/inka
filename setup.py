@@ -30,7 +30,7 @@ setup(
     keywords="anki, markdown, spaced-repetition",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
         "mistune==2.0.2",
         "requests==2.27.1",
