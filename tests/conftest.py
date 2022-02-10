@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 from unittest.mock import MagicMock
 
@@ -53,7 +54,7 @@ def anki_api_mock(mocker) -> MagicMock:
 @pytest.fixture
 def image() -> str:
     """Path to temp image in working directory"""
-    path = "image_for_testing.png"
+    path = f"image_for_testing_{random.randrange(999999)}.png"
     Img.new("RGBA", size=(50, 50), color=(155, 0, 0)).save(path, format="png")
 
     yield path
@@ -64,7 +65,7 @@ def image() -> str:
 @pytest.fixture
 def another_image() -> str:
     """Path to temp image in working directory"""
-    path = "another_image_for_testing.png"
+    path = f"another_image_for_testing_{random.randrange(999999)}.png"
     Img.new("RGBA", size=(50, 50), color=(155, 0, 123)).save(path, format="png")
 
     yield path
