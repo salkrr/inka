@@ -10,9 +10,17 @@ from rich.traceback import install
 
 from . import __version__
 from .exceptions import AnkiApiError, HighlighterError
-from .helpers import (CONSOLE, print_action, print_error, print_result,
-                      print_step, print_sub_error, print_sub_step,
-                      print_sub_warning, print_warning)
+from .helpers import (
+    CONSOLE,
+    print_action,
+    print_error,
+    print_result,
+    print_step,
+    print_sub_error,
+    print_sub_step,
+    print_sub_warning,
+    print_warning,
+)
 from .models import converter, highlighter, img_handler
 from .models.anki_api import AnkiApi
 from .models.anki_media import AnkiMedia
