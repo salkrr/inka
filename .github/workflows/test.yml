@@ -76,3 +76,8 @@ jobs:
 
       - name: black
         uses: psf/black@stable
+
+      - name: isort
+        run: |
+          pip install isort
+          isort . --check --diff
