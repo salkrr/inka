@@ -9,6 +9,7 @@ import anki.consts
 import anki.errors
 import anki.models
 import anki.notes
+import anki.collection
 import aqt
 
 from .config import Config
@@ -43,7 +44,9 @@ class AnkiApi:
 
         try:
             self._profile_manager.load(profile)
-            self._collection = anki.Collection(self._profile_manager.collectionPath())
+            self._collection = anki.collection.Collection(
+                self._profile_manager.collectionPath()
+            )
         except anki.errors.DBError:
             raise AnkiApiError(
                 "the collection is open in Anki. "
@@ -74,7 +77,7 @@ class AnkiApi:
         os.chdir(initial_dir)
 
     def add_note(self, note: Note) -> int:
-        model = self._collection.models.byName(note.get_anki_note_type(self._cfg))
+        model = self._collection.models.by_name(note.get_anki_note_type(self._cfg))
         anki_note = anki.notes.Note(self._collection, model)
         anki_note.tags = list(note.tags)
         anki_note.fields = list(note.get_html_fields(self._cfg).values())
@@ -95,7 +98,8 @@ class AnkiApi:
         for note in notes:
             # Update id only if note with this id doesn't exist
             try:
-                self._collection.getNote(note.anki_id if note.anki_id else -1)
+                note_id = anki.collection.NoteId(note.anki_id if note.anki_id else -1)
+                self._collection.get_note(note_id)
             except anki.errors.NotFoundError:
                 found_notes = self._collection.find_notes(note.search_query)
                 note.anki_id = found_notes[0] if found_notes else None
@@ -103,7 +107,8 @@ class AnkiApi:
     def update_note(self, note: Note) -> None:
         """Synchronize changes in notes with Anki"""
         try:
-            anki_note = self._collection.getNote(note.anki_id if note.anki_id else -1)
+            note_id = anki.collection.NoteId(note.anki_id if note.anki_id else -1)
+            anki_note = self._collection.get_note(note_id)
         except anki.errors.NotFoundError:
             raise AnkiApiError(
                 f"note with ID {note.anki_id} was not found. "
@@ -164,7 +169,7 @@ class AnkiApi:
         """Update styling of the note type in Anki"""
         anki_model = self._get_model(note_type)
         anki_model["css"] = new_styles
-        self._collection.models.save(anki_model, True)
+        self._collection.models.update_dict(anki_model)
 
     def fetch_note_type_templates(
         self, note_type: Type[Note]
@@ -198,7 +203,7 @@ class AnkiApi:
                 if afmt:
                     anki_template["afmt"] = afmt
 
-        self._collection.models.save(anki_model, True)
+        self._collection.models.update_dict(anki_model)
 
     def close(self):
         """Save and close the collection."""
@@ -206,7 +211,7 @@ class AnkiApi:
 
     def _get_model(self, note_type: Type[Note]) -> anki.models.NoteType:
         model_name = note_type.get_anki_note_type(self._cfg)
-        anki_model = self._collection.models.byName(model_name)
+        anki_model = self._collection.models.by_name(model_name)
         if not anki_model:
             raise AnkiApiError(f"couldn't get note type {model_name} from Anki!")
 
