@@ -7,5 +7,5 @@ pytest==7.0.0
 pytest-cov==3.0.0
 pytest-mock==3.7.0
 tox==3.24.5
-aqt==2.1.44
-anki==2.1.44
+aqt==2.1.49
+anki==2.1.49
