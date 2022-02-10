@@ -23,6 +23,7 @@ jobs:
     strategy:
       matrix:
         python: [ 3.8, 3.9 ]
+        aqt: [ 2.1.44, 2.1.45, 2.1.46, 2.1.47, 2.1.48, 2.1.49 ]
 
     steps:
       - uses: actions/checkout@v2.4.0
@@ -35,6 +36,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install aqt==${{ matrix.aqt }}
 
       - name: Test with pytest
         run: |
