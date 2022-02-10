@@ -1,9 +1,9 @@
 import configparser
 import os
 from pathlib import Path
-from typing import Union, List
+from typing import List, Union
 
-from rich.table import Table, Column
+from rich.table import Column, Table
 
 
 class Config:

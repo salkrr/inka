@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, Any, Dict, List
+from typing import Any, Callable, Dict, Iterable, List
 
 from rich.table import Table
 

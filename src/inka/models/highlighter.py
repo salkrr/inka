@@ -1,13 +1,13 @@
 import re
-from typing import Type, Dict
+from typing import Dict, Type
 
 import requests
 from requests import HTTPError
 
+from ..exceptions import HighlighterError
 from .anki_api import AnkiApi
 from .anki_media import AnkiMedia
 from .notes.note import Note
-from ..exceptions import HighlighterError
 
 HLJS_VERSION = "10.7.1"
 BASE_URL = f"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/{HLJS_VERSION}"

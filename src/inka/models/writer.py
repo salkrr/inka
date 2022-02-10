@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Union, Optional, Iterable
+from typing import Iterable, Optional, Union
 
 from .notes.basic_note import BasicNote
 from .notes.cloze_note import ClozeNote

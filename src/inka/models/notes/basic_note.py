@@ -1,9 +1,9 @@
-from typing import Iterable, Any, Callable, Dict, List
+from typing import Any, Callable, Dict, Iterable, List
 
-from rich.table import Table, Column
+from rich.table import Column, Table
 
-from .note import Note
 from ..config import Config
+from .note import Note
 
 
 class BasicNote(Note):
