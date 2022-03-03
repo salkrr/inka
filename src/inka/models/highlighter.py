@@ -9,7 +9,7 @@ from .anki_api import AnkiApi
 from .anki_media import AnkiMedia
 from .notes.note import Note
 
-HLJS_VERSION = "10.7.1"
+HLJS_VERSION = "11.4.0"
 BASE_URL = f"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/{HLJS_VERSION}"
 
 # Thanks u/arthurmilchior for the initial idea.
@@ -20,11 +20,28 @@ function color() {
     if (typeof hljs !== 'undefined') {
         codes = document.querySelectorAll(selector)
         codes.forEach(element => {
+            recloze = uncloze(element);
             hljs.highlightBlock(element);
+            recloze();
         });
     } else {
         setTimeout(color, 50)
     }
+}
+function uncloze(el) {
+    let html = el.innerHTML;
+    const clozes = el.querySelectorAll(".cloze");
+    clozes.forEach(
+        (c, i) => (html = html.replace(c.outerHTML, `__CLOZE__${i}`))
+    );
+    el.innerHTML = html;
+    return function () {
+        let html = el.innerHTML;
+        clozes.forEach(
+            (c, i) => (html = html.replace(`__CLOZE__${i}`, c.outerHTML))
+        );
+        el.innerHTML = html;
+    };
 }
 color()
 </script>"""
