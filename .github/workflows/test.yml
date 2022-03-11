@@ -2,6 +2,8 @@ name: Tests
 
 on:
   push:
+    tags-ignore:
+      - '**'
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
