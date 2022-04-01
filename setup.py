@@ -34,7 +34,7 @@ setup(
     install_requires=[
         "mistune==2.0.2",
         "requests==2.27.1",
-        "click==8.1.1",
+        "click==8.1.2",
         "rich==12.0.1",
     ],
     entry_points={"console_scripts": ["inka=inka.cli:cli"]},
