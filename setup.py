@@ -35,7 +35,7 @@ setup(
         "mistune==2.0.2",
         "requests==2.27.1",
         "click==8.1.3",
-        "rich==12.4.1",
+        "rich==12.4.4",
     ],
     entry_points={"console_scripts": ["inka=inka.cli:cli"]},
 )
