@@ -33,7 +33,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "mistune==2.0.2",
-        "requests==2.27.1",
+        "requests==2.28.0",
         "click==8.1.3",
         "rich==12.4.4",
     ],
