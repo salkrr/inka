@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
 from rich.table import Column, Table
 
@@ -15,7 +15,7 @@ class BasicNote(Note):
         back_md: str,
         tags: Iterable[str],
         deck_name: str,
-        anki_id: int = None,
+        anki_id: Optional[int] = None,
     ):
         super().__init__(tags, deck_name, anki_id)
         self.raw_front_md = front_md

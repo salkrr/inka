@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Iterable, List
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
 from rich.table import Table
 
@@ -9,7 +9,9 @@ from inka.models.config import Config
 class Note(ABC):
     """Base class for all other note types"""
 
-    def __init__(self, tags: Iterable[str], deck_name: str, anki_id: int = None):
+    def __init__(
+        self, tags: Iterable[str], deck_name: str, anki_id: Optional[int] = None
+    ):
         self.tags = tags
         self.deck_name = deck_name
         self.anki_id = anki_id

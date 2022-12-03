@@ -1,3 +1,5 @@
+from typing import Optional
+
 from rich.console import Console
 
 from inka.models.notes.note import Note
@@ -13,7 +15,7 @@ def print_action(msg: str) -> None:
     CONSOLE.print(f"[cyan1]::[/cyan1] {msg}", style="bold")
 
 
-def print_error(message: str, pause: bool = False, note: Note = None) -> None:
+def print_error(message: str, pause: bool = False, note: Optional[Note] = None) -> None:
     if note:
         CONSOLE.print(note)
     CONSOLE.print(f"ERROR: {message}", style="red bold")

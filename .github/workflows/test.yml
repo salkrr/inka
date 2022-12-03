@@ -77,7 +77,7 @@ jobs:
 
       - name: black
         run: |
-          black --check --verbose ./src
+          black --check --verbose ./src ./tests
 
       - name: isort
         run: |
