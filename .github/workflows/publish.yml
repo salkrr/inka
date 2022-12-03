@@ -25,5 +25,8 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
+          RELEASE_VERSION=$(echo $GITHUB_REF_NAME | sed 's/v//')
+          echo "Publishing version ${RELEASE_VERSION}"
+          sed -i "s/\"dev\"/\"${RELEASE_VERSION}\"/" ./src/inka/__init__.py
           python3 -m build
           twine upload dist/*
