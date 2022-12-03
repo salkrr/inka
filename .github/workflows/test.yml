@@ -35,6 +35,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt update && sudo apt install --yes libgl1-mesa-dev
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install .
