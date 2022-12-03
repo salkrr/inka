@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
 from rich.table import Column, Table
 
@@ -10,7 +10,11 @@ class ClozeNote(Note):
     """Cloze note type"""
 
     def __init__(
-        self, text_md: str, tags: Iterable[str], deck_name: str, anki_id: int = None
+        self,
+        text_md: str,
+        tags: Iterable[str],
+        deck_name: str,
+        anki_id: Optional[int] = None,
     ):
         super().__init__(tags, deck_name, anki_id)
         self.raw_text_md = text_md
