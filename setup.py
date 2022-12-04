@@ -38,6 +38,7 @@ setup(
         "rich==12.6.0",
         "PyQt6==6.4.0",
         "PyQt6-WebEngine==6.4.0",
+        "aqt>=2.1.54",
     ],
     entry_points={"console_scripts": ["inka=inka.cli:cli"]},
 )
