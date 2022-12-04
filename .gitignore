@@ -121,6 +121,9 @@ pip-selfcheck.json
 .idea/
 .vscode/
 
+### Pyright ###
+pyrightconfig.json
+
 ### inka ###
 # Ignore inka's config and hashes files
 src/inka/config.ini
