@@ -2,7 +2,7 @@
 
 [![Downloads](https://pepy.tech/badge/inka)](https://pepy.tech/project/inka)
 [![PyPi](https://img.shields.io/pypi/v/inka)](https://pypi.org/project/inka)
-[![Tests CI](https://img.shields.io/github/workflow/status/keiqu/inka/Tests/main)](https://github.com/keiqu/inka/actions/workflows/test.yml)
+[![Tests CI](https://img.shields.io/github/actions/workflow/status/keiqu/inka/test.yml?branch=main)](https://github.com/keiqu/inka/actions/workflows/test.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Codecov](https://codecov.io/gh/keiqu/inka/branch/main/graph/badge.svg?token=9wW5SJ9uLL)](https://codecov.io/gh/keiqu/inka)
 
