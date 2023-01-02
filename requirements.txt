@@ -11,7 +11,7 @@ tox==4.1.1
 pytest==7.2.0
 pytest-cov==4.0.0
 pytest-mock==3.10.0
-Pillow==9.3.0
+Pillow==9.4.0
 
 mypy==0.991
 types-click==7.1.8
