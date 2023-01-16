@@ -8,7 +8,7 @@ PyQt6==6.4.0
 PyQt6-WebEngine==6.4.0
 
 tox==4.2.1
-pytest==7.2.0
+pytest==7.2.1
 pytest-cov==4.0.0
 pytest-mock==3.10.0
 Pillow==9.4.0
