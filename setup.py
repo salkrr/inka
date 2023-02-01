@@ -36,7 +36,7 @@ setup(
         "requests==2.28.2",
         "click==8.1.3",
         "rich==13.1.0",
-        "PyQt6==6.4.0",
+        "PyQt6==6.4.1",
         "PyQt6-WebEngine==6.4.0",
         "aqt>=2.1.54",
     ],
