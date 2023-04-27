@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 from subprocess import call
 from typing import Iterable, List, Set
 
@@ -514,7 +515,7 @@ def collect(
 
     # Create instance of AnkiApi. Throws an error if path to anki is incorrect
     try:
-        anki_api = AnkiApi(CONFIG, anki_path)
+        anki_api = AnkiApi(CONFIG, Path(anki_path))
     except AnkiApiError as e:
         print_error(str(e))
         sys.exit(1)
