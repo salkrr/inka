@@ -36,9 +36,9 @@ setup(
         "requests==2.28.2",
         "click==8.1.3",
         "rich==13.3.3",
-        "PyQt6==6.4.2",
-        "PyQt6-WebEngine==6.4.0",
-        "aqt>=2.1.54",
+        "PyQt6~=6.5",
+        "PyQt6-WebEngine~=6.5",
+        "aqt>=2.1.61",
     ],
     entry_points={"console_scripts": ["inka=inka.cli:cli"]},
 )

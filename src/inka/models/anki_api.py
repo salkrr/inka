@@ -2,6 +2,7 @@
 # and apy (https://github.com/lervag/apy) projects. Thanks to all their developers.
 
 import os
+from pathlib import Path
 from typing import Dict, Iterable, List, Type
 
 import anki
@@ -20,7 +21,7 @@ from .notes.note import Note
 class AnkiApi:
     """Class for working with Anki collection"""
 
-    def __init__(self, cfg: Config, anki_path: str):
+    def __init__(self, cfg: Config, anki_path: Path):
         self._cfg = cfg
 
         # Check correctness of the anki path
