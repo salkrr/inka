@@ -33,7 +33,7 @@ setup(
     python_requires=">=3.10",
     install_requires=[
         "mistune==2.0.5",
-        "requests==2.28.2",
+        "requests==2.29.0",
         "click==8.1.3",
         "rich==13.3.3",
         "PyQt6~=6.5",
