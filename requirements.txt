@@ -7,7 +7,7 @@ anki>=2.1.61
 PyQt6~=6.5
 PyQt6-WebEngine~=6.5
 
-tox==4.4.8
+tox==4.6.3
 pytest==7.2.0
 pytest-cov==4.0.0
 pytest-mock==3.10.0
