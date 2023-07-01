@@ -35,7 +35,7 @@ setup(
         "mistune==2.0.5",
         "requests==2.28.2",
         "click==8.1.3",
-        "rich==13.3.3",
+        "rich==13.4.2",
         "PyQt6~=6.5",
         "PyQt6-WebEngine~=6.5",
         "aqt>=2.1.61",
