@@ -6,6 +6,10 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Codecov](https://codecov.io/gh/keiqu/inka/branch/main/graph/badge.svg?token=9wW5SJ9uLL)](https://codecov.io/gh/keiqu/inka)
 
+> ⚠️ I have stopped maintaining Inka for personal reasons. But there is a fork that is actively developed: [inka2](https://github.com/sysid/inka2).
+> I recommend you to take a look at it.
+
+
 Automatically add your Markdown flashcards to [Anki](https://apps.ankiweb.net/).
 
 - [Installation](#installation)
